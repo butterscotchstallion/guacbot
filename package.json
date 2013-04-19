@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "irc-js": "2",
+    "irc": "~0.3.6"
+  }
+}
