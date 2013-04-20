@@ -1,0 +1,92 @@
+{
+        "response": {
+                "version": "0.1"
+                ,"termsofService": "http://www.wunderground.com/weather/api/d/terms.html"
+                ,"features": {
+                "conditions": 1
+                }
+        },
+        "current_observation": {
+                "image": {
+                "url":"http://icons-ak.wxug.com/graphics/wu2/logo_130x80.png",
+                "title":"Weather Underground",
+                "link":"http://www.wunderground.com"
+                },
+                "display_location": {
+                    "full":"Hamilton, NJ",
+                    "city":"Hamilton",
+                    "state":"NJ",
+                    "state_name":"New Jersey",
+                    "country":"US",
+                    "country_iso3166":"US",
+                    "zip":"08609",
+                    "latitude":"40.22579956",
+                    "longitude":"-74.74308014",
+                    "elevation":"17.00000000"
+                },
+                "observation_location": {
+                    "full":"Morris Heights, Morrisville, Pennsylvania",
+                    "city":"Morris Heights, Morrisville",
+                    "state":"Pennsylvania",
+                    "country":"US",
+                    "country_iso3166":"US",
+                    "latitude":"40.216743",
+                    "longitude":"-74.783028",
+                    "elevation":"89 ft"
+                },
+                "estimated": {
+                },
+                "station_id":"KPAMORRI2",
+                "observation_time":"Last Updated on April 19, 11:25 PM EDT",
+                "observation_time_rfc822":"Fri, 19 Apr 2013 23:25:52 -0400",
+                "observation_epoch":"1366428352",
+                "local_time_rfc822":"Fri, 19 Apr 2013 23:25:52 -0400",
+                "local_epoch":"1366428352",
+                "local_tz_short":"EDT",
+                "local_tz_long":"America/New_York",
+                "local_tz_offset":"-0400",
+                "weather":"Light Rain",
+                "temperature_string":"64.8 F (18.2 C)",
+                "temp_f":64.8,
+                "temp_c":18.2,
+                "relative_humidity":"86%",
+                "wind_string":"Calm",
+                "wind_dir":"NW",
+                "wind_degrees":315,
+                "wind_mph":0.0,
+                "wind_gust_mph":"1.1",
+                "wind_kph":0.0,
+                "wind_gust_kph":"1.8",
+                "pressure_mb":"1005",
+                "pressure_in":"29.69",
+                "pressure_trend":"+",
+                "dewpoint_string":"61 F (16 C)",
+                "dewpoint_f":61,
+                "dewpoint_c":16,
+                "heat_index_string":"NA",
+                "heat_index_f":"NA",
+                "heat_index_c":"NA",
+                "windchill_string":"NA",
+                "windchill_f":"NA",
+                "windchill_c":"NA",
+                "feelslike_string":"64.8 F (18.2 C)",
+                "feelslike_f":"64.8",
+                "feelslike_c":"18.2",
+                "visibility_mi":"5.0",
+                "visibility_km":"8.0",
+                "solarradiation":"",
+                "UV":"0",
+                "precip_1hr_string":"0.05 in ( 1 mm)",
+                "precip_1hr_in":"0.05",
+                "precip_1hr_metric":" 1",
+                "precip_today_string":"0.10 in (3 mm)",
+                "precip_today_in":"0.10",
+                "precip_today_metric":"3",
+                "icon":"rain",
+                "icon_url":"http://icons-ak.wxug.com/i/c/k/nt_rain.gif",
+                "forecast_url":"http://www.wunderground.com/US/NJ/Hamilton.html",
+                "history_url":"http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=KPAMORRI2",
+                "ob_url":"http://www.wunderground.com/cgi-bin/findweather/getForecast?query=40.216743,-74.783028"
+        }
+}
+

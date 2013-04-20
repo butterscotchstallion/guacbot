@@ -14,15 +14,27 @@ var client = new irc.Client(config.server, config.nick, {
     channels: config.channels
 });
 
+// Track current nick
+client.currentNick = config.nick;
+
+// Track nick changes
+client.addListener('nick', function (oldNick, newNick, channels, message) {
+    // But only the bot's nick
+    if (oldNick.toLowerCase() === client.currentNick.toLowerCase()) {
+        config.nick = newNick;
+    }
+});
+
 // Log errors to console
 client.addListener('error', function (message) {
-    console.log('error: ', message);
+    console.log('IRC Error: ', message);
 });
 
 // Capture incoming messages to any channel
 client.addListener('message', function (from, to, message) {
     console.log(from + ' => ' + to + ': ' + message);
     
+    // Show link titles
     var titler = require('./plugins/titler');
     
     if (titler.matchURL(message)) {
@@ -31,6 +43,14 @@ client.addListener('message', function (from, to, message) {
                 client.say(to, '^ ' + title);
             }
         });
+    }
+    
+    // CLS
+    if (message.toLowerCase() === '!cls') {
+        var cls = require('./plugins/caps-lock-saturday');
+        
+        cls.init({ client: client });
+        cls.capitalizeNick(config.nick);
     }
     
     // If first word in message has the bot's nick in it...
