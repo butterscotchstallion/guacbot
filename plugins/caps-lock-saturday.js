@@ -17,8 +17,6 @@ cls.capitalizeNick = function (currentNick) {
     var lowerCaseNick = currentNick.toLowerCase();
     var newNick       = upperCaseNick;
     
-    console.log('current nick: ' + currentNick);
-    
     if (currentNick === upperCaseNick) {
         newNick = lowerCaseNick;
     } else {

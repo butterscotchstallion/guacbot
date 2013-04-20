@@ -4,6 +4,7 @@
  */
 "use strict";
 
+var moment = require('moment');
 var fs     = require('fs');
 var config = JSON.parse(fs.readFileSync('./bot-config.json', 'utf8'));
 
@@ -25,13 +26,30 @@ client.addListener('nick', function (oldNick, newNick, channels, message) {
     }
 });
 
+// Log Ping!
+client.addListener('ping', function () {
+    console.log(moment().format('MMMM Do YYYY, h:mm:ssa') + ' Ping!');
+});
+
 // Log errors to console
 client.addListener('error', function (message) {
     console.log('IRC Error: ', message);
 });
 
+// Log server connection
+client.addListener('registered', function (message) {
+    client.connectTime = new Date().getTime();
+    console.log('Connected to ' + message.server);
+    console.log(message.args[message.args.length-1]);
+});
+
+// Reply to VERSION
+client.addListener('ctcp-version', function (from, to) {
+    client.notice(from, 'nodebot');
+});
+
 // Capture incoming messages to any channel
-client.addListener('message', function (from, to, message) {
+client.addListener('message#', function (from, to, message) {
     console.log(from + ' => ' + to + ': ' + message);
     
     // Show link titles
@@ -44,6 +62,15 @@ client.addListener('message', function (from, to, message) {
             }
         });
     }
+    
+    // Uptime
+    if (message === '!uptime') {
+        var uptime = require('./plugins/uptime');
+        
+        uptime.getUptime(client.connectTime, function (uptime) {
+            client.say(to, uptime);
+        });
+    } 
     
     // CLS
     if (message.toLowerCase() === '!cls') {
@@ -77,7 +104,7 @@ client.addListener('message', function (from, to, message) {
                         callback: function (data) {
                             client.say(to, data);
                         },
-                        debug: true
+                        debug: false
                     });
                 }
             }

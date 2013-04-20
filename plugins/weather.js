@@ -24,8 +24,8 @@ weatherPlugin.parseResponse = function (response) {
     conditions.push('The current temperature in ' + cityAndState);
     conditions.push('is ' + resp.temperature_string);
     conditions.push('Conditions: ' + resp.weather + '.');
-    conditions.push('Humidity:' + resp.relative_humidity);
-    conditions.push('Dew Point: ' + resp.dewpoint_string);
+    conditions.push('Humidity: ' + resp.relative_humidity);
+    //conditions.push('Dew Point: ' + resp.dewpoint_string);
     conditions.push('Feels like: ' + resp.feelslike_string); 
     
     return conditions.join(' ');
