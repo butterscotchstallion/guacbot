@@ -19,41 +19,38 @@ titler.getURLInfo = function (url) {
     return u.parse(url);
 };
 
-titler.getPageHTML = function (url) {
-    var urlInfo = titler.getURLInfo(url);
-    var http    = require('http');
-    var options = {
-        host: urlInfo.host,
-        path: urlInfo.path,
-        port: urlInfo.port
-    };
+titler.getPageHTML = function (url, callback) {
+    console.log('Retrieving page HTML for URL: ' + url);
     
-    try {
-        http.get(options, function (response) {
-            response.on('data', function (chunk) {
-                return titler.getTitle(chunk.toString());
-            });
-        });
-        
-    } catch (e) {
-        console.log(e);
-    }
+    var request = require('request');
+    request(url, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            callback(body);
+        }
+    });
 };
 
-titler.getTitle = function (html) {
-    var shortenedHTML = html.substring(0, 500);
+titler.getTitle = function (url, callback) {
     
-    console.log(shortenedHTML);
-    
-    var re    = /(<\s*title[^>]*>(.+?)<\s*\/\s*title)>/gi;
-    var match = re.exec(shortenedHTML);
-    
-    if (match && match[2]) {
-        return match[2];
-    } else {
-        console.log('Failed to find title in html!');
-        console.log(match);
-    }
+    titler.getPageHTML(url, function (html) {
+        console.log('parsing title out of HTML');
+        console.log(html);
+        
+        var re    = /(<\s*title[^>]*>(.+?)<\s*\/\s*title)>/gi;
+        var match = re.exec(html);
+        
+        if (match && match[2]) {
+            var ent   = require('ent');
+            var title = ent.decode(match[2]);
+            
+            callback(title);
+        } else {
+            console.log('Failed to find title in html!');
+            console.log(match);
+            
+            return false;
+        }
+    });
 };
 
 module.exports = titler;
