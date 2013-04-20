@@ -6,13 +6,16 @@
 "use strict";
 
 var cls = { };
-cls.client = undefined;
 
-cls.init   = function (cfg) {
-    cls.client = cfg.client;
+cls.init = function (client) {
+    client.addListener('message#', function (from, to, message) {
+        if (message.toLowerCase() === '!cls') {
+            cls.capitalizeNick(client, client.config.nick);
+        }
+    });
 };
 
-cls.capitalizeNick = function (currentNick) {
+cls.capitalizeNick = function (client, currentNick) {
     var upperCaseNick = currentNick.toUpperCase();
     var lowerCaseNick = currentNick.toLowerCase();
     var newNick       = upperCaseNick;
@@ -23,7 +26,7 @@ cls.capitalizeNick = function (currentNick) {
         newNick = upperCaseNick;
     }
     
-    cls.client.send('NICK', newNick);
+    client.send('NICK', newNick);
 };
 
 module.exports = cls;

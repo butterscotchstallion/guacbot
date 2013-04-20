@@ -6,6 +6,37 @@
 
 var weatherPlugin = { };
 
+weatherPlugin.init = function (client) {
+    client.addListener('message#', function (from, to, message) {
+        // If first word in message has the bot's nick in it...
+        if (message.length >= client.config.nick.length) {
+            var messageWords = message.split(' ');
+            
+            // You talkin' to me?
+            if (messageWords[0] && messageWords[0].indexOf(client.config.nick) === 0) {
+                console.log(from + ' is addressing bot');
+                
+                if (messageWords[1] === 'weather') {
+                    console.log('weather command detected');
+                    
+                    var query = messageWords.slice(2, messageWords.length).join(' ');
+                    
+                    if (query) {
+                        weatherPlugin.query({
+                            apiKey: client.config.plugins.weather.apiKey,
+                            query: query,
+                            callback: function (data) {
+                                client.say(to, data);
+                            },
+                            debug: false
+                        });
+                    }
+                }
+            }
+        }
+    });
+};
+
 weatherPlugin.parseResponse = function (response) {
     var resp         = JSON.parse(response).current_observation;
     var conditions   = [];

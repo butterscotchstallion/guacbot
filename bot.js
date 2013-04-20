@@ -18,6 +18,9 @@ var client = new irc.Client(config.server, config.nick, {
 // Track current nick
 client.currentNick = config.nick;
 
+// Pass along config
+client.config      = config;
+
 // Track nick changes
 client.addListener('nick', function (oldNick, newNick, channels, message) {
     // But only the bot's nick
@@ -48,66 +51,14 @@ client.addListener('ctcp-version', function (from, to) {
     client.notice(from, 'nodebot');
 });
 
-// Capture incoming messages to any channel
-client.addListener('message#', function (from, to, message) {
-    console.log(from + ' => ' + to + ': ' + message);
-    
-    // Show link titles
-    var titler = require('./plugins/titler');
-    
-    if (titler.matchURL(message)) {
-        var title = titler.getTitle(message, function (title) {
-            if (title) {
-                client.say(to, '^ ' + title);
-            }
-        });
-    }
-    
-    // Uptime
-    if (message === '!uptime') {
-        var uptime = require('./plugins/uptime');
-        
-        uptime.getUptime(client.connectTime, function (uptime) {
-            client.say(to, uptime);
-        });
-    } 
-    
-    // CLS
-    if (message.toLowerCase() === '!cls') {
-        var cls = require('./plugins/caps-lock-saturday');
-        
-        cls.init({ client: client });
-        cls.capitalizeNick(config.nick);
-    }
-    
-    // If first word in message has the bot's nick in it...
-    if (message.length >= config.nick.length) {
-        var messageWords = message.split(' ');
-        
-        // You talkin' to me?
-        if (messageWords[0] && messageWords[0].indexOf(config.nick) === 0) {
-            console.log(from + ' is addressing bot');
-            
-            if (messageWords[1] === 'weather') {
-                console.log('weather command detected');
-                
-                var query = messageWords.slice(2, messageWords.length).join(' ');
-                
-                console.log('query: ' + query);
-                
-                if (query) {
-                    var weather = require('./plugins/weather');
-                    
-                    weather.query({
-                        apiKey: config.plugins.weather.apiKey,
-                        query: query,
-                        callback: function (data) {
-                            client.say(to, data);
-                        },
-                        debug: false
-                    });
-                }
-            }
-        }
-    }
-});
+// Show link titles
+require('./plugins/titler').init(client);
+
+// Uptime
+require('./plugins/uptime').init(client);
+
+// CLS
+require('./plugins/caps-lock-saturday').init(client);
+
+// Weather
+require('./plugins/weather').init(client);
