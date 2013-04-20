@@ -13,12 +13,6 @@ titler.matchURL = function (url) {
     return urlPattern.test(url);
 };
 
-titler.getURLInfo = function (url) {
-    var u = require('url');
-
-    return u.parse(url);
-};
-
 titler.getPageHTML = function (url, callback) {
     console.log('Retrieving page HTML for URL: ' + url);
     
@@ -40,6 +34,7 @@ titler.getTitle = function (url, callback) {
         var match = re.exec(html);
         
         if (match && match[2]) {
+            // Decode HTML entities in title
             var ent   = require('ent');
             var title = ent.decode(match[2]);
             

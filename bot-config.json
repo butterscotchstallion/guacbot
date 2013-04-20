@@ -1,8 +1,0 @@
-{
-    "server": "irc.slashnet.org",
-    "nick": "nodebot",
-    "channels": [
-        "#nodebot"
-    ],
-    "commandPrefix": "!"
-}

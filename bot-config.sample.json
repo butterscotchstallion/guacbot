@@ -1,0 +1,13 @@
+{
+    "server": "irc.slashnet.org",
+    "nick": "nodebot",
+    "channels": [
+        "#nodebot"
+    ],
+    "commandPrefix": "!",
+    "plugins": {
+        "weather": {
+            "apiKey": "your-api-key-here"
+        }
+    }
+}
