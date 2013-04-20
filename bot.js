@@ -34,6 +34,11 @@ client.addListener('ping', function () {
     console.log(moment().format('MMMM Do YYYY, h:mm:ssa') + ' Ping!');
 });
 
+// Log messages from server
+client.addListener('raw', function (msg) {
+    //console.log('SERVER: ', msg);
+});
+
 // Log errors to console
 client.addListener('error', function (message) {
     console.log('IRC Error: ', message);

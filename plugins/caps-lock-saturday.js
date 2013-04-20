@@ -15,6 +15,10 @@ cls.init = function (client) {
         }
     });
     
+    client.addListener('names#nodebot', function (names) {
+        console.log(names);
+    });
+    
     // Each time there is a ping, check if it's saturday
     // and if so, change nick
     client.addListener('ping', function () {
@@ -22,23 +26,26 @@ cls.init = function (client) {
         var saturday  = 6;
         
         if (dayOfWeek === saturday) {
+            // Change nick if it's Saturday
             cls.capitalizeNick(client, client.config.nick);
+            
+            // Voice anyone who has an uppercase nick
+            // TODO: maybe this should happen for each channel in config
+            //client.send('NAMES', '#nodebot');
+            
+        } else {
+            // If it's not saturday, lowercase nick
+            client.send('NICK', client.config.nick.toLowerCase());
         }
     });
 };
 
+cls.isNickUpperCase = function (nick) {
+    return nick === nick.toUpperCase();
+};
+
 cls.capitalizeNick = function (client, currentNick) {
-    var upperCaseNick = currentNick.toUpperCase();
-    var lowerCaseNick = currentNick.toLowerCase();
-    var newNick       = upperCaseNick;
-    
-    if (currentNick === upperCaseNick) {
-        newNick = lowerCaseNick;
-    } else {
-        newNick = upperCaseNick;
-    }
-    
-    client.send('NICK', newNick);
+    client.send('NICK', currentNick.toUpperCase());
 };
 
 module.exports = cls;
