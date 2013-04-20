@@ -5,11 +5,23 @@
  */
 "use strict";
 
-var cls = { };
+var cls    = { };
+var moment = require('moment');
 
 cls.init = function (client) {
     client.addListener('message#', function (from, to, message) {
         if (message.toLowerCase() === '!cls') {
+            cls.capitalizeNick(client, client.config.nick);
+        }
+    });
+    
+    // Each time there is a ping, check if it's saturday
+    // and if so, change nick
+    client.addListener('ping', function () {
+        var dayOfWeek = moment().day();
+        var saturday  = 6;
+        
+        if (dayOfWeek === saturday) {
             cls.capitalizeNick(client, client.config.nick);
         }
     });

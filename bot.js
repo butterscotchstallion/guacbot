@@ -51,14 +51,10 @@ client.addListener('ctcp-version', function (from, to) {
     client.notice(from, 'nodebot');
 });
 
-// Show link titles
-require('./plugins/titler').init(client);
+// Initialize plugins
+var enabledPlugins = config.plugins.enabled;
+var epLen          = enabledPlugins.length;
 
-// Uptime
-require('./plugins/uptime').init(client);
-
-// CLS
-require('./plugins/caps-lock-saturday').init(client);
-
-// Weather
-require('./plugins/weather').init(client);
+for (var j = 0; j < epLen; j++) {
+    require('./plugins/' + enabledPlugins[j]).init(client);
+}

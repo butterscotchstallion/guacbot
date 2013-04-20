@@ -4,7 +4,12 @@
     "channels": [
         "#nodebot"
     ],
-    "commandPrefix": "!",
+    "enabled": [
+        "titler",
+        "weather",
+        "caps-lock-saturday",
+        "uptime"
+    ],
     "plugins": {
         "weather": {
             "apiKey": "your-api-key-here"
