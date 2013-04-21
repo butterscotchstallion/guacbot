@@ -31,13 +31,12 @@ cls.init = function (client) {
         console.log(names);
         
         var nlen       = names.length;
-        var namesArray = [];
         
         for (var nick in names) {
-            namesArray.push(nick);
+            cls.voiceUserIfNickIsUppercase(client, channel, nick);
         }
         
-        client.say('#' + channel, namesArray.join(' '));
+        //client.say('#' + channel, namesArray.join(' '));
     });
     
     // Each time there is a ping, check if it's saturday
@@ -46,6 +45,9 @@ cls.init = function (client) {
         if (cls.isSaturday()) {
             // CLS! uppercase nick
             cls.capitalizeNick(client, client.config.nick);
+            
+            // Get names from channel
+            client.send('NAMES');
         } else {
             // If it's not saturday, lowercase nick
             client.send('NICK', client.config.nick.toLowerCase());
@@ -56,11 +58,14 @@ cls.init = function (client) {
 cls.voiceUserIfNickIsUppercase = function (client, channel, nick) {
     // if nick is capitalized, voice
     if (cls.isNickUpperCase(nick)) {
-        console.log(nick + 'is capitalized');
         cls.voiceUser(client, channel, nick);
     } else {
-        console.log(nick + 'is not capitalized');
+        cls.devoiceUser(client, channel, nick);
     }
+};
+
+cls.devoiceUser = function (client, channel, nick) {
+    client.send('MODE', channel, '-v', nick);
 };
 
 cls.voiceUser = function (client, channel, nick) {
