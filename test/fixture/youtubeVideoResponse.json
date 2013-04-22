@@ -1,0 +1,43 @@
+{
+    "apiVersion": "2.1",
+    "data": {
+        "id": "vuNN1D-FCjs",
+        "uploaded": "2012-11-07T17:03:37.000Z",
+        "updated": "2013-04-21T04:39:08.000Z",
+        "uploader": "theescapistmagazine",
+        "category": "Games",
+        "title": "MEDAL OF HONOR WARFIGHTER & DOOM 3 BFG EDITION (Zero Punctuation)",
+        "description": "Subscribe to Escapist Magazine! http://bit.ly/Sub2Escapist\n\nThis week, Zero Punctuation reviews one shooter and one, well you'll see.\n\nFast-talking Ben \"Yahtzee\" Croshaw reviews a new game each week in this animated series that combines informed critique with cutting humor. Watch the next episode of Zero Punctuation a week early, only on The Escapist.\n\nEscapist Magazine!\nThe latest from Escapist Magazine: http://escapistmagazine.com\nSubscibe: http://bit.ly/Sub2Escapist\nLike us on Facebook: http://www.facebook.com/EscapistMag\nFollow us on Twitter: http://twitter.com/TheEscapistMag\nFind us Google+: http://bit.ly/EscapistGoogle\nFollow us on Pinterest: http://bit.ly/EscapistPins\nCheck out our Merch: http://www.splitreason.com/theescapist",
+        "thumbnail": {
+            "sqDefault": "http://i.ytimg.com/vi/vuNN1D-FCjs/default.jpg",
+            "hqDefault": "http://i.ytimg.com/vi/vuNN1D-FCjs/hqdefault.jpg"
+        },
+        "player": {
+            "default": "https://www.youtube.com/watch?v=vuNN1D-FCjs&feature=youtube_gdata_player",
+            "mobile": "https://m.youtube.com/details?v=vuNN1D-FCjs"
+        },
+        "content": {
+            "1": "rtsp://v1.cache4.c.youtube.com/CiILENy73wIaGQk7CoU_1E3jvhMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp",
+            "5": "https://www.youtube.com/v/vuNN1D-FCjs?version=3&f=videos&app=youtube_gdata",
+            "6": "rtsp://v1.cache4.c.youtube.com/CiILENy73wIaGQk7CoU_1E3jvhMYESARFEgGUgZ2aWRlb3MM/0/0/0/video.3gp"
+        },
+        "duration": 342,
+        "aspectRatio": "widescreen",
+        "rating": 4.939745,
+        "likeCount": "2550",
+        "ratingCount": 2589,
+        "viewCount": 171289,
+        "favoriteCount": 0,
+        "commentCount": 1170,
+        "accessControl": {
+            "comment": "allowed",
+            "commentVote": "allowed",
+            "videoRespond": "moderated",
+            "rate": "allowed",
+            "embed": "allowed",
+            "list": "allowed",
+            "autoPlay": "allowed",
+            "syndicate": "allowed"
+        }
+    }
+}

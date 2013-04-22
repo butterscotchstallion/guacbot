@@ -4,8 +4,8 @@
  *
  */
 "use strict";
-
-var titler = { };
+var request = require('request');
+var titler  = { };
 
 titler.init = function (client) {
     // Listen to messages from any channel
@@ -30,37 +30,98 @@ titler.matchURL = function (url) {
 titler.getPageHTML = function (url, callback) {
     console.log('Retrieving page HTML for URL: ' + url);
     
-    var request = require('request');
-    
     request(url, function (error, response, body) {
-        //console.log(response);
-        
         if (!error && response.statusCode == 200) {
             callback(body);
         }
     });
 };
 
-titler.getTitle = function (url, callback) {
+titler.parseHTMLAndGetTitle = function (html, callback) {
+    var re    = /(<\s*title[^>]*>(.+?)<\s*\/\s*title)>/gi;
+    var match = re.exec(html);
     
-    titler.getPageHTML(url, function (html) {
-        //console.log('parsing title out of HTML');
-        //console.log(html);
+    if (match && match[2]) {
+        // Decode HTML entities in title
+        var ent   = require('ent');
+        var title = ent.decode(match[2]);
         
-        var re    = /(<\s*title[^>]*>(.+?)<\s*\/\s*title)>/gi;
-        var match = re.exec(html);
+        callback(title);
+    } else {
+        console.log('Failed to find title in html!');
+    }
+};
+
+titler.getTitle = function (url, callback) {
+    // Parse the URL and see if it's a youtube video
+    // If so, query the API and get extra info about the video
+    var u      = require('url');
+    var info   = u.parse(url);
+    
+    if (info.host && titler.isYoutubeURL(info.host)) {        
         
-        if (match && match[2]) {
-            // Decode HTML entities in title
-            var ent   = require('ent');
-            var title = ent.decode(match[2]);
-            
+        // Build title based on API data
+        titler.getYoutubeVideoInfo(url, function (data) {
+            var title  = data.title;
+                title += ' - Rating: ' + data.rating; 
+                title += ' - Views: ' + data.viewCount;
+                title += ' - Likes: ' + data.likeCount;
+                
             callback(title);
-        } else {
-            console.log('Failed to find title in html!');
-            return false;
-        }
-    });
+        });
+        
+    } else {    
+        titler.getPageHTML(url, function (html) {
+            //console.log('parsing title out of HTML');
+            titler.parseHTMLAndGetTitle(html, function (title) {
+                callback(title);
+            });
+        });
+    }
+};
+
+titler.getYoutubeVideoInfo = function (url, callback) {
+    var videoID = titler.getYoutubeVideoID(url);
+    
+    if (videoID) {
+        var apiURL = titler.getYoutubeAPIURL(videoID);
+        
+        request(apiURL, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                callback(JSON.parse(body).data);
+            }
+        });
+        
+    } else {
+        console.log('Failed to get video ID for url: ' + url);
+    }
+};
+
+titler.getYoutubeAPIURL = function (videoID) {
+    return 'https://gdata.youtube.com/feeds/api/videos/' + videoID + '?v=2&alt=jsonc';
+};
+
+titler.getYoutubeVideoID = function (url) {    
+    var u       = require('url');
+    var qs      = require('qs');
+    
+    var info    = u.parse(url);
+    var query   = info.query;
+    var videoID = '';
+    
+    if (query) {
+        var qsInfo = qs.parse(info.query);        
+        videoID    = qsInfo.v;
+    }
+    
+    return videoID;
+};
+
+titler.isYoutubeURL = function (host) {
+    var looksLikeAYoutubeDomain  = host.indexOf('youtube.') > -1;
+    var isShortenedYoutubeDomain = host === 'youtu.be';
+    
+    return looksLikeAYoutubeDomain || isShortenedYoutubeDomain;
 };
 
 module.exports = titler;
