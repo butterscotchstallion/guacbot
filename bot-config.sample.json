@@ -2,15 +2,26 @@
     "server": "irc.slashnet.org",
     "nick": "nodebot",
     "channels": [
-        "#nodebot"
-    ],
-    "enabled": [
-        "titler",
-        "weather",
-        "caps-lock-saturday",
-        "uptime"
+        "#guacamole"
     ],
     "plugins": {
+        "enabled": {
+            "titler": {},
+            "weather": {},
+            "caps-lock-saturday": {},
+            "uptime": {},
+            "nickserv-auto-identify": {},
+            "news": {},
+            "event-messages": {
+                "kick": [
+                    "$nick is a sheister! a charlatan!"
+                ],
+                
+                "quit": [
+                    "$nick bites the big one!"
+                ]
+            }
+        },
         "weather": {
             "apiKey": "your-api-key-here"
         }
