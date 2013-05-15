@@ -8,6 +8,8 @@
 var ai = {};
 
 ai.init = function (client) {
+    var cfg = client.config.plugins.enabled['nickserv-auto-identify'];
+    
     // Listen to PMs so we can see if there was an error 
     client.addListener('message', function (nick, to, text, message) {
         if (to === client.config.nick) {
@@ -19,14 +21,14 @@ ai.init = function (client) {
     client.addListener('registered', function (message) {
         setTimeout(function () {
             
-            var pw = client.config.nickserv.password;
+            var pw = cfg.password;
             
             if (pw) {
                 console.log('Identifying with nickserv!');
                 client.say('nickserv', 'IDENTIFY ' + pw);
             }
             
-        }, client.config.nickserv.delay);
+        }, cfg.delay);
     });
 };
 

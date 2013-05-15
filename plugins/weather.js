@@ -23,7 +23,7 @@ weatherPlugin.init = function (client) {
                     
                     if (query) {
                         weatherPlugin.query({
-                            apiKey: client.config.plugins.weather.apiKey,
+                            apiKey: client.config.plugins.enabled.weather.apiKey,
                             query: query,
                             callback: function (data) {
                                 client.say(to, data);
