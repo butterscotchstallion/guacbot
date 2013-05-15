@@ -1,0 +1,221 @@
+
+<?xml version="1.0"?>
+
+<rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" version="2.0">
+
+<channel>
+
+<title>The Alex Jones Show - Infowars.com</title>
+<itunes:subtitle>Because there's a war on for your mind!</itunes:subtitle>
+<link>http://www.infowars.com</link>
+<itunes:summary> Because there's a war on for your mind; veteran broadcaster, filmmaker and media analyst Alex Jones brings you incredible interviews with people on the frontlines of the Infowar and takes an in-depth look at the news between the day's headlines.</itunes:summary>
+<description>Because there's a war on for your mind; broadcaster, filmmaker and news analyst Alex Jones brings you an in-depth look at the news between the day's headlines.</description>
+<language>en-us</language>
+<lastBuildDate>Fri, 26 Apr 2013 19:45:00 -0000</lastBuildDate>
+<itunes:owner>
+<itunes:name>Alex Jones</itunes:name>
+<itunes:email>sysadmin_xml3_nospam@infowars.com</itunes:email>
+</itunes:owner>
+<webMaster>sysadmin_xml3_nospam@infowars.com</webMaster>
+<ttl>250</ttl>
+
+<itunes:category text="News &amp; Politics" />
+
+<itunes:image href="http://www.infowars.com/images2/activism/podcast_ajshow_150.jpg"/>
+
+<item>
+<title>Alex Jones - 2013-Apr-26, Friday</title>
+<description>Friday - Alex Jones</description>
+<pubDate>Fri, 26 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130426_Fri_Alex.mp3" length="44401454" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130426_Fri_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-25, Thursday</title>
+<description>Thursday - Alex Jones</description>
+<pubDate>Thu, 25 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130425_Thu_Alex.mp3" length="44409086" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130425_Thu_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-24, Wednesday</title>
+<description>Wednesday - Alex Jones</description>
+<pubDate>Wed, 24 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130424_Wed_Alex.mp3" length="44244307" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130424_Wed_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-23, Tuesday</title>
+<description>Tuesday - Alex Jones</description>
+<pubDate>Tue, 23 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130423_Tue_Alex.mp3" length="44400725" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130423_Tue_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-22, Monday</title>
+<description>Monday - Alex Jones</description>
+<pubDate>Mon, 22 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130422_Mon_Alex.mp3" length="57598202" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130422_Mon_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-21, Sunday</title>
+<description>Sunday - Alex Jones</description>
+<pubDate>Sun, 21 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130421_Sun_Alex.mp3" length="28798201" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130421_Sun_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-19, Friday</title>
+<description>Friday - Alex Jones</description>
+<pubDate>Fri, 19 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130419_Fri_Alex.mp3" length="86425787" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130419_Fri_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-18, Thursday</title>
+<description>Thursday - Alex Jones</description>
+<pubDate>Thu, 18 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130418_Thu_Alex.mp3" length="93814787" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130418_Thu_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-17, Wednesday</title>
+<description>Wednesday - Alex Jones</description>
+<pubDate>Wed, 17 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130417_Wed_Alex.mp3" length="86433212" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130417_Wed_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-16, Tuesday</title>
+<description>Tuesday - Alex Jones</description>
+<pubDate>Tue, 16 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130416_Tue_Alex.mp3" length="57325485" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130416_Tue_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-15, Monday</title>
+<description>Monday - Alex Jones</description>
+<pubDate>Mon, 15 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130415_Mon_Alex.mp3" length="57325170" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130415_Mon_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-14, Sunday</title>
+<description>Sunday - Alex Jones</description>
+<pubDate>Sun, 14 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130414_Sun_Alex.mp3" length="28280663" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130414_Sun_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-12, Friday</title>
+<description>Friday - Alex Jones</description>
+<pubDate>Fri, 12 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130412_Fri_Alex.mp3" length="44538858" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130412_Fri_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-11, Thursday</title>
+<description>Thursday - Alex Jones</description>
+<pubDate>Thu, 11 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130411_Thu_Alex.mp3" length="44424759" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130411_Thu_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-10, Wednesday</title>
+<description>Wednesday - Alex Jones</description>
+<pubDate>Wed, 10 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130410_Wed_Alex.mp3" length="50360618" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130410_Wed_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-09, Tuesday</title>
+<description>Tuesday - Alex Jones</description>
+<pubDate>Tue, 09 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130409_Tue_Alex.mp3" length="42929299" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130409_Tue_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-08, Monday</title>
+<description>Monday - Alex Jones</description>
+<pubDate>Mon, 08 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130408_Mon_Alex.mp3" length="57320677" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130408_Mon_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-07, Sunday</title>
+<description>Sunday - Alex Jones</description>
+<pubDate>Sun, 07 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130407_Sun_Alex.mp3" length="28314308" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130407_Sun_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-05, Friday</title>
+<description>Friday - Alex Jones</description>
+<pubDate>Fri, 05 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130405_Fri_Alex.mp3" length="44406887" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130405_Fri_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-04, Thursday</title>
+<description>Thursday - Alex Jones</description>
+<pubDate>Thu, 04 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130404_Thu_Alex.mp3" length="42882803" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130404_Thu_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-03, Wednesday</title>
+<description>Wednesday - Alex Jones</description>
+<pubDate>Wed, 03 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130403_Wed_Alex.mp3" length="55445195" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130403_Wed_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-02, Tuesday</title>
+<description>Tuesday - Alex Jones</description>
+<pubDate>Tue, 02 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130402_Tue_Alex.mp3" length="44401456" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130402_Tue_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Apr-01, Monday</title>
+<description>Monday - Alex Jones</description>
+<pubDate>Mon, 01 Apr 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130401_Mon_Alex.mp3" length="44403021" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130401_Mon_Alex.mp3</guid>
+</item>
+
+<item>
+<title>Alex Jones - 2013-Mar-31, Sunday</title>
+<description>Sunday - Alex Jones</description>
+<pubDate>Sun, 31 Mar 2013 22:00:00 -0000</pubDate>
+<enclosure url="http://rss.infowars.com/20130331_Sun_Alex.mp3" length="28520676" type="audio/mpeg"/>
+<guid>http://rss.infowars.com/20130331_Sun_Alex.mp3</guid>
+</item>
+
+<itunes:explicit>no</itunes:explicit>
+</channel>
+
+</rss>

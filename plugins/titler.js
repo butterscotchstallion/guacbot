@@ -47,17 +47,18 @@ titler.parseHTMLAndGetTitle = function (html, callback) {
         var title = ent.decode(match[2]);
         
         callback(title);
+        
     } else {
         console.log('Failed to find title in html!');
     }
 };
 
 titler.getTitle = function (url, callback) {
-    // Parse the URL and see if it's a youtube video
-    // If so, query the API and get extra info about the video
+    // Parse the URL and see if it's a youtube video    
     var u      = require('url');
     var info   = u.parse(url);
     
+    // If so, query the API and get extra info about the video
     if (info.host && titler.isYoutubeURL(info.host)) {        
         
         // Build title based on API data
@@ -66,11 +67,11 @@ titler.getTitle = function (url, callback) {
                 title += ' - Rating: ' + data.rating; 
                 title += ' - Views: ' + data.viewCount;
                 title += ' - Likes: ' + data.likeCount;
-                
+            
             callback(title);
         });
         
-    } else {    
+    } else {
         titler.getPageHTML(url, function (html) {
             //console.log('parsing title out of HTML');
             titler.parseHTMLAndGetTitle(html, function (title) {
