@@ -8,7 +8,8 @@
  */
 'use strict';
 
-var em = {};
+var irc = require('irc');
+var em  = {};
 
 em.init = function (client, config) {
     client.addListener('kick', function (channel, nick, by, reason, message) {
@@ -41,9 +42,21 @@ em.init = function (client, config) {
 };
 
 em.replaceVariables = function (msg, kickInfo) {
-    var newMsg = '';
+    var newMsg      = '';
     
-    newMsg = msg.replace(new RegExp('\\$nick', 'g'), kickInfo.nick);
+    // Specifically chose these colors to exclude difficult to read colors
+    // and the reset sequence
+    var colors    = ['white', 'light_red', 'dark_red', 'orange', 'yellow',
+                     'light_green', 'cyan', 'light_cyan', 'light_blue',
+                     'light_magenta', 'gray', 'light_gray'];
+    
+    // irc.colors.codes is an object so we have to get the properties
+    // first and then find a random key based on that
+    var keys      = Object.keys(codes);
+    var colorName = keys[Math.floor(keys.length * Math.random())];
+    var nick      = irc.colors.wrap(colorName, kickInfo.nick);
+    
+    newMsg = msg.replace(new RegExp('\\$nick', 'g'), nick);
     newMsg = newMsg.replace(new RegExp('\\$channel', 'g'), kickInfo.channel);
     newMsg = newMsg.replace(new RegExp('\\$by', 'g'), kickInfo.by);
     newMsg = newMsg.replace(new RegExp('\\$reason', 'g'), kickInfo.reason);
