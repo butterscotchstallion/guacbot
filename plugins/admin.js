@@ -1,6 +1,10 @@
 /**
  * admin - provides ability to do things like kick/ban/topic using custom commands
  *
+ * TODO
+ * - join
+ * - nick change
+ *
  */
 "use strict";
 
@@ -14,7 +18,7 @@ admin.init = function (client) {
     client.addListener('message#', function (nick, to, text, message) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         
-        console.log(message);
+        console.log('message: ', message);
         
         if (isAddressingBot) {
             var words    = parser.splitMessageIntoWords(text);
@@ -54,6 +58,8 @@ admin.userIsAdmin = function (info) {
             
             match = true;
             
+            break;
+            
         } else {
             console.log('admin owner mismatch: ' + mask + ' != ' + admins[j]);
         }
@@ -68,6 +74,14 @@ admin.executeCommand = function (info) {
         return false;
     }
     
+    // message:
+    // [0] guacamole:
+    // [1] join
+    // [2] #test
+    var command       = info.words[1];
+    var commandArgOne = info.words[2];
+    var commandArgTwo = info.words[3];
+    
     switch (info.command) {
         case 'op':
             info.client.send('MODE', info.channel, '+o', info.nick);
@@ -76,7 +90,19 @@ admin.executeCommand = function (info) {
         case 'kick':
             info.client.send('KICK', 
                              info.channel, 
-                             info.words[2], 
+                             commandArgOne, 
+                             // Send everything after the second word
+                             info.words.slice(3).join(' '));
+        break;
+        
+        case 'join': 
+            info.client.send('JOIN',
+                             commandArgOne);
+        break;
+        
+        case 'part':
+            info.client.send('PART',
+                             commandArgOne,
                              // Send everything after the second word
                              info.words.slice(3).join(' '));
         break;
