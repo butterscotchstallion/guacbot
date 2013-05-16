@@ -84,7 +84,13 @@ admin.executeCommand = function (info) {
     
     switch (info.command) {
         case 'op':
-            info.client.send('MODE', info.channel, '+o', info.nick);
+            var target = commandArgOne ? commandArgOne : info.nick;
+            info.client.send('MODE', info.channel, '+o', target);
+        break;
+        
+        case 'deop':
+            var target = commandArgOne ? commandArgOne : info.nick;
+            info.client.send('MODE', info.channel, '-o', target);
         break;
         
         case 'kick':
@@ -93,6 +99,11 @@ admin.executeCommand = function (info) {
                              commandArgOne, 
                              // Send everything after the second word
                              info.words.slice(3).join(' '));
+        break;
+        
+        case 'nick':
+            info.client.send('NICK',
+                             commandArgOne);
         break;
         
         case 'join': 
