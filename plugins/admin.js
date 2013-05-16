@@ -83,6 +83,20 @@ admin.executeCommand = function (info) {
     var commandArgTwo = info.words[3];
     
     switch (info.command) {
+        /**
+         * say [#channel] hello world
+         *
+         */
+        case 'say':
+            var chanSpecified = commandArgOne.indexOf('#') === 0;
+            var dest          = chanSpecified ? commandArgOne       : info.channel;
+            var msg           = chanSpecified ? info.words.slice(3) : info.words.slice(2);
+            
+            msg               = msg.join(' ');
+            
+            info.client.say(dest, msg);
+        break;
+        
         case 'op':
             var target = commandArgOne ? commandArgOne : info.nick;
             info.client.send('MODE', info.channel, '+o', target);
