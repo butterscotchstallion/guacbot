@@ -26,13 +26,12 @@ em.init = function (client, config) {
         client.say(channel, msg);
     });
     
-    client.addListener('quit', function (channel, nick, by, reason, message) {
+    client.addListener('quit', function (nick, reason, channels, message) {
         var messages = em.getQuitMessages(config);
         var msg      = em.getRandomMessage(messages);
             msg      = em.replaceVariables(msg, {
                 nick: nick,
-                channel: channel,
-                by: by,
+                channels: channels,
                 reason: reason,
                 message: message
         });
