@@ -22,8 +22,17 @@ admin.init = function (client) {
             var triggers = admin.getTriggersFromConfig(pluginCfg);
             var triglen  = triggers.length;
             
+            // Command not found!
+            if (triggers.indexOf(command) === -1) {
+                var msg = admin.getUnknownCommandMsg(pluginCfg);
+                
+                if (msg) {
+                    client.say(to, msg);
+                }
+            }
+            
             for (var j = 0; j < triglen; j++) {
-                if (triggers[j].trigger === command) {
+                if (triggers[j].trigger === command) { 
                     admin.executeCommand({
                         client: client,
                         command: triggers[j].command,
@@ -66,7 +75,13 @@ admin.userIsAdmin = function (info) {
 
 admin.executeCommand = function (info) {
     // Check if user is authorized to use commands
-    if (!admin.userIsAdmin(info)) {
+    if (!admin.userIsAdmin(info)) {    
+        var msg = admin.getAccessDeniedMsg(info.pluginCfg);
+        
+        if (msg) {
+            info.client.say(info.channel, msg);
+        }
+        
         return false;
     }
     
@@ -95,12 +110,12 @@ admin.executeCommand = function (info) {
         
         case 'op':
             var target = commandArgOne ? commandArgOne : info.nick;
-            info.client.send('MODE', info.channel, '+o', target);
+            admin.grantChannelOperatusStatus(info, target);
         break;
         
         case 'deop':
             var target = commandArgOne ? commandArgOne : info.nick;
-            info.client.send('MODE', info.channel, '-o', target);
+            admin.removeChannelOperatusStatus(info, target);
         break;
         
         case 'kick':
@@ -128,10 +143,67 @@ admin.executeCommand = function (info) {
                              info.words.slice(3).join(' '));
         break;
         
+        // Unknown command
         default:
-            console.log('admin: unrecognized command: ' + info.command);
+            admin.processUnknownCommand(info);
         break;
     }
+};
+
+admin.processUnknownCommand = function (info) {
+    console.log('admin: unrecognized command: ' + info.command);
+    var msg = admin.getUnknownCommandMsg(info.pluginCfg);
+    
+    if (msg) {
+        info.client.say(info.channel,
+                        msg);
+    }
+};
+
+admin.grantChannelOperatusStatus = function (info, target) {
+    if (info.pluginCfg.useChanserv) {
+        info.client.say('CHANSERV', 'OP ' + info.channel + ' ' + target);
+    } else {
+        info.client.send('MODE', info.channel, '+o', target);
+    }
+};
+
+admin.removeChannelOperatusStatus = function (info, target) {
+    if (info.pluginCfg.useChanserv) {
+        info.client.say('CHANSERV', 'DEOP ' + info.channel + ' ' + target);
+    } else {
+        info.client.send('MODE', info.channel, '-o', target);
+    }
+};
+
+admin.getAccessDeniedMsg = function (cfg) {
+    var messages = admin.getAccessDeniedMessages(cfg);
+    var msg      = '';
+    
+    if (messages) {
+        msg = messages[Math.floor(Math.random() * messages.length)];
+    }
+    
+    return msg;
+};
+
+admin.getAccessDeniedMessages = function (cfg) {
+    return cfg.accessDeniedMessages || [];
+};
+
+admin.getUnknownCommandMsg = function (cfg) {
+    var messages = admin.getUnknownCommandMessages(cfg);
+    var msg      = '';
+    
+    if (messages) {
+        msg = messages[Math.floor(Math.random() * messages.length)];
+    }
+    
+    return msg;
+};
+
+admin.getUnknownCommandMessages = function (cfg) {
+    return cfg.unknownCommandMessages || [];
 };
 
 admin.getTriggersFromConfig = function (cfg) {
