@@ -7,17 +7,16 @@
 var weatherPlugin = { };
 
 weatherPlugin.init = function (client) {
-    client.addListener('message#', function (from, to, message) {
+    client.addListener('message#', function (nick, to, text, message) {
         // If first word in message has the bot's nick in it...
-        if (message.length >= client.config.nick.length) {
-            var messageWords = message.split(' ');
+        if (text.length >= client.config.nick.length) {
+            var messageWords = text.split(' ');
             
-            // You talkin' to me?
+            // TODO
+            // Refactor to use message parser
             if (messageWords[0] && messageWords[0].indexOf(client.config.nick) === 0) {
-                console.log(from + ' is addressing bot');
-                
                 if (messageWords[1] === 'weather') {
-                    console.log('weather command detected');
+                    console.log('retrieving weather for ' + nick);
                     
                     var query = messageWords.slice(2, messageWords.length).join(' ');
                     
@@ -28,7 +27,7 @@ weatherPlugin.init = function (client) {
                             callback: function (data) {
                                 client.say(to, data);
                             },
-                            debug: false
+                            debug: true
                         });
                     }
                 }
@@ -38,9 +37,19 @@ weatherPlugin.init = function (client) {
 };
 
 weatherPlugin.parseResponse = function (response) {
-    var resp         = JSON.parse(response).current_observation;
-    var conditions   = [];
+    var res = JSON.parse(response);
     
+    // Unexpected response!!
+    if (res.response.error) {
+        return res.response.error.description;
+    }
+    
+    if (typeof(res.current_observation) === 'undefined') {
+        return 'No cities match your search query!';
+    }
+    
+    var resp         = res.current_observation;
+    var conditions   = [];
     var location     = resp.display_location;
     var cityAndState = location.city + ', ' + location.state;
     
@@ -56,7 +65,7 @@ weatherPlugin.parseResponse = function (response) {
     conditions.push('is ' + resp.temperature_string);
     conditions.push('Conditions: ' + resp.weather + '.');
     conditions.push('Humidity: ' + resp.relative_humidity);
-    //conditions.push('Dew Point: ' + resp.dewpoint_string);
+    conditions.push('Dew Point: ' + resp.dewpoint_string);
     conditions.push('Feels like: ' + resp.feelslike_string); 
     
     return conditions.join(' ');
