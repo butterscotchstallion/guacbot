@@ -1,10 +1,6 @@
 /**
  * admin - provides ability to do things like kick/ban/topic using custom commands
  *
- * TODO
- * - join
- * - nick change
- *
  */
 "use strict";
 

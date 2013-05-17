@@ -10,3 +10,4 @@ Features/Plugins
 * CLS            - Caps Lock Saturday - capitalize nick on Saturdays
 * Uptime         - How long bot has been connected to network
 * Event Messages - Say things when events like a kick or quit occur 
+* Admin          - commands to kick, join, part, say etc

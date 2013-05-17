@@ -1,10 +1,6 @@
 /**
  * event-messages - say things when people are kicked or quit
  *
- * TODO
- * - variables in messages like $nick
- * - random selection of messages from config
- *
  */
 'use strict';
 
@@ -65,8 +61,8 @@ em.replaceVariables = function (msg, kickInfo) {
 };
 
 em.getRandomMessage = function (messages) {
-    var msg = messages[Math.floor(Math.random() * messages.length)];
-
+    var msg = messages ? messages[Math.floor(Math.random() * messages.length)] : '';
+    
     return msg;
 };
 
