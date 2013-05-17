@@ -26,6 +26,7 @@ cls.init = function (client) {
     });
     
     // Received user list from channel
+    /*
     client.addListener('names#', function (channel, names) {
         console.log('Received NAMES');
         console.log(names);
@@ -38,6 +39,7 @@ cls.init = function (client) {
         
         //client.say('#' + channel, namesArray.join(' '));
     });
+    */
     
     // Each time there is a ping, check if it's saturday
     // and if so, change nick
@@ -47,7 +49,7 @@ cls.init = function (client) {
             cls.capitalizeNick(client, client.config.nick);
             
             // Get names from channel
-            client.send('NAMES');
+            //client.send('NAMES');
         } else {
             // If it's not saturday, lowercase nick
             client.send('NICK', client.config.nick.toLowerCase());
