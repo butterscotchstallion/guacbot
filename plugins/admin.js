@@ -21,16 +21,7 @@ admin.init = function (client) {
             var command  = words[1];
             var triggers = admin.getTriggersFromConfig(pluginCfg);
             var triglen  = triggers.length;
-            
-            // Command not found!
-            if (triggers.indexOf(command) === -1) {
-                var msg = admin.getUnknownCommandMsg(pluginCfg);
-                
-                if (msg) {
-                    client.say(to, msg);
-                }
-            }
-            
+
             for (var j = 0; j < triglen; j++) {
                 if (triggers[j].trigger === command) { 
                     admin.executeCommand({
@@ -143,20 +134,10 @@ admin.executeCommand = function (info) {
                              info.words.slice(3).join(' '));
         break;
         
-        // Unknown command
+        // Unknown command - this should probably never happen
         default:
-            admin.processUnknownCommand(info);
+            console.log('unknown command: ' + info.command);
         break;
-    }
-};
-
-admin.processUnknownCommand = function (info) {
-    console.log('admin: unrecognized command: ' + info.command);
-    var msg = admin.getUnknownCommandMsg(info.pluginCfg);
-    
-    if (msg) {
-        info.client.say(info.channel,
-                        msg);
     }
 };
 
@@ -189,21 +170,6 @@ admin.getAccessDeniedMsg = function (cfg) {
 
 admin.getAccessDeniedMessages = function (cfg) {
     return cfg.accessDeniedMessages || [];
-};
-
-admin.getUnknownCommandMsg = function (cfg) {
-    var messages = admin.getUnknownCommandMessages(cfg);
-    var msg      = '';
-    
-    if (messages) {
-        msg = messages[Math.floor(Math.random() * messages.length)];
-    }
-    
-    return msg;
-};
-
-admin.getUnknownCommandMessages = function (cfg) {
-    return cfg.unknownCommandMessages || [];
 };
 
 admin.getTriggersFromConfig = function (cfg) {
