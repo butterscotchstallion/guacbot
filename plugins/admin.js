@@ -14,7 +14,7 @@ admin.init = function (client) {
     client.addListener('message#', function (nick, to, text, message) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         
-        console.log('message: ', message);
+        //console.log('message: ', message);
         
         if (isAddressingBot) {
             var words    = parser.splitMessageIntoWords(text);
