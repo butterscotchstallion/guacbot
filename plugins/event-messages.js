@@ -67,11 +67,11 @@ em.getRandomMessage = function (messages) {
 };
 
 em.getKickMessages = function (cfg) {
-    return cfg.plugins.enabled['event-messages'].kick || [];
+    return cfg.plugins['event-messages'].kick || [];
 };
 
 em.getQuitMessages = function (cfg) {
-    return cfg.plugins.enabled['event-messages'].quit || [];
+    return cfg.plugins['event-messages'].quit || [];
 };
 
 module.exports = em;

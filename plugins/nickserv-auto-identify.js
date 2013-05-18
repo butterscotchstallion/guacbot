@@ -8,7 +8,7 @@
 var ai = {};
 
 ai.init = function (client) {
-    var cfg = client.config.plugins.enabled['nickserv-auto-identify'];
+    var cfg = client.config.plugins['nickserv-auto-identify'];
     
     // Listen to PMs so we can see if there was an error 
     client.addListener('message', function (nick, to, text, message) {

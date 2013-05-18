@@ -9,7 +9,7 @@ var parser    = require('../lib/messageParser');
 var admin     = {};
 
 admin.init = function (client) {
-    var pluginCfg = client.config.plugins.enabled.admin;
+    var pluginCfg = client.config.plugins.admin;
     
     client.addListener('message#', function (nick, to, text, message) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);

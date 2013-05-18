@@ -1,29 +1,77 @@
 {
     "server": "irc.slashnet.org",
+    
     "nick": "nodebot",
+    
     "channels": [
         "#guacamole"
     ],
+    
     "plugins": {
-        "enabled": {
-            "titler": {},
-            "weather": {},
-            "caps-lock-saturday": {},
-            "uptime": {},
-            "nickserv-auto-identify": {},
-            "news": {},
-            "event-messages": {
-                "kick": [
-                    "$nick is a sheister! a charlatan!"
-                ],
-                
-                "quit": [
-                    "$nick bites the big one!"
-                ]
-            }
-        },
+        "titler": {},
         "weather": {
             "apiKey": "your-api-key-here"
+        },
+        "caps-lock-saturday": {},
+        "uptime": {},
+        "nickserv-auto-identify": {
+            "password": "omgponies",
+            "delay": 0
+        },
+        "news": {},
+        "event-messages": {
+            "kick": [
+                "$nick is a sheister! a charlatan!"
+            ],
+            
+            "quit": [
+                "$nick bites the big one!"
+            ]
+        },
+        "admin": {
+            "admins": [
+                "your-hostmask-here@example.com"
+            ],
+            
+            "useChanserv": true,
+            
+            "accessDeniedMessages": [
+                "Access denied!!!",
+                "no way",
+                "lol no",
+                "no"
+            ],
+            
+            "triggers": [
+                {
+                    "trigger": "say",
+                    "command": "say"
+                },
+                {
+                    "trigger": "op",
+                    "command": "op"
+                },
+                {
+                    "trigger": "deop",
+                    "command": "deop"
+                },
+                {
+                    "trigger": "kick",
+                    "command": "kick"
+                },
+                {
+                    "trigger": "join",
+                    "command": "join"
+                },
+                {
+                    "trigger": "part",
+                    "command": "part"
+                },
+                {
+                    "trigger": "nick",
+                    "command": "nick"
+                }
+            ]
         }
     }
 }
