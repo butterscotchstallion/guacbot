@@ -5,18 +5,21 @@
  */
 "use strict";
 var request = require('request');
+var ignore  = require('./ignore');
 var titler  = { };
 
 titler.init = function (client) {
     // Listen to messages from any channel
     client.addListener('message#', function (from, to, message) {
-        // Only try to get source of things that look like a URL
-        if (titler.matchURL(message)) {
-            titler.getTitle (message, function (title) {
-                if (title) {
-                    client.say(to, '^ ' + title);
-                }
-            });
+        if (!ignore.isIgnored(message.user + '@' + message.host)) {
+            // Only try to get source of things that look like a URL
+            if (titler.matchURL(message)) {
+                titler.getTitle (message, function (title) {
+                    if (title) {
+                        client.say(to, '^ ' + title);
+                    }
+                });
+            }
         }
     });
 };

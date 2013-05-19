@@ -6,16 +6,17 @@
 
 var parser = require('../lib/messageParser');
 var moment = require('moment');
+var ignore = require('./ignore');
 var uptime = { };
 
 uptime.init = function (client) {
-    client.addListener('message#', function (from, to, message) {
-        var words           = parser.splitMessageIntoWords(message);
-        var isAddressingBot = parser.isMessageAddressingBot(message, client.config.nick);
+    client.addListener('message#', function (nick, channel, text, message) {
+        var words           = parser.splitMessageIntoWords(text);
+        var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         
-        if (isAddressingBot && words[1] === 'uptime') {
+        if (isAddressingBot && words[1] === 'uptime' && !ignore.isIgnored(message.user + '@' + message.host)) {
             uptime.getUptime(client.connectTime, function (uptime) {
-                client.say(to, uptime);
+                client.say(channel, uptime);
             });
         }
     });

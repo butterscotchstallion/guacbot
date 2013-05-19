@@ -4,34 +4,33 @@
  */
 "use strict";
 
+var ignore        = require('./ignore');
+var parser        = require('../lib/messageParser');
 var weatherPlugin = { };
 
 weatherPlugin.init = function (client) {
     client.addListener('message#', function (nick, to, text, message) {
-        // If first word in message has the bot's nick in it...
-        if (text.length >= client.config.nick.length) {
-            var messageWords = text.split(' ');
+        var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
+        
+        if (isAddressingBot && !ignore.isIgnored(message.user + '@' + message.host)) {
+            var words = parser.splitMessageIntoWords(text);
             
-            // TODO
-            // Refactor to use message parser
-            if (messageWords[0] && messageWords[0].indexOf(client.config.nick) === 0) {
-                if (messageWords[1] === 'weather') {
-                    console.log('retrieving weather for ' + nick);
-                    
-                    var query = messageWords.slice(2, messageWords.length).join(' ');
-                    
-                    if (query) {
-                        weatherPlugin.query({
-                            apiKey: client.config.plugins.weather.apiKey,
-                            query: query,
-                            callback: function (data) {
-                                client.say(to, data);
-                            },
-                            debug: true
-                        });
-                    }
+            if (words[1] === 'weather') {
+                console.log('retrieving weather for ' + nick);
+                
+                var query = messageWords.slice(2, messageWords.length).join(' ');
+                
+                if (query) {
+                    weatherPlugin.query({
+                        apiKey: client.config.plugins.weather.apiKey,
+                        query: query,
+                        callback: function (data) {
+                            client.say(to, data);
+                        },
+                        debug: true
+                    });
                 }
-            }
+            }            
         }
     });
 };
