@@ -13,3 +13,4 @@ Features/Plugins
 * Admin          - Commands to kick, join, part, say etc
 * Reminder       - Remind yourself and others about stuff
 * Arbiter        - Let an irc bot make decisions for you
+* Invite         - Join channels automatically when invited
