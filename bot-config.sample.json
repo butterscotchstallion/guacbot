@@ -3,6 +3,10 @@
     
     "nick": "nodebot",
     
+    "realName": "nodebot",
+    
+    "userName": "nodebot",
+    
     "channels": [
         "#guacamole"
     ],
@@ -72,6 +76,15 @@
                     "command": "nick"
                 }
             ]
+        },
+        "reminder": {
+            
+        },
+        "ignore": {
+            
+        },
+        "arbiter": {
+        
         }
     }
 }
