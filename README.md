@@ -12,3 +12,4 @@ Features/Plugins
 * Event Messages - Say things when events like a kick or quit occur 
 * Admin          - Commands to kick, join, part, say etc
 * Reminder       - Remind yourself and others about stuff
+* Arbiter        - Let an irc bot make decisions for you
