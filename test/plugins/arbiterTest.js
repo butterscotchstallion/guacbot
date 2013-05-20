@@ -39,10 +39,18 @@ describe('aribiter.applyChoiceSelectionIndicators should indicate which choice w
     it('should indicate stuff', function () {
         var input    = ['ella fitzgerald', 'billie holiday'];
         var selected = 'ella fitzgerald';
-        var expected = '[x] ella fitzgerald [ ] billie holiday';
+        var expected = '[✓] ella fitzgerald [ ] billie holiday';
         var actual   = arbiter.applyChoiceSelectionIndicators(input, selected);
         
         assert.equal(expected, actual);
+    });
+    
+    it('should always select a choice', function () {
+        var input    = 'joffrey, sansa stark, hodor, or ned stark';
+        var actual   = arbiter.decide(input);
+        var expected = actual.indexOf('[✓] ') > -1;
+        
+        assert.equal(expected, true);
     });
     
 });

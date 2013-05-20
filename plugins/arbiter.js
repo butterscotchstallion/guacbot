@@ -53,9 +53,9 @@ arbiter.applyChoiceSelectionIndicators = function (choices, selected) {
     var clen              = choices.length;
     var output            = '';
     var indicator         = '[ ] ';
-    var selectedIndicator = '[x] ';
+    var selectedIndicator = '[✓] ';
     
-    console.log(choices);
+    //console.log(choices);
     
     for (var j = 0; j < clen; j++) {
         if (choices[j]) {
@@ -131,6 +131,11 @@ arbiter.parse = function (input) {
     if (choices) {
         choices = choices.map(function (c) {
             return c.trim();
+        });
+        
+        // Remove blank elements
+        choices = choices.filter(function (input) {
+            return input;
         });
     }
     
