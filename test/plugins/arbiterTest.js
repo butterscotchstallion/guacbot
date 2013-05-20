@@ -17,7 +17,7 @@ describe('aribiter.isDecision should detect decisions', function () {
         assert.equal(expected, actual);
     });
     
-    it('should not detect a phrase less than one word', function () {
+    it('should not detect a phrase less than two words', function () {
         var input    = 'magicks';
         var expected = false;
         var actual   = arbiter.isDecision(input);
