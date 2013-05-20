@@ -22,6 +22,9 @@ em.init = function (client, config) {
         client.say(channel, msg);
     });
     
+    // since a quit affects many channels, and we might not want to 
+    // say stuff in every channel...disabling this
+    /*
     client.addListener('quit', function (nick, reason, channels, message) {
         var messages = em.getQuitMessages(config);
         var msg      = em.getRandomMessage(messages);
@@ -34,6 +37,7 @@ em.init = function (client, config) {
         
         client.say(channel, msg);
     });
+    */
 };
 
 em.replaceVariables = function (msg, kickInfo) {
