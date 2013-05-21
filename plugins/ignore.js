@@ -50,16 +50,12 @@ ig.remove = function (hostmask) {
             delete ig.ignored[j];
         }
     }
-    
-    console.log(ig.ignored);
 };
 
 ig.add = function (hostmask) {
     if (!ig.isIgnored(hostmask)) { 
         ig.ignored.push(hostmask);
     }
-    
-    console.log(ig.ignored);
 };
 
 ig.isIgnored = function (hostmask) {
@@ -67,15 +63,10 @@ ig.isIgnored = function (hostmask) {
     var ignored = false;
     
     for (var j = 0; j < iglen; j++) {
-        if (ig.ignored[j] && minimatch(hostmask, ig.ignored[j])) {
-            console.log('hostmask ' + hostmask + ' is now ignored');
-            
+        if (ig.ignored[j] && minimatch(hostmask, ig.ignored[j])) {            
             ignored = true;
             
-            break;
-            
-        } else {
-            console.log('hostmask ' + hostmask + ' is not ignored');
+            break;            
         }
     }
     
