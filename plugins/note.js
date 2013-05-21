@@ -48,7 +48,11 @@ note.init = function (client) {
         var newNote = note.get(nick, channel);
         
         if (newNote) {
-            client.say(channel, nick + ': ' + newNote.message + ' (' + newNote.from + ')');
+            var timeAgo = newNote.timestamp.fromNow();
+            var msg     = nick + ': ' + newNote.message;
+                msg    += ' (from ' + newNote.from + ' ' + timeAgo + ')';
+            
+            client.say(channel, msg);
         }
     });
 };

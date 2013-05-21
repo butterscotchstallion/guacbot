@@ -15,8 +15,8 @@ describe('note.get', function () {
     
     it('should delete the note after retrieving it', function () {
         var input = {
-            nick: 'biggie',
-            message: 'I live for the funk, I die for the funk',
+            nick: 'sarahvaughan',
+            message: 'One mint julip was the start of it all',
             channel: '#guacamole',
             timestamp: moment()
         };
