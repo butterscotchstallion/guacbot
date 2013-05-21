@@ -36,7 +36,7 @@ reminder.init = function (client) {
                     var remindAt  = moment().add(d.unit, d.length);
                     var formatted = remindAt.format('h:m:sA M-D-YYYY');
                     
-                    if (d.length > 0) {
+                    if (d.length > 0 && d.unit) {
                         client.say(channel, 'reminding you at \u0002' + formatted);
                         
                         reminder.add({
@@ -63,7 +63,7 @@ reminder.init = function (client) {
 reminder.parseDuration = function (input) {
     var unit       = input.substring(input.length, input.length - 1);
     var length     = input.substring(0, input.length - 1);
-    var validUnits = ['d', 'y', 'm', 's'];
+    var validUnits = ['d', 'y', 'm', 's', 'M', 'w', 'h'];
     
     // If the unit is invalid, set it to zero and disregard
     if (validUnits.indexOf(unit) === -1) {
@@ -72,7 +72,7 @@ reminder.parseDuration = function (input) {
     
     return {
         length: length,
-        unit: unit
+        unit  : unit
     };
 };
 
