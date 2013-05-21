@@ -11,7 +11,7 @@ Features/Plugins
 * Uptime         - How long bot has been connected to network
 * Event Messages - Say things when events like a kick or quit occur 
 * Admin          - Commands to kick, join, part, say etc
-* Reminder       - Remind yourself and others about stuff
+* Reminder       - Remind yourself about stuff
 * Arbiter        - Let an irc bot make decisions for you
 * Invite         - Join channels automatically when invited
 * Ignore         - Ignore users by hostmask 
