@@ -26,10 +26,11 @@ note.init = function (client) {
                 if (recipient && nMessage) {
                 
                     note.add({
-                        nick: nick,
+                        nick: recipient,
                         channel: channel,
                         timestamp: moment(),
-                        message: nMessage
+                        message: nMessage,
+                        from: nick
                     }, 
                     function () {
                         client.say(channel, 'k');
@@ -43,11 +44,32 @@ note.init = function (client) {
                 }
             }
         }
+        
+        var newNote = note.get(nick, channel);
+        
+        if (newNote) {
+            client.say(channel, nick + ': ' + newNote.message + ' (' + newNote.from + ')');
+        }
+    });
+};
+
+note.removeByNickAndChannel = function (nick, channel) {
+    var nlen  = note.notes.length;
+    var notes = [];
+    
+    for (var j = 0; j < nlen; j++) {
+        if (note.notes[j].nick !== nick && note.notes[j].channel !== channel) {
+            notes.push(note.notes[j]);
+        }
     }
+    
+    note.notes = notes;
 };
 
 note.get = function (nick, channel) {
-    return note.hasNotes(nick, channel);
+    var newNote = note.hasNotes(nick, channel);
+    
+    return newNote;
 };
 
 note.add = function (n, successCallback, errBack) {
