@@ -49,8 +49,6 @@ note.init = function (client) {
         
         if (newNote) {
             client.say(channel, nick + ': ' + newNote.message + ' (' + newNote.from + ')');
-            
-            note.removeByNickAndChannel(nick, channel);
         }
     });
 };
@@ -70,6 +68,10 @@ note.removeByNickAndChannel = function (nick, channel) {
 
 note.get = function (nick, channel) {
     var newNote = note.hasNotes(nick, channel);
+    
+    if (newNote) {
+        note.removeByNickAndChannel(nick, channel);
+    }
     
     return newNote;
 };

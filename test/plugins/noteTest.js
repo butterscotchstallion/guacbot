@@ -13,6 +13,23 @@ describe('note.get', function () {
         note.notes = [];
     });
     
+    it('should delete the note after retrieving it', function () {
+        var input = {
+            nick: 'biggie',
+            message: 'I live for the funk, I die for the funk',
+            channel: '#guacamole',
+            timestamp: moment()
+        };
+        
+        note.add(input);
+    
+        assert.equal(note.notes.length, 1);
+        
+        note.get(input.nick, input.channel);
+        
+        assert.equal(note.notes.length, 0);
+    });
+    
     it('should get a note after adding it', function () {
         var input = {
             nick: 'biggie',
