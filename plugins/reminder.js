@@ -86,7 +86,8 @@ reminder.processPendingReminders = function (client) {
     var rmdrs        = reminder.reminders;
     var rlen         = rmdrs.length;
     var now          = moment();
-    var duration     = {};
+    var duration     = {};    
+    var msg          = '';
     var reminderTime;
     
     for (var j = 0; j < rlen; j++) {
@@ -97,7 +98,9 @@ reminder.processPendingReminders = function (client) {
             if (reminderTime.isBefore(now)) {
                 console.log('reminder created at ' + rmdrs[j].createdAt._d + ' expired!!!');
                 
-                client.say(rmdrs[j].channel, rmdrs[j].nick + ': ' + rmdrs[j].message);
+                msg  = rmdrs[j].nick + ': ' + rmdrs[j].message;
+                
+                client.say(rmdrs[j].channel, msg);
                 
                 delete rmdrs[j];
             }
