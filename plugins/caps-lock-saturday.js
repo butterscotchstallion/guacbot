@@ -43,7 +43,9 @@ cls.init = function (client) {
     
     // Each time there is a ping, check if it's saturday
     // and if so, change nick
-    client.addListener('ping', function () {
+    var oneMinuteInMS = 60000;
+    
+    setInterval(function () {
         if (cls.isSaturday()) {
             // CLS! uppercase nick
             cls.capitalizeNick(client, client.config.nick);
@@ -54,7 +56,7 @@ cls.init = function (client) {
             // If it's not saturday, lowercase nick
             client.send('NICK', client.config.nick.toLowerCase());
         }
-    });
+    }, oneMinuteInMS);
 };
 
 cls.voiceUserIfNickIsUppercase = function (client, channel, nick) {
