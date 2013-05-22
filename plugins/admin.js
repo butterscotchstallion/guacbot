@@ -11,14 +11,13 @@ var admin     = {
 };
 
 admin.init = function (client) {
-    var pluginCfg = client.config.plugins.admin;
-    admin.client  = client;
+    var pluginCfg   = client.config.plugins.admin;
+    admin.client    = client;
+    admin.pluginCfg = pluginCfg;
     
     client.addListener('message#', function (nick, to, text, message) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
-        
-        //console.log('message: ', message);
-        
+
         if (isAddressingBot) {
             var words    = parser.splitMessageIntoWords(text);
             var command  = words[1];
@@ -157,25 +156,37 @@ admin.whois = function (nick, callback) {
 };
 
 admin.mute = function (channel, nick) {
-    console.log('whoising');
-    
-    admin.whois(nick, function (data) {
-        console.log('setting mute');
-        
-        // unreal ircd format
-        var mask = '~q:*!*@' + data.host;
+    admin.whois(nick, function (data) {        
+        var mask = admin.getMask(data.host);
         
         admin.client.send('MODE', channel, '+b', mask);
+        
+        var muteDurationInMinutes = admin.pluginCfg.muteDuration;
+        
+        // If there is a mute duration set, then unmute after specified duration
+        if (muteDurationInMinutes) {
+            var ms = muteDurationInMinutes * 60000;
+            
+            console.log('muting for ' + ms + ' ms (' + muteDuration + ' minutes');
+            
+            setTimeout(function () {
+                admin.unmute(channel, nick);
+            }, ms);
+        }
     });
 };
 
 admin.unmute = function (channel, nick) {
     admin.whois(nick, function (data) {
-        // unreal ircd format
-        var mask = '~q:*!*@' + data.host;
+        var mask = admin.getMask(data.host);
         
         admin.client.send('MODE', channel, '-b', mask);
     });
+};
+
+admin.getMask = function (host) {
+    // unreal ircd format
+    return '~q:*!*@' + host;
 };
 
 admin.grantChannelOperatusStatus = function (info, target) {
