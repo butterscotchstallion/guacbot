@@ -7,12 +7,15 @@
 var moment   = require('moment');
 var parser   = require('../lib/messageParser');
 var ignore   = require('./ignore');
+var irc      = require('irc');
 
 var note     = {
     notes: []
 };
 
 note.init = function (client) {
+    var notePendingDelivery;
+    
     client.addListener('message#', function (nick, channel, text, message) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         
@@ -23,21 +26,24 @@ note.init = function (client) {
             var nMessage  = words.slice(3).join(' ');
             
             if (command === 'note') {
-                if (recipient && nMessage) {
-                
-                    note.add({
-                        nick: recipient,
-                        channel: channel,
-                        timestamp: moment(),
-                        message: nMessage,
-                        from: nick
-                    }, 
-                    function () {
-                        client.say(channel, 'k');
-                    },
-                    function () {
-                        client.say(channel, 'too many notes!!');
-                    });
+                if (recipient && nMessage) {                    
+                    if (recipient !== nick) {
+                        notePendingDelivery = {
+                            nick: recipient,
+                            channel: channel,
+                            timestamp: moment(),
+                            message: nMessage,
+                            from: nick
+                        };
+                        
+                        client.send('NAMES', channel);
+                        
+                    } else {
+                        var msg  = "can't send a note to yourself ";
+                            msg += irc.colors.wrap('magenta', 'friend');
+                        
+                        client.say(channel, msg);
+                    }
                     
                 } else {
                     client.say(channel, 'does not compute');
@@ -53,6 +59,37 @@ note.init = function (client) {
                 msg    += ' (from ' + newNote.from + ' ' + timeAgo + ')';
             
             client.say(channel, msg);
+        }
+    });
+    
+    client.addListener('names', function (channel, nicks) {
+        console.log('listener channel:', channel);
+        console.log('listener nicks:', nicks);
+        
+        if (notePendingDelivery) {
+            
+            if (notePendingDelivery.channel === channel) {
+                var actualNicks = Object.keys(nicks);
+                
+                console.log(actualNicks);
+                
+                var userPresent = actualNicks.indexOf(notePendingDelivery.nick) > -1;
+                
+                if (userPresent) {
+                    note.add(notePendingDelivery,
+                    function () {
+                        client.say(channel, 'k');
+                    },
+                    function () {
+                        client.say(channel, 'too many notes!!');
+                    });
+                } else {
+                    client.say(channel, 'idk who that is');
+                }
+            }
+            
+        } else {
+            console.log('no notes to send');
         }
     });
 };
