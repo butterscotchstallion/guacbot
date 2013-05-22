@@ -27,7 +27,7 @@ weatherPlugin.init = function (client) {
                         callback: function (data) {
                             client.say(to, data);
                         },
-                        debug: true
+                        debug: false
                     });
                 }
             }            
