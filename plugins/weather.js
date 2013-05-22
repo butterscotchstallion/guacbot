@@ -18,7 +18,7 @@ weatherPlugin.init = function (client) {
             if (words[1] === 'weather') {
                 console.log('retrieving weather for ' + nick);
                 
-                var query = messageWords.slice(2, messageWords.length).join(' ');
+                var query = words.slice(2, words.length).join(' ');
                 
                 if (query) {
                     weatherPlugin.query({
