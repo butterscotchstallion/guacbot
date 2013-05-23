@@ -23,22 +23,31 @@ ig.init = function (client) {
         if (isAddressingBot) {
             var words           = parser.splitMessageIntoWords(text);
             var command         = words[1];
-            var hostmask        = words[2];
+            var nick            = words[2];
             
-            if (hostmask) {
-                if (command === 'ignore') {
-                    ig.add(hostmask);
+            if (nick && (command === 'ignore' || command === 'unignore')) {
+                client.whois(nick, function (data) {
+                    var hostmask = typeof(data.host) !== 'undefined' ? '*@' + data.host : false;
                     
-                    client.say(channel, 'k');
-                }
-                
-                if (command === 'unignore') {
-                    ig.remove(hostmask);
-
-                    client.say(channel, 'k');
-                }
+                    if (hostmask) {
+                        if (command === 'ignore') {
+                            ig.add(hostmask);
+                            
+                            client.say(channel, 'k');
+                        }
+                        
+                        if (command === 'unignore') {
+                            ig.remove(hostmask);
+                            
+                            client.say(channel, 'k');
+                        }
+                        
+                    } else {
+                        console.log('ignore: unable to determine hostmask of nick "', nick, '"');
+                    }
+                });
             }
-        }    
+        }
     });
 };
 
@@ -67,7 +76,7 @@ ig.isIgnored = function (hostmask) {
             ignored = true;
             
             break;            
-        }
+        } 
     }
     
     return ignored;
