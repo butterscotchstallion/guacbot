@@ -112,7 +112,10 @@ admin.executeCommand = function (info) {
         break;
         
         case 'kick':
-            admin.kick(channel, commandArgOne, info.words.slice(3).join(' '));
+            var targetChannel = commandArgOne.indexOf('#') === 0 ? commandArgOne : info.channel;
+            var targetNick    = commandArgOne.indexOf('#') === -1 ? commandArgOne : commandArgTwo;
+            
+            admin.kick(targetChannel, targetNick, info.words.slice(3).join(' '));
         break;
         
         case 'nick':
