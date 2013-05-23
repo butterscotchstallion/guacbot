@@ -17,6 +17,5 @@ describe('translate 5m to milliseconds', function () {
         
         assert.equal(expected, actual);
     });
-    
-    
+
 });
