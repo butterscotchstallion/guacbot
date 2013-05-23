@@ -198,11 +198,32 @@ admin.unmute = function (channel, nick) {
     });
 };
 
-admin.ban = function (channel, nick) {
+admin.ban = function (channel, nick, duration) {
     admin.whois(nick, function (data) {
         var mask = admin.getBanMask(data.host);
+        var ms   = 60000;
         
         admin.client.send('MODE', channel, '+b', mask);
+        
+        // If a duration is supplied, use it. Else, use default duration from config
+        if (duration) {
+            ms = admin.timeToMilliseconds(duration);            
+        } else {
+            var muteDurationInMinutes = admin.pluginCfg.banDuration;
+            
+            // If there is a mute duration set, then unmute after specified duration
+            if (muteDurationInMinutes) {
+                ms = muteDurationInMinutes * 60000;
+            }
+        }
+        
+        if (ms) {
+            console.log('banning for: ', ms, 'ms (', ms / 60000, ')');
+            
+            setTimeout(function () {
+                admin.unban(channel, nick);
+            }, ms);
+        }
     });
 };
 
