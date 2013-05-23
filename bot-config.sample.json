@@ -85,6 +85,27 @@
         },
         "arbiter": {
         
+        }"invite": {
+        
+        },
+        "note": {
+        
+        },
+        "badwords": {
+            "words": [
+            
+            ],
+            "actions": "mute,say",
+            "banDuration": "1m",
+            "muteDuration": "5m",
+            "replyMessages": [
+                "illegal word!!!"
+            ],
+            "kickMessages": [
+                "bad words!!!",
+                "illegal word",
+                "profanity"
+            ]
         }
     }
 }
