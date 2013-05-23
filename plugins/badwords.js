@@ -43,13 +43,7 @@ bw.performAction = function (action, channel, nick) {
         break;
         
         case "say":
-            var messages =  bw.cfg.replyMessages || [];
-            var message  = 'Bad word.';
-            
-            if (messages) {
-                message = messages[Math.floor(Math.random() * messages.length)];
-            }
-            
+            var message = bw.getReplyMessage();
             admin.client.say(channel, message);
         break;
         
@@ -58,6 +52,19 @@ bw.performAction = function (action, channel, nick) {
         break;
     }
 };
+
+bw.getReplyMessage = function () {
+    var messages =  bw.cfg.replyMessages || [];
+    var message  = 'Bad word.';
+    
+    if (messages) {
+        message = messages[Math.floor(Math.random() * messages.length)];
+    }
+    
+    return message;    
+};
+
+
 
 bw.kickWithMessage = function (channel, nick) {
     var messages =  bw.cfg.kickMessages || [];
