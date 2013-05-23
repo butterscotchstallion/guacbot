@@ -8,10 +8,11 @@
  */
 "use strict";
 
-var moment   = require('moment');
-var parser   = require('../lib/messageParser');
-var ignore   = require('./ignore');
-var reminder = {
+var moment     = require('moment');
+var parser     = require('../lib/messageParser');
+var timeParser = require('../lib/timeUnitParser');
+var ignore     = require('./ignore');
+var reminder   = {
     reminders: []
 };
 
@@ -32,7 +33,7 @@ reminder.init = function (client) {
             
             if (command === 'remind') {
                 if (message.length > 1) {
-                    var d         = reminder.parseDuration(duration);
+                    var d         = timeParser.parseDuration(duration);
                     var remindAt  = moment().add(d.unit, d.length);
                     var formatted = remindAt.format('h:m:sA M-D-YYYY');
                     
@@ -60,22 +61,6 @@ reminder.init = function (client) {
     });
 };
 
-reminder.parseDuration = function (input) {
-    var unit       = input.substring(input.length, input.length - 1);
-    var length     = input.substring(0, input.length - 1);
-    var validUnits = ['d', 'y', 'm', 's', 'M', 'w', 'h'];
-    
-    // If the unit is invalid, set it to zero and disregard
-    if (validUnits.indexOf(unit) === -1) {
-        unit = 0;
-    }
-    
-    return {
-        length: length,
-        unit  : unit
-    };
-};
-
 /**
  * Iterate all reminders and check if the current message is from
  * someone who added a reminder, and the creation time + duration is
@@ -92,7 +77,7 @@ reminder.processPendingReminders = function (client) {
     
     for (var j = 0; j < rlen; j++) {
         if (rmdrs[j]) {
-            duration     = reminder.parseDuration(rmdrs[j].duration);
+            duration     = timeParser.parseDuration(rmdrs[j].duration);
             reminderTime = rmdrs[j].remindAt;
             
             if (reminderTime.isBefore(now)) {
