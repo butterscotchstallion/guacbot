@@ -63,16 +63,9 @@ note.init = function (client) {
     });
     
     client.addListener('names', function (channel, nicks) {
-        console.log('listener channel:', channel);
-        console.log('listener nicks:', nicks);
-        
-        if (notePendingDelivery) {
-            
+        if (notePendingDelivery) {            
             if (notePendingDelivery.channel === channel) {
                 var actualNicks = Object.keys(nicks);
-                
-                console.log(actualNicks);
-                
                 var userPresent = actualNicks.indexOf(notePendingDelivery.nick) > -1;
                 
                 if (userPresent) {
@@ -86,10 +79,7 @@ note.init = function (client) {
                 } else {
                     client.say(channel, 'idk who that is');
                 }
-            }
-            
-        } else {
-            console.log('no notes to send');
+            }  
         }
     });
 };
