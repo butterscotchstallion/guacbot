@@ -12,44 +12,51 @@ var bw    = {};
 bw.init = function (client) {
     bw.cfg    = client.config.plugins.badwords;
     
-    var words = bw.cfg.words || [];
-    
     client.addListener('message#', function (nick, channel, text, message) {
+        var words                   = bw.cfg.words || [];
         var messageContainsBadWords = bw.messageContainsBadWords(words, text);
-        var action                  = bw.cfg.action;
+        var actions                 = bw.cfg.actions.split(',');
         
-        if (messageContainsBadWords) {
-            switch (action) {
-                case "ban":
-                    admin.ban(channel, nick);
-                    bw.kickWithMessage(channel, nick);
-                break;
-                
-                case "kick":
-                    bw.kickWithMessage(channel, nick);
-                break;
-                
-                case "mute":
-                    admin.mute(channel, nick, bw.cfg.muteDuration);
-                break;
-                
-                case "say":
-                    var messages =  bw.cfg.replyMessages || [];
-                    var message  = 'Bad word.';
-                    
-                    if (messages) {
-                        message = messages[Math.floor(Math.random() * messages.length)];
-                    }
-                    
-                    admin.client.say(channel, message);
-                break;
-                
-                default:
-                    console.log('badwords: unknown action');
-                break;
+        if (messageContainsBadWords) {  
+            var alen = actions.length;
+            
+            for (var j = 0; j < alen; j++) {
+                bw.performAction(actions[j], channel, nick);
             }
         }
     });
+};
+
+bw.performAction = function (action, channel, nick) {
+    switch (action) {
+        case "ban":
+            admin.ban(channel, nick);
+            bw.kickWithMessage(channel, nick);
+        break;
+        
+        case "kick":
+            bw.kickWithMessage(channel, nick);
+        break;
+        
+        case "mute":
+            admin.mute(channel, nick, bw.cfg.muteDuration);
+        break;
+        
+        case "say":
+            var messages =  bw.cfg.replyMessages || [];
+            var message  = 'Bad word.';
+            
+            if (messages) {
+                message = messages[Math.floor(Math.random() * messages.length)];
+            }
+            
+            admin.client.say(channel, message);
+        break;
+        
+        default:
+            console.log('badwords: unknown action');
+        break;
+    }
 };
 
 bw.kickWithMessage = function (channel, nick) {
@@ -76,6 +83,5 @@ bw.messageContainsBadWords = function (words, message) {
     
     return found;
 };
-
 
 module.exports = bw;
