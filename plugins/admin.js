@@ -4,9 +4,11 @@
  */
 "use strict";
 
-var minimatch = require('minimatch');
-var parser    = require('../lib/messageParser');
-var admin     = {
+var moment     = require('moment');
+var minimatch  = require('minimatch');
+var timeParser = require("../lib/timeUnitParser");
+var parser     = require('../lib/messageParser');
+var admin      = {
     muted: []
 };
 
@@ -137,7 +139,10 @@ admin.executeCommand = function (info) {
         break;
         
         case 'mute':
-            admin.mute(info.channel, commandArgOne);
+            var muteNick = info.words[info.words.length-1];
+            var duration = commandArgOne;
+            
+            admin.mute(info.channel, muteNick, duration);
         break;
         
         case 'unmute':
@@ -155,19 +160,27 @@ admin.whois = function (nick, callback) {
     admin.client.whois(nick, callback);
 };
 
-admin.mute = function (channel, nick) {
+admin.mute = function (channel, nick, duration) {
     admin.whois(nick, function (data) {        
         var mask = admin.getMask(data.host);
+        var ms   = 5;
         
         admin.client.send('MODE', channel, '+b', mask);
         
-        var muteDurationInMinutes = admin.pluginCfg.muteDuration;
-        
-        // If there is a mute duration set, then unmute after specified duration
-        if (muteDurationInMinutes) {
-            var ms = muteDurationInMinutes * 60000;
+        // If a duration is supplied, use it. Else, use default duration from config
+        if (duration !== nick) {
+            ms = admin.timeToMilliseconds(duration);            
+        } else {
+            var muteDurationInMinutes = admin.pluginCfg.muteDuration;
             
-            console.log('muting for ' + ms + ' ms (' + muteDuration + ' minutes');
+            // If there is a mute duration set, then unmute after specified duration
+            if (muteDurationInMinutes) {
+                ms = muteDurationInMinutes * 60000;
+            }
+        }
+        
+        if (ms) {
+            console.log('muting for: ', ms, 'ms (', ms / 60000, ')');
             
             setTimeout(function () {
                 admin.unmute(channel, nick);
@@ -182,6 +195,13 @@ admin.unmute = function (channel, nick) {
         
         admin.client.send('MODE', channel, '-b', mask);
     });
+};
+
+admin.timeToMilliseconds = function (input) {
+    var duration = timeParser.parseDuration(input);
+    var msDiff   = duration.length * 60000;
+    
+    return msDiff;    
 };
 
 admin.getMask = function (host) {
