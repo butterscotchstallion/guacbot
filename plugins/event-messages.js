@@ -53,7 +53,8 @@ em.replaceVariables = function (msg, kickInfo) {
     // first and then find a random key based on that
     var keys      = Object.keys(codes);
     var colorName = keys[Math.floor(keys.length * Math.random())];
-    var nick      = irc.colors.wrap(colorName, kickInfo.nick);
+    //var nick      = irc.colors.wrap(colorName, kickInfo.nick);
+    var nick      = kickInfo.nick;
     
     newMsg = msg.replace(new RegExp('\\$nick', 'g'), nick);
     newMsg = newMsg.replace(new RegExp('\\$channel', 'g'), kickInfo.channel);
