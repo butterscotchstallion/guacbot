@@ -53,16 +53,14 @@ admin.userIsAdmin = function (info) {
     var match  = false;
     
     for (var j = 0; j < olen; j++) {
-        if (minimatch(mask, admins[j])) {
-            console.log('admin owner match: ' + mask + ' == ' + admins[j]);
-            
-            match = true;
-            
-            break;
-            
-        } else {
-            console.log('admin owner mismatch: ' + mask + ' != ' + admins[j]);
+        if (minimatch(mask, admins[j])) {            
+            match = true;            
+            break;            
         }
+    }
+    
+    if (!match) {
+        console.log(mask, 'has attempted to use an admin ability and FAILED');
     }
     
     return match;
@@ -114,11 +112,7 @@ admin.executeCommand = function (info) {
         break;
         
         case 'kick':
-            info.client.send('KICK', 
-                             info.channel, 
-                             commandArgOne, 
-                             // Send everything after the second word
-                             info.words.slice(3).join(' '));
+            admin.kick(channel, commandArgOne, info.words.slice(3).join(' '));
         break;
         
         case 'nick':
@@ -156,13 +150,20 @@ admin.executeCommand = function (info) {
     }
 };
 
+admin.kick = function (channel, nick, message) {
+    admin.client.send('KICK', 
+                      channel, 
+                      nick, 
+                      message);
+};
+
 admin.whois = function (nick, callback) {
     admin.client.whois(nick, callback);
 };
 
 admin.mute = function (channel, nick, duration) {
     admin.whois(nick, function (data) {        
-        var mask = admin.getMask(data.host);
+        var mask = admin.getMuteMask(data.host);
         var ms   = 5;
         
         admin.client.send('MODE', channel, '+b', mask);
@@ -191,7 +192,23 @@ admin.mute = function (channel, nick, duration) {
 
 admin.unmute = function (channel, nick) {
     admin.whois(nick, function (data) {
-        var mask = admin.getMask(data.host);
+        var mask = admin.getMuteMask(data.host);
+        
+        admin.client.send('MODE', channel, '-b', mask);
+    });
+};
+
+admin.ban = function (channel, nick) {
+    admin.whois(nick, function (data) {
+        var mask = admin.getBanMask(data.host);
+        
+        admin.client.send('MODE', channel, '+b', mask);
+    });
+};
+
+admin.unban = function (channel, nick) {
+    admin.whois(nick, function (data) {
+        var mask = admin.getBanMask(data.host);
         
         admin.client.send('MODE', channel, '-b', mask);
     });
@@ -204,7 +221,11 @@ admin.timeToMilliseconds = function (input) {
     return msDiff;    
 };
 
-admin.getMask = function (host) {
+admin.getBanMask = function (host) {
+    return '*!*@' + host;
+};
+
+admin.getMuteMask = function (host) {
     // unreal ircd format
     return '~q:*!*@' + host;
 };

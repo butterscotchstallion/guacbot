@@ -1,0 +1,81 @@
+/**
+ * badwords - kick/ban/message on badword sighting
+ *
+ * NOTE: this plugin depends on the admin plugin
+ *
+ */
+"use strict";
+
+var admin = require('./admin');
+var bw    = {};
+
+bw.init = function (client) {
+    bw.cfg    = client.config.plugins.badwords;
+    
+    var words = bw.cfg.words || [];
+    
+    client.addListener('message#', function (nick, channel, text, message) {
+        var messageContainsBadWords = bw.messageContainsBadWords(words, text);
+        var action                  = bw.cfg.action;
+        
+        if (messageContainsBadWords) {
+            switch (action) {
+                case "ban":
+                    admin.ban(channel, nick);
+                    bw.kickWithMessage(channel, nick);
+                break;
+                
+                case "kick":
+                    bw.kickWithMessage(channel, nick);
+                break;
+                
+                case "mute":
+                    admin.mute(channel, nick, bw.cfg.muteDuration);
+                break;
+                
+                case "say":
+                    var messages =  bw.cfg.replyMessages || [];
+                    var message  = 'Bad word.';
+                    
+                    if (messages) {
+                        message = messages[Math.floor(Math.random() * messages.length)];
+                    }
+                    
+                    admin.client.say(channel, message);
+                break;
+                
+                default:
+                    console.log('badwords: unknown action');
+                break;
+            }
+        }
+    });
+};
+
+bw.kickWithMessage = function (channel, nick) {
+    var messages =  bw.cfg.kickMessages || [];
+    var message  = 'Bad word.';
+    
+    if (messages) {
+        message = messages[Math.floor(Math.random() * messages.length)];
+    }
+    
+    admin.kick(channel, nick, message);
+};
+
+bw.messageContainsBadWords = function (words, message) {
+    var wlen  = words.length;
+    var found = false;
+    
+    for (var j = 0; j < wlen; j++) {
+        if (message.indexOf(words[j]) > -1) {
+            found = true;
+            break;
+        }
+    }
+    
+    return found;
+};
+
+
+module.exports = bw;
