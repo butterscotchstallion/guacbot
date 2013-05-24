@@ -6,6 +6,7 @@
 "use strict";
 var request = require('request');
 var ignore  = require('./ignore');
+var parser  = require('../lib/messageParser');
 var titler  = { };
 
 titler.loadConfig = function (cfg) {
@@ -16,15 +17,32 @@ titler.init = function (client) {
     titler.loadConfig(client.config);
     
     // Listen to messages from any channel
-    client.addListener('message#', function (from, to, message) {
+    client.addListener('message#', function (nick, channel, text, message) {
         if (!ignore.isIgnored(message.user + '@' + message.host)) {
-            // Only try to get source of things that look like a URL
-            if (titler.matchURL(message)) {
-                titler.getTitle (message, function (title) {
-                    if (title) {
-                        client.say(to, '^ ' + title);
-                    }
-                });
+            /**
+             * sometimes people have text in the same line as the URL,
+             * so split the entire message into words
+             * and only get the title of the first URL found
+             *
+             */
+            var words = parser.splitMessageIntoWords(text);
+            var wlen  = words.length;
+            var word  = '';
+            
+            for (var j = 0; j < wlen; j++) {
+                word = words[j];
+                
+                // Only try to get source of things that look like a URL
+                if (titler.matchURL(word)) {
+                    titler.getTitle (word, function (title) {
+                        if (title) {
+                            client.say(channel, '^ ' + title);
+                        }
+                    });
+                    
+                    // Only care about first URL found
+                    break;
+                }
             }
         }
     });
