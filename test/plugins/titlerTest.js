@@ -8,6 +8,46 @@ var fs     = require('fs');
 var assert = require("assert");
 var titler = require('../../plugins/titler');
 
+describe('reload', function () {
+    it('should reload the config', function () {
+        titler.init({
+            "config": {
+                "plugins": {
+                    "titler": {
+                        "ignoreDomains": [
+                        
+                        ]
+                    }
+                }
+            },
+            
+            "addListener": function () {
+            
+            }
+        });
+        
+        assert.equal(titler.isIgnoredDomain('asdf.com'), false);
+        
+        titler.init({
+            "config": {
+                "plugins": {
+                    "titler": {
+                        "ignoreDomains": [
+                            "asdf.com"
+                        ]
+                    }
+                }
+            },
+            
+            "addListener": function () {
+            
+            }
+        });
+        
+        assert.equal(titler.isIgnoredDomain('asdf.com'), true);
+    });
+});
+
 describe('ignore domains', function () {
 
     it('should not return false domain is not ignored', function () {
