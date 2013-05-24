@@ -8,6 +8,61 @@ var fs     = require('fs');
 var assert = require("assert");
 var titler = require('../../plugins/titler');
 
+describe('ignore domains', function () {
+
+    it('should not return false domain is not ignored', function () {
+        var input    = 'http://momentjs.com/docs';
+        var expected = false;    
+    
+        titler.init({
+            "config": {
+                "plugins": {
+                    "titler": {
+                        "ignoreDomains": [
+                        
+                        ]
+                    }
+                }
+            },
+            
+            "addListener": function () {
+            
+            }
+        });
+        
+        var actual = titler.getPageHTML(input, function (body) {
+            return body;
+        });
+        
+        assert.notEqual(expected, actual);
+    }); 
+    
+    it('should return false if domain is ignored', function () {
+        var input    = 'http://i.imgur.com/dSTFnd3.gif';
+        var expected = false;
+        
+        titler.init({
+            "config": {
+                "plugins": {
+                    "titler": {
+                        "ignoreDomains": [
+                            "i.imgur.com"
+                        ]
+                    }
+                }
+            },
+            
+            "addListener": function () {
+            
+            }
+        });
+        
+        var actual   = titler.getPageHTML(input);
+        
+        assert.equal(expected, actual);
+    }); 
+});
+
 describe('Youtube Info', function () {
     it('should get the video ID given a URL', function () {
         var url     = 'http://www.youtube.com/watch?v=7B9z6VEzfDE';
@@ -18,7 +73,7 @@ describe('Youtube Info', function () {
     });
     
     it('should parse JSON and get correct info', function () {        
-        var info = JSON.parse(fs.readFileSync('./fixture/youtubeVideoResponse.json', 'utf8'));
+        var info = JSON.parse(fs.readFileSync('../fixture/youtubeVideoResponse.json', 'utf8'));
         var url  = 'http://www.youtube.com/watch?v=7B9z6VEzfDE';
         
         var info = titler.getYoutubeVideoInfo(url, function (data) {

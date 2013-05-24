@@ -9,6 +9,8 @@ var ignore  = require('./ignore');
 var titler  = { };
 
 titler.init = function (client) {
+    titler.cfg = client.config.plugins.titler;
+    
     // Listen to messages from any channel
     client.addListener('message#', function (from, to, message) {
         if (!ignore.isIgnored(message.user + '@' + message.host)) {
@@ -30,14 +32,32 @@ titler.matchURL = function (url) {
     return urlPattern.test(url);
 };
 
+titler.isIgnoredDomain = function (domain) {
+    var domains = typeof(titler.cfg.ignoreDomains) !== 'undefined' ? titler.cfg.ignoreDomains : [];
+
+    return domains && domains.indexOf(domain) > -1;
+};
+
 titler.getPageHTML = function (url, callback) {
-    console.log('Retrieving page HTML for URL: ' + url);
+    var u               = require('url');
+    var host            = u.parse(url).host;
+    var isIgnoredDomain = titler.isIgnoredDomain(host);
     
-    request(url, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            callback(body);
-        }
-    });
+    if (!isIgnoredDomain) {
+        //console.log('Retrieving page HTML for URL: ' + url);
+        
+        request(url, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                console.log('calling back');
+                callback(body);
+            } else {
+                console.log('titler error: ', error);
+            }
+        });
+        
+    } else {
+        return false;
+    }
 };
 
 titler.parseHTMLAndGetTitle = function (html, callback) {
@@ -58,8 +78,8 @@ titler.parseHTMLAndGetTitle = function (html, callback) {
 
 titler.getTitle = function (url, callback) {
     // Parse the URL and see if it's a youtube video    
-    var u      = require('url');
-    var info   = u.parse(url);
+    var u    = require('url');
+    var info = u.parse(url);
     
     // If so, query the API and get extra info about the video
     if (info.host && titler.isYoutubeURL(info.host)) {        
