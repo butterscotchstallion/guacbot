@@ -8,8 +8,12 @@ var request = require('request');
 var ignore  = require('./ignore');
 var titler  = { };
 
+titler.loadConfig = function (cfg) {
+    titler.cfg = cfg.plugins.titler;
+};
+
 titler.init = function (client) {
-    titler.cfg = client.config.plugins.titler;
+    titler.loadConfig(client.config);
     
     // Listen to messages from any channel
     client.addListener('message#', function (from, to, message) {
@@ -35,6 +39,8 @@ titler.matchURL = function (url) {
 titler.isIgnoredDomain = function (domain) {
     var domains = typeof(titler.cfg.ignoreDomains) !== 'undefined' ? titler.cfg.ignoreDomains : [];
 
+    console.log(domains);
+    
     return domains && domains.indexOf(domain) > -1;
 };
 
@@ -48,7 +54,6 @@ titler.getPageHTML = function (url, callback) {
         
         request(url, function (error, response, body) {
             if (!error && response.statusCode == 200) {
-                console.log('calling back');
                 callback(body);
             } else {
                 console.log('titler error: ', error);

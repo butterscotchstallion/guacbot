@@ -8,14 +8,20 @@ var moment     = require('moment');
 var minimatch  = require('minimatch');
 var timeParser = require("../lib/timeUnitParser");
 var parser     = require('../lib/messageParser');
+var pluginMgr  = require('../lib/pluginManager');
 var admin      = {
     muted: []
 };
 
-admin.init = function (client) {
-    var pluginCfg   = client.config.plugins.admin;
-    admin.client    = client;
+admin.loadConfig = function (cfg) { 
+    var pluginCfg   = cfg.plugins.admin;
     admin.pluginCfg = pluginCfg;
+};
+
+admin.init = function (client) {    
+    admin.client = client;
+    
+    admin.loadConfig(client.config);
     
     client.addListener('message#', function (nick, to, text, message) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
@@ -23,7 +29,7 @@ admin.init = function (client) {
         if (isAddressingBot) {
             var words    = parser.splitMessageIntoWords(text);
             var command  = words[1];
-            var triggers = admin.getTriggersFromConfig(pluginCfg);
+            var triggers = admin.getTriggersFromConfig(admin.pluginCfg);
             var triglen  = triggers.length;
             
             for (var j = 0; j < triglen; j++) {
@@ -38,7 +44,7 @@ admin.init = function (client) {
                             user: message.user,
                             host: message.host
                         },
-                        pluginCfg: pluginCfg
+                        pluginCfg: admin.pluginCfg
                     });
                 }
             }
@@ -144,6 +150,15 @@ admin.executeCommand = function (info) {
         
         case 'unmute':
             admin.unmute(info.channel, commandArgOne);
+        break;
+        
+        case 'reload':
+            console.log('reloading');
+            info.client.say(info.channel, 'k');
+            
+            pluginMgr.loadPlugins(info.client, function () {
+                info.client.say(info.channel, 'reloaded!');
+            }, true);
         break;
         
         // Unknown command - this should probably never happen
