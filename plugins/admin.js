@@ -4,6 +4,7 @@
  */
 "use strict";
 
+var identifier = require('./nickserv-auto-identify');
 var moment     = require('moment');
 var minimatch  = require('minimatch');
 var timeParser = require("../lib/timeUnitParser");
@@ -158,6 +159,10 @@ admin.executeCommand = function (info) {
             pluginMgr.loadPlugins(info.client, function () {
                 info.client.say(info.channel, 'reloaded!');
             }, true);
+        break;
+        
+        case 'identify':
+            identifier.identify(info.client, info.pluginCfg.password);
         break;
         
         // Unknown command - this should probably never happen
