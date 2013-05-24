@@ -7,9 +7,9 @@
 var irc = require('irc');
 var em  = {};
 
-em.init = function (client, config) {
+em.init = function (client) {
     client.addListener('kick', function (channel, nick, by, reason, message) {
-        var messages = em.getKickMessages(config);
+        var messages = em.getKickMessages(client.config);
         var msg      = em.getRandomMessage(messages);
             msg      = em.replaceVariables(msg, {
                 nick: nick,
@@ -51,8 +51,8 @@ em.replaceVariables = function (msg, kickInfo) {
     
     // irc.colors.codes is an object so we have to get the properties
     // first and then find a random key based on that
-    var keys      = Object.keys(codes);
-    var colorName = keys[Math.floor(keys.length * Math.random())];
+    //var keys      = Object.keys(codes);
+    //var colorName = keys[Math.floor(keys.length * Math.random())];
     //var nick      = irc.colors.wrap(colorName, kickInfo.nick);
     var nick      = kickInfo.nick;
     
