@@ -9,8 +9,12 @@
 var admin = require('./admin');
 var bw    = {};
 
+bw.loadConfig = function (cfg) {
+    bw.cfg = cfg.plugins.badwords;
+};
+
 bw.init = function (client) {
-    bw.cfg    = client.config.plugins.badwords;
+    bw.loadConfig(client.config);
     
     client.addListener('message#', function (nick, channel, text, message) {
         var words                   = bw.cfg.words || [];
@@ -43,7 +47,10 @@ bw.performAction = function (action, channel, nick) {
         break;
         
         case "say":
-            var message = bw.getReplyMessage();
+            var message = bw.getReplyMessage({
+                nick: nick,
+                channel: channel
+            });
             admin.client.say(channel, message);
         break;
         
@@ -53,18 +60,26 @@ bw.performAction = function (action, channel, nick) {
     }
 };
 
-bw.getReplyMessage = function () {
+bw.replaceVariables = function (input, info) {
+    var output = input;
+    
+    output     = output.replace(new RegExp('\\$nick', 'g'), info.nick);
+    output     = output.replace(new RegExp('\\$channel', 'g'), info.channel);
+    
+    return output;
+};
+
+bw.getReplyMessage = function (info) {
     var messages =  bw.cfg.replyMessages || [];
     var message  = 'Bad word.';
     
     if (messages) {
         message = messages[Math.floor(Math.random() * messages.length)];
+        message = bw.replaceVariables(message, info);
     }
     
     return message;    
 };
-
-
 
 bw.kickWithMessage = function (channel, nick) {
     var messages =  bw.cfg.kickMessages || [];
