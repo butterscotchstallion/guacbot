@@ -48,13 +48,14 @@ cls.init = function (client) {
     setInterval(function () {
         if (cls.isSaturday()) {
             // CLS! uppercase nick
-            cls.capitalizeNick(client, client.config.nick);
-            
-            // Get names from channel
-            //client.send('NAMES');
+            if (client.currentNick !== client.currentNick.toUpperCase()) {
+                cls.capitalizeNick(client, client.currentNick);
+            }
         } else {
             // If it's not saturday, lowercase nick
-            client.send('NICK', client.config.nick.toLowerCase());
+            if (client.currentNick !== client.currentNick.toLowerCase()) {
+                cls.lowercaseNick(client, client.currentNick);
+            }
         }
     }, oneMinuteInMS);
 };
@@ -88,7 +89,17 @@ cls.isNickUpperCase = function (nick) {
 };
 
 cls.capitalizeNick = function (client, currentNick) {
-    client.send('NICK', currentNick.toUpperCase());
+    var capitalized    = currentNick.toUpperCase();
+    client.currentNick = capitalized;
+    
+    client.send('NICK', capitalized);
+};
+
+cls.lowercaseNick = function (client, currentNick) {
+    var lowercase      = currentNick.toLowerCase();
+    client.currentNick = lowercase;
+    
+    client.send('NICK', lowercase);
 };
 
 module.exports = cls;
