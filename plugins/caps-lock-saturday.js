@@ -48,12 +48,12 @@ cls.init = function (client) {
     setInterval(function () {
         if (cls.isSaturday()) {
             // CLS! uppercase nick
-            if (client.currentNick !== client.currentNick.toUpperCase()) {
+            if (!cls.isNickUpperCase(client.currentNick)) {
                 cls.capitalizeNick(client, client.currentNick);
             }
         } else {
             // If it's not saturday, lowercase nick
-            if (client.currentNick !== client.currentNick.toLowerCase()) {
+            if (!cls.isNickLowerCase(client.currentNick)) {
                 cls.lowercaseNick(client, client.currentNick);
             }
         }
@@ -88,7 +88,13 @@ cls.isNickUpperCase = function (nick) {
     return nick === nick.toUpperCase();
 };
 
+cls.isNickLowerCase = function (nick) {
+    return nick === nick.toLowerCase();
+};
+
 cls.capitalizeNick = function (client, currentNick) {
+    //console.log('is saturday! capitalizing nick!');
+    
     var capitalized    = currentNick.toUpperCase();
     client.currentNick = capitalized;
     
@@ -96,6 +102,8 @@ cls.capitalizeNick = function (client, currentNick) {
 };
 
 cls.lowercaseNick = function (client, currentNick) {
+    //console.log('is NOT saturday! NOT capitalizing nick!');
+    
     var lowercase      = currentNick.toLowerCase();
     client.currentNick = lowercase;
     
