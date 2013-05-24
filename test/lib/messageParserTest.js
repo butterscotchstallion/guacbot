@@ -15,11 +15,26 @@ describe('messageParser.isMessageAddressingBot', function () {
         var actual   = messageParser.isMessageAddressingBot(input, nick);
         
         assert.equal(expected, actual);
+        
+        input    = 'amen sista';
+        nick     = 'n';
+        actual   = messageParser.isMessageAddressingBot(input, nick);
+        
+        assert.equal(expected, actual);
     });
     
     it('should be true when first word is the nick with a single character after it', function () {
         var expected = true;
         var input    = 'n:';
+        var nick     = 'n';
+        var actual   = messageParser.isMessageAddressingBot(input, nick);
+        
+        assert.equal(expected, actual);
+    });
+    
+    it('should be true when first word is the nick', function () {
+        var expected = true;
+        var input    = 'n';
         var nick     = 'n';
         var actual   = messageParser.isMessageAddressingBot(input, nick);
         
