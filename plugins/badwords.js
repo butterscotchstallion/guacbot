@@ -39,7 +39,10 @@ bw.performAction = function (action, channel, nick) {
         break;
         
         case "kick":
-            bw.kickWithMessage(channel, nick);
+            bw.kickWithMessage(channel, nick, {
+                nick: nick,
+                channel: channel
+            });
         break;
         
         case "mute":
@@ -81,12 +84,13 @@ bw.getReplyMessage = function (info) {
     return message;    
 };
 
-bw.kickWithMessage = function (channel, nick) {
+bw.kickWithMessage = function (channel, nick, info) {
     var messages =  bw.cfg.kickMessages || [];
     var message  = 'Bad word.';
     
     if (messages) {
         message = messages[Math.floor(Math.random() * messages.length)];
+        message = bw.replaceVariables(message, info);
     }
     
     admin.kick(channel, nick, message);
