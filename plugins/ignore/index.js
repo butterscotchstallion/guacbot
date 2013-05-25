@@ -9,7 +9,7 @@
 "use strict";
 
 var minimatch = require('minimatch');
-var parser    = require('../lib/messageParser');
+var parser    = require('../../lib/messageParser');
 var ig        = {
     ignored: [
     

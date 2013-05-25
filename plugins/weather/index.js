@@ -4,8 +4,8 @@
  */
 "use strict";
 
-var ignore        = require('./ignore');
-var parser        = require('../lib/messageParser');
+var ignore        = require('../ignore');
+var parser        = require('../../lib/messageParser');
 var weatherPlugin = { };
 
 weatherPlugin.init = function (client) {
