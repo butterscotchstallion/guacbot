@@ -18,6 +18,7 @@ describe('seen should save', function () {
             }
             
             assert.equal(exists, true);
+            assert.equal(err, null);
         });
     });
     
@@ -26,23 +27,35 @@ describe('seen should save', function () {
             name: 'PrgmrBill',
             lastSeen: '2013-04-23 12:18:06'
         }, function (err, res) {
-            console.log('res: ', res);         
-            console.log('err: ', err);      
+            //console.log('res: ', res);         
+            //console.log('err: ', err);
+            assert.equal(err, null);
         });
     });
     
     it('should find the last seen time of an inserted user', function () {
-        db.remove('IcebergSlim', function (err, res) {
-            console.log('res: ', res);         
-            console.log('err: ', err);
-        });
         
+        /*
         db.save({
             name: 'IcebergSlim',
             lastSeen: '2013-05-11 10:18:09'
         }, function (err, res) {
             console.log('res: ', res);         
             console.log('err: ', err);
+            
+            db.remove('IcebergSlim', res.rev, function (err, res) {                
+                console.log('res: ', res);         
+                console.log('err: ', err);
+            });
+            
+        });
+        */
+        
+        db.view('seen/all', { key: 'IcebergSlim' }, function (err, doc) {
+            console.log('viewing');
+            console.log(err); 
+            console.log('doc:',doc);
+            assert.equal(err, null);
         });
     });
     
