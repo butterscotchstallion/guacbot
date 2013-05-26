@@ -154,10 +154,10 @@ admin.executeCommand = function (info) {
         break;
         
         case 'reload':
-            info.client.say(info.channel, 'k');
+            info.client.say(info.channel, 'reloading...');
             
-            pluginMgr.loadPlugins(info.client, function () {
-                info.client.say(info.channel, 'reloaded!');
+            pluginMgr.loadPlugins(info.client, function (reloadedPlugins) {
+                info.client.say(info.channel, reloadedPlugins + ' plugins reloaded.');
             }, true);
         break;
         
