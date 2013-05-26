@@ -6,7 +6,39 @@
 
 var fs     = require('fs');
 var assert = require("assert");
-var titler = require('../../plugins/titler');
+var titler = require('../../plugins/titler/');
+
+describe('youtube views undefined bug', function () {
+    it('views should be defined', function () {   
+        var videoTitle = "One Mint Julep";
+        var likeCount  = 500000;
+        var rating     = 9;
+        var viewCount  = 9001;
+        
+        var title = titler.getYoutubeVideoTitleDetailString({
+            title: videoTitle,
+            likeCount: likeCount,
+            rating: rating,
+            viewCount: viewCount
+        });
+        
+        assert.notEqual(title.indexOf(videoTitle), -1);
+        assert.notEqual(title.indexOf(likeCount), -1);
+        assert.notEqual(title.indexOf(rating), -1);
+        assert.notEqual(title.indexOf(viewCount), -1);
+        assert.equal(title.indexOf('undefined'), -1);
+    });
+    
+    it('views should not be undefined', function () {        
+        var data  = JSON.parse(fs.readFileSync('fixture/youtubeVideoResponseWithViewsUndefined.json', 'utf8')).data;        
+        var title = titler.getYoutubeVideoTitleDetailString(data);
+        
+        assert.notEqual(title.indexOf(data.title), -1);
+        assert.notEqual(title.indexOf(data.likeCount), -1);
+        assert.notEqual(title.indexOf(data.rating), -1);
+        assert.equal(title.indexOf('undefined'), -1);
+    });
+});
 
 describe('reload', function () {
     it('should reload the config', function () {
@@ -113,11 +145,15 @@ describe('Youtube Info', function () {
     });
     
     it('should parse JSON and get correct info', function () {        
-        var info = JSON.parse(fs.readFileSync('../fixture/youtubeVideoResponse.json', 'utf8'));
+        var info = JSON.parse(fs.readFileSync('fixture/youtubeVideoResponse.json', 'utf8'));
         var url  = 'http://www.youtube.com/watch?v=7B9z6VEzfDE';
         
         var info = titler.getYoutubeVideoInfo(url, function (data) {
             assert.equal(data.id, '7B9z6VEzfDE');
+            assert.equal(data.title, 'Ray J...I Hit It First!!!!');
+            assert.notEqual(data.viewCount, 'undefined');
+            assert.notEqual(data.likeCount, 'undefined');
+            assert.notEqual(data.rating, 'undefined');
         });
     });
 });

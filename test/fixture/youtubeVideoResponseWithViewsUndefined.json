@@ -1,0 +1,45 @@
+{
+    "apiVersion": "2.1",
+    "data": {
+        "id": "3hBpugaWrKU",
+        "uploaded": "2013-05-24T17:28:08.000Z",
+        "updated": "2013-05-25T23:32:55.000Z",
+        "uploader": "ufc",
+        "category": "Sports",
+        "title": "UFC 160 Prelims",
+        "description": "Watch 3 prelims live on Saturday at 6:30/3:30PM ET/P - Stephen Thompson vs Nah-Shon Burrell, Brian Bowles vs George Roop, and Jeremy Stephens vs Estevan Payan",
+        "thumbnail": {
+            "sqDefault": "http://i.ytimg.com/vi/3hBpugaWrKU/default.jpg",
+            "hqDefault": "http://i.ytimg.com/vi/3hBpugaWrKU/hqdefault.jpg"
+        },
+        "player": {
+            "default": "https://www.youtube.com/watch?v=3hBpugaWrKU&feature=youtube_gdata_player"
+        },
+        "duration": 0,
+        "aspectRatio": "widescreen",
+        "rating": 4.850622,
+        "likeCount": "464",
+        "ratingCount": 482,
+        "commentCount": 2808,
+        "status": {
+            "value": "processing"
+        },
+        "restrictions": [
+            {
+                "type": "country",
+                "relationship": "deny",
+                "countries": "DE BR"
+            }
+        ],
+        "accessControl": {
+            "comment": "allowed",
+            "commentVote": "allowed",
+            "videoRespond": "moderated",
+            "rate": "allowed",
+            "embed": "denied",
+            "list": "allowed",
+            "autoPlay": "allowed",
+            "syndicate": "allowed"
+        }
+    }
+}
