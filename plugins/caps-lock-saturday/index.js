@@ -5,10 +5,16 @@
  */
 "use strict";
 
-var cls    = { };
+var cls    = { loaded: false };
 var moment = require('moment');
 
 cls.init = function (client) {
+    // Check once on load before waiting a minute
+    if (!cls.loaded) {
+        cls.changeNickIfNecessary(client);
+        cls.loaded = true;
+    }
+    
     // User changes nick
     client.addListener('nick', function (oldNick, newNick, channels, message) {
         var clen = channels.length;
@@ -25,40 +31,27 @@ cls.init = function (client) {
         }
     });
     
-    // Received user list from channel
-    /*
-    client.addListener('names#', function (channel, names) {
-        console.log('Received NAMES');
-        console.log(names);
-        
-        var nlen       = names.length;
-        
-        for (var nick in names) {
-            cls.voiceUserIfNickIsUppercase(client, channel, nick);
-        }
-        
-        //client.say('#' + channel, namesArray.join(' '));
-    });
-    */
-    
     // Each time there is a ping, check if it's saturday
     // and if so, change nick
     var oneMinuteInMS = 60000;
     
     setInterval(function () {
-        if (cls.isSaturday()) {
-            console.log('is saturday');
-            // CLS! uppercase nick
-            if (!cls.isNickUpperCase(client.currentNick)) {
-                cls.capitalizeNick(client, client.currentNick);
-            }
-        } else {
-            // If it's not saturday, lowercase nick
-            if (!cls.isNickLowerCase(client.currentNick)) {
-                cls.lowercaseNick(client, client.currentNick);
-            }
-        }
+        cls.changeNickIfNecessary(client);
     }, oneMinuteInMS);
+};
+
+cls.changeNickIfNecessary = function (client) {
+    if (cls.isSaturday()) {
+        // CLS! uppercase nick
+        if (!cls.isNickUpperCase(client.currentNick)) {
+            cls.capitalizeNick(client, client.currentNick);
+        }
+    } else {
+        // If it's not saturday, lowercase nick
+        if (!cls.isNickLowerCase(client.currentNick)) {
+            cls.lowercaseNick(client, client.currentNick);
+        }
+    }
 };
 
 cls.voiceUserIfNickIsUppercase = function (client, channel, nick) {
