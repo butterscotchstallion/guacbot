@@ -5,8 +5,8 @@
  */
 "use strict";
 var request = require('request');
-var ignore  = require('./ignore');
-var parser  = require('../lib/messageParser');
+var ignore  = require('../ignore/');
+var parser  = require('../../lib/messageParser');
 var titler  = { };
 
 titler.loadConfig = function (cfg) {
@@ -57,8 +57,6 @@ titler.matchURL = function (url) {
 titler.isIgnoredDomain = function (domain) {
     var domains = typeof(titler.cfg.ignoreDomains) !== 'undefined' ? titler.cfg.ignoreDomains : [];
 
-    console.log(domains);
-    
     return domains && domains.indexOf(domain) > -1;
 };
 
@@ -109,10 +107,7 @@ titler.getTitle = function (url, callback) {
         
         // Build title based on API data
         titler.getYoutubeVideoInfo(url, function (data) {
-            var title  = data.title;
-                title += ' - Rating: ' + data.rating; 
-                title += ' - Views: ' + data.viewCount;
-                title += ' - Likes: ' + data.likeCount;
+            var title = titler.getYoutubeVideoTitleDetailString(data);
             
             callback(title);
         });
@@ -125,6 +120,21 @@ titler.getTitle = function (url, callback) {
             });
         });
     }
+};
+
+titler.getYoutubeVideoTitleDetailString = function (data) {
+    var viewCount = typeof(data.viewCount) !== 'undefined' ? data.viewCount : 0;
+    var rating    = typeof(data.rating)    !== 'undefined' ? data.rating    : 0;
+    var likeCount = typeof(data.likeCount) !== 'undefined' ? data.likeCount : 0;
+    
+    var title     = data.title;
+        title    += ' - Rating: ' + rating; 
+        title    += ' - Views: '  + viewCount;
+        title    += ' - Likes: '  + likeCount;
+    
+    //console.log(title);
+    
+    return title;
 };
 
 titler.getYoutubeVideoInfo = function (url, callback) {

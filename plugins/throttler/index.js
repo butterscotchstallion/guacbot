@@ -7,7 +7,7 @@
 
 var minimatch = require('minimatch');
 var moment    = require('moment');
-var parser    = require('../lib/messageParser');
+var parser    = require('../../lib/messageParser');
 var throttler = {
     hostmasks: []
 };

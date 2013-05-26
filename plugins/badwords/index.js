@@ -6,7 +6,7 @@
  */
 "use strict";
 
-var admin = require('./admin');
+var admin = require('../admin/');
 var bw    = {};
 
 bw.loadConfig = function (cfg) {

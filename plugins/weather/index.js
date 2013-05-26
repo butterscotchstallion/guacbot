@@ -4,7 +4,7 @@
  */
 "use strict";
 
-var ignore        = require('../ignore');
+var ignore        = require('../ignore/');
 var parser        = require('../../lib/messageParser');
 var weatherPlugin = { };
 

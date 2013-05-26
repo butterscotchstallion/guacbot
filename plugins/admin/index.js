@@ -4,12 +4,12 @@
  */
 "use strict";
 
-var identifier = require('./nickserv-auto-identify');
+var identifier = require('../nickserv-auto-identify/');
 var moment     = require('moment');
 var minimatch  = require('minimatch');
-var timeParser = require("../lib/timeUnitParser");
-var parser     = require('../lib/messageParser');
-var pluginMgr  = require('../lib/pluginManager');
+var timeParser = require("../../lib/timeUnitParser");
+var parser     = require('../../lib/messageParser');
+var pluginMgr  = require('../../lib/pluginManager');
 var admin      = {
     muted: []
 };

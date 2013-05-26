@@ -58,7 +58,7 @@ cls.init = function (client) {
                 cls.lowercaseNick(client, client.currentNick);
             }
         }
-    }, 3000);
+    }, oneMinuteInMS);
 };
 
 cls.voiceUserIfNickIsUppercase = function (client, channel, nick) {
@@ -94,7 +94,7 @@ cls.isNickLowerCase = function (nick) {
 };
 
 cls.capitalizeNick = function (client, currentNick) {
-    console.log('is saturday! capitalizing nick!');
+    //console.log('is saturday! capitalizing nick!');
     
     var capitalized    = currentNick.toUpperCase();
     client.currentNick = capitalized;
@@ -103,7 +103,7 @@ cls.capitalizeNick = function (client, currentNick) {
 };
 
 cls.lowercaseNick = function (client, currentNick) {
-    console.log('is NOT saturday! NOT capitalizing nick!');
+    //console.log('is NOT saturday! NOT capitalizing nick!');
     
     var lowercase      = currentNick.toLowerCase();
     client.currentNick = lowercase;

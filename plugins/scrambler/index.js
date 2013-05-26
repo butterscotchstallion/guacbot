@@ -14,7 +14,7 @@ var sc = {
 };
 
 sc.loadConfig = function (cfg) {
-    sc.cfg   = cfg.config.plugins.scrambler;    
+    sc.cfg   = cfg.plugins.scrambler;    
     sc.words = sc.getWords();
 };
 
@@ -28,7 +28,7 @@ sc.getHint = function (word, counter) {
     return;
 };
 
-sc.descramble = function () {
+sc.descramble = function (word) {
     var wlen         = sc.words.length;
     var sortedWords  = sc.words.sort();
     var scrambled    = sc.getScrambledWord(word);

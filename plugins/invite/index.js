@@ -5,7 +5,7 @@
 "use strict";
 
 var invite = {};
-var ignore = require('./ignore');
+var ignore = require('../ignore/');
 
 invite.init = function (client) {
     client.addListener('invite', function (channel, from, message) {

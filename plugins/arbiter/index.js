@@ -5,7 +5,7 @@
 "use strict";
 
 var arbiter = {};
-var parser  = require('../lib/messageParser');
+var parser  = require('../../lib/messageParser');
 
 arbiter.init = function (client) {
     client.addListener('message#', function (nick, channel, text, message) {

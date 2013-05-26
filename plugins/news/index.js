@@ -7,7 +7,7 @@
 var fs         = require('fs');
 var FeedParser = require('feedparser')
 var request    = require('request');
-var parser     = require('../lib/messageParser');
+var parser     = require('../../lib/messageParser');
 var news       = {};
 
 news.init = function (client) {    

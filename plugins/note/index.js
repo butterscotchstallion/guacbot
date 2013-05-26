@@ -5,8 +5,8 @@
 "use strict";
 
 var moment   = require('moment');
-var parser   = require('../lib/messageParser');
-var ignore   = require('./ignore');
+var parser   = require('../../lib/messageParser');
+var ignore   = require('../ignore/');
 var irc      = require('irc');
 
 var note     = {

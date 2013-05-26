@@ -4,9 +4,9 @@
  */
 "use strict";
 
-var parser = require('../lib/messageParser');
+var parser  = require('../../lib/messageParser');
 var moment = require('moment');
-var ignore = require('./ignore');
+var ignore = require('../ignore/');
 var uptime = { };
 
 uptime.init = function (client) {

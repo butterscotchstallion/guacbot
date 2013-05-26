@@ -9,9 +9,9 @@
 "use strict";
 
 var moment     = require('moment');
-var parser     = require('../lib/messageParser');
-var timeParser = require('../lib/timeUnitParser');
-var ignore     = require('./ignore');
+var parser     = require('../../lib/messageParser');
+var timeParser = require('../../lib/timeUnitParser');
+var ignore     = require('../ignore/');
 var reminder   = {
     reminders: []
 };
