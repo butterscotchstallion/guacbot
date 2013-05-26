@@ -14,6 +14,8 @@ var sc = {
 };
 
 sc.loadConfig = function (cfg) {
+    //console.log(cfg);
+    
     sc.cfg   = cfg.plugins.scrambler;    
     sc.words = sc.getWords();
 };
@@ -34,7 +36,7 @@ sc.descramble = function (word) {
     var scrambled    = sc.getScrambledWord(word);
     var wrongAnswers = [];
     
-    console.log(scrambled);
+    //console.log(scrambled);
     //console.log(word);
 };
 

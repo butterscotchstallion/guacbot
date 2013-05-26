@@ -70,7 +70,7 @@ describe('scrambler.getWords', function (done) {
         scrambler.pluginPath = '../plugins/scrambler/';
         scrambler.loadConfig(cfg);
         */
-        sc.words = ['house', 'wire', 'cobra', 'pizza'];
+        scrambler.words = ['house', 'wire', 'cobra', 'pizza'];
     });
     
     it('should return an array of words', function (done) {
