@@ -10,7 +10,8 @@ var admin = require('../admin/');
 var bw    = {};
 
 bw.loadConfig = function (cfg) {
-    bw.cfg = cfg.plugins.badwords;
+    bw.cfg         = cfg.plugins.badwords;
+    bw.adminConfig = cfg.plugins.admin;
 };
 
 bw.init = function (client) {
@@ -20,12 +21,21 @@ bw.init = function (client) {
         var words                   = bw.cfg.words || [];
         var messageContainsBadWords = bw.messageContainsBadWords(words, text);
         var actions                 = bw.cfg.actions.split(',');
+        var info                    = {
+            userInfo: {
+                user: message.user,
+                host: message.host
+            },
+            pluginCfg: bw.adminConfig
+        };
         
-        if (messageContainsBadWords) {  
-            var alen = actions.length;
-            
-            for (var j = 0; j < alen; j++) {
-                bw.performAction(actions[j], channel, nick);
+        if (messageContainsBadWords) {            
+            if (!bw.cfg.ignoreAdmins || !admin.userIsAdmin(info)) {  
+                var alen = actions.length;
+                
+                for (var j = 0; j < alen; j++) {
+                    bw.performAction(actions[j], channel, nick);
+                }
             }
         }
     });
