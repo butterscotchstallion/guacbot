@@ -4,61 +4,73 @@
  */
 "use strict";
 
-var cradle = require('cradle');
+var fs     = require('fs');
 var assert = require("assert");
+var config = JSON.parse(fs.readFileSync('../bot-config.json', 'utf8'));
+var mysql  = require('mysql');
+var seen   = require('../../plugins/seen/');
 
-describe('seen should save', function () {
-    var c  = new(cradle.Connection);
-    var db = c.database('seen');
-    
-    it('should create the db', function () {
-        db.exists(function (err, exists) {
-            if (!exists) {
-                db.create();
-            }
-            
-            assert.equal(exists, true);
-            assert.equal(err, null);
-        });
+describe('seen should add a user', function () {
+    beforeEach(function () {
+        seen.connect(config.db);
     });
     
-    it('should create a seen document', function () {
-        db.save({
-            name: 'PrgmrBill',
-            lastSeen: '2013-04-23 12:18:06'
-        }, function (err, res) {
-            //console.log('res: ', res);         
-            //console.log('err: ', err);
-            assert.equal(err, null);
-        });
-    });
-    
-    it('should find the last seen time of an inserted user', function () {
+    it('should add a user', function () {
+        var expected = {
+            nick: 'billulum',
+            host: 'localhost',
+            message: 'sup',
+            channel: '#guacamole',
+            last_seen: 'NOW()'
+        };
         
-        /*
-        db.save({
-            name: 'IcebergSlim',
-            lastSeen: '2013-05-11 10:18:09'
-        }, function (err, res) {
-            console.log('res: ', res);         
-            console.log('err: ', err);
-            
-            db.remove('IcebergSlim', res.rev, function (err, res) {                
-                console.log('res: ', res);         
-                console.log('err: ', err);
-            });
-            
-        });
-        */
+        var q = seen.getAddQuery(expected);
         
-        db.view('seen/all', { key: 'IcebergSlim' }, function (err, doc) {
-            console.log('viewing');
-            console.log(err); 
-            console.log('doc:',doc);
-            assert.equal(err, null);
+        assert.deepEqual(q.params, expected);
+        
+        seen.add(expected, function (results) {
+            assert.notEqual(results.insertId, 0);
+        });
+    });    
+});
+
+describe('seen should find a user', function () {
+    beforeEach(function () {
+        seen.connect(config.db);
+    });
+    
+    it('should get a user', function () {
+        var q             = seen.getSeenQuery('billulum');
+        var expectedQuery = "SELECT nick,"+
+                                    "host,"+
+                                    "message,"+
+                                    "last_seen AS lastSeen,"+
+                                    "channel"+
+                            " FROM seen"+
+                            " WHERE 1=1"+
+                            " AND nick = ?";
+        
+        var expectedParams = ['billulum'];
+        
+        assert.deepEqual(q.params, expectedParams);
+        assert.equal(q.query, expectedQuery);
+        
+        seen.get('billulum', function (result) {
+            assert.equal('billulum', result.nick);
+            assert.equal('localhost', result.host);
+            assert.equal('#guacamole', result.channel);
+            assert.equal('sup', result.message);
         });
     });
     
+    /*
+    it('should be undefined', function () {
+        seen.get('liltuna', function (info) {
+            //console.log(info);
+            assert.equal(typeof(info), 'undefined');
+        });
+    });
+    */
 });
 
 

@@ -9,6 +9,7 @@
     "cradle": "~0.6.5",
     "feedparser": "~0.15.2",
     "minimatch": "~0.2.12",
-    "goo.gl": "0.0.2"
+    "goo.gl": "0.0.2",
+    "mysql": "~2.0.0-alpha8"
   }
 }
