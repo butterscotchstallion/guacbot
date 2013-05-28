@@ -4,6 +4,8 @@
  *
  */
 "use strict";
+
+var moment = require('moment');
 var mysql  = require('mysql');
 var parser = require('../../lib/messageParser');
 var seen   = {};
@@ -40,7 +42,9 @@ seen.init = function (client) {
                     if (!err && result) {
                         
                         if (typeof(result.nick) !== 'undefined') {
-                            var msg  = result.nick + ' was last seen on ' + result.lastSeen;
+                            // todo: 5 minutes go
+                            var lastSeen = moment(result.lastSeen).fromNow();
+                            var msg  = result.nick + ' was last seen on ' + lastSeen;
                                 msg += ' saying "' + result.message + '"';
                             
                             client.say(channel, msg);
@@ -89,7 +93,7 @@ seen.add = function (info, callback) {
     var q = seen.getAddQuery(info);
     
     var query = seen.connection.query(q.query, q.params, function (err, results) {
-        console.log(results);
+        //console.log(results);
         console.log(query.sql);
         
         callback(results, err);
@@ -102,7 +106,7 @@ seen.getAddQuery = function (info) {
         query += ' UPDATE last_seen = NOW(),';
         query += ' channel = ' + seen.connection.escape(info.channel) + ',';
         query += ' message = ' + seen.connection.escape(info.message) + ',';
-        query += ' host    = ' + seen.connection.escaoe(info.host);
+        query += ' host    = ' + seen.connection.escape(info.host);
         
     return {
         query: query,
