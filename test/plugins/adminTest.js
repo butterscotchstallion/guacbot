@@ -90,6 +90,23 @@ describe('admin.parseKickBanCommand', function () {
         assert.equal(expected.duration, actual.duration);
         assert.equal(expected.reason, actual.reason);
     });
+    
+    it('kb with reason', function () {
+        var expected = {
+            targetNick: 'ndbt',
+            targetChannel: '',
+            duration: config.plugins.admin.banDuration,
+            reason: 'nerd'
+        };
+        
+        var cmd    = 'guacamole: kb ndbt nerd';
+        var actual = admin.parseKickBanCommand(cmd);
+        
+        assert.equal(expected.targetNick, actual.targetNick);
+        assert.equal(expected.targetChannel, actual.targetChannel);
+        assert.equal(expected.duration, actual.duration);
+        assert.equal(expected.reason, actual.reason);
+    });
 });
 
 describe('translate 5m to milliseconds', function () {

@@ -195,6 +195,17 @@ admin.parseKickBanCommand = function (input) {
     var reason        = kickMessage;
     var duration      = admin.pluginCfg.banDuration;
     
+    // guacamole: kb ndbt nerd
+    if (!targetChannel && words.length === 4) {
+        var tmp       = timeParser.parseDuration(commandArgTwo);
+        
+        if (tmp.unit != 0) {
+            duration  = tmp.length + tmp.unit;
+        } else {
+            reason    = words.slice(3).join(' ');
+        }
+    }
+    
     // guacamole: kb ndbt 5m msg
     // 0           1 2    3  4
     if (!targetChannel && words.length >= 4) {
