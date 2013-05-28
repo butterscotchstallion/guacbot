@@ -165,11 +165,67 @@ admin.executeCommand = function (info) {
             identifier.identify(info.client, info.pluginCfg.password);
         break;
         
+        case 'kickban':
+            // guacamole: kb ndbt [5m] [idiot]
+            //            command, nick, duration, reason
+            var kb = admin.parseKickBanCommand(info.words.join(' '));
+            
+            if (!kb.targetChannel) {
+                kb.targetChannel = info.channel;
+            }
+            
+            admin.kick(kb.targetChannel, kb.targetNick, kb.reason);
+            admin.ban(kb.targetChannel, kb.targetNick, kb.duration);            
+        break;
+        
         // Unknown command - this should probably never happen
         default:
             console.log('unknown command: ' + info.command);
         break;
     }
+};
+
+admin.parseKickBanCommand = function (input) {
+    var words         = parser.splitMessageIntoWords(input);
+    var commandArgOne = words[2] || '';
+    var commandArgTwo = words[3] || '';
+    var targetChannel = commandArgOne.indexOf('#') ===  0 ? commandArgOne : '';
+    var targetNick    = commandArgOne.indexOf('#') === -1 ? commandArgOne : commandArgTwo;
+    var kickMessage   = admin.getKickMsg(admin.pluginCfg) || 'banned';
+    var reason        = kickMessage;
+    var duration      = admin.pluginCfg.banDuration;
+    
+    // guacamole: kb ndbt 5m msg
+    // 0           1 2    3  4
+    if (!targetChannel && words.length >= 4) {
+        var tmp = timeParser.parseDuration(commandArgTwo);
+        
+        if (tmp.unit != 0) {
+            duration = tmp.length + tmp.unit;
+        }
+        
+        if (words.length > 4) {
+            reason   = words.slice(4).join(' ');
+        }
+    }
+    
+    // guacamole: kb #channel nick 5m msg
+    if (targetChannel && words.length >= 5) {
+        var tmp = timeParser.parseDuration(words[4]);
+        
+        if (tmp.unit !== 0) {
+            duration = tmp.length + tmp.unit;
+        }
+        
+        reason = words.slice(5).join(' ');
+    }
+    
+    return {
+        targetChannel: targetChannel,
+        targetNick   : targetNick,
+        reason       : reason,
+        duration     : duration
+    };
 };
 
 admin.kick = function (channel, nick, message) {
@@ -302,6 +358,21 @@ admin.getAccessDeniedMsg = function (cfg) {
 
 admin.getAccessDeniedMessages = function (cfg) {
     return cfg.accessDeniedMessages || [];
+};
+
+admin.getKickMsg = function (cfg) {
+    var messages = admin.getKickMessages(cfg);
+    var msg      = '';
+    
+    if (messages) {
+        msg = messages[Math.floor(Math.random() * messages.length)];
+    }
+    
+    return msg;
+};
+
+admin.getKickMessages = function (cfg) {
+    return cfg.kickMessages || [];
 };
 
 admin.getTriggersFromConfig = function (cfg) {
