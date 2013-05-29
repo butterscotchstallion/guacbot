@@ -22,9 +22,9 @@ quote.init = function (client) {
             if (command === 'quote') {
                 var targetNick = words[2] && words[2].length > 0 ? words[2].trim() : nick;
                 
-                logger.getRandomQuote(nick, function (result, err) {
+                logger.getRandomQuote(targetNick, function (result, err) {
                     if (result) {
-                        var msg  = '<' + nick + '> ';
+                        var msg  = '<' + targetNick + '> ';
                             msg += result.message;
                         
                         client.say(channel, msg);
