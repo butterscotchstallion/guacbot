@@ -9,25 +9,25 @@ var db    = {};
 
 db.init = function (client) {
     var cfg = client.config.plugins.db;
-
-    db.connect(cfg);
     
-    db.qry    = db.connection.query;
-    db.escape = db.connection.escape;
+    db.connect(cfg);
     
     db.handleDisconnect(db.connection);
 };
 
 db.connect = function (config) {
-    db.connection = mysql.createConnection(config);
-    
-    db.connection.connect(function (err) {
-        if (!err) {
-            console.log('db: connected to "' + config.name + '"');
-        } else {
-            console.log('db: ERROR connecting to "' + config.name + '": ', err);
-        }
-    });
+    if (typeof db.connection === 'undefined') {
+        db.connection = mysql.createConnection(config);
+        //db.connection.query('use ' + config.database);
+        
+        db.connection.connect(function (err) {
+            if (!err) {
+                console.log('db: connected to "' + config.database + '"');
+            } else {
+                console.log('db: ERROR connecting to "' + config.database + '": ', err);
+            }
+        });
+    }
 };
 
 db.handleDisconnect = function (connection) {
@@ -37,7 +37,8 @@ db.handleDisconnect = function (connection) {
         }
         
         if (err.code !== 'PROTOCOL_CONNECTION_LOST') {
-            throw err;
+            console.log(err);
+            //throw err;
         }
         
         console.log('db: Re-connecting lost connection: ' + err.stack);

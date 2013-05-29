@@ -22,21 +22,16 @@ logger.init = function (client) {
                 console.log(err);
             } else {
                 //console.log(result);
-                console.log(info);
+                //console.log(info);
             }
         });
     });
 };
 
 logger.log = function (info, callback) {
-    var query  = ' INSERT INTO logs SET ?, ts = NOW()';
-        query += ' ON DUPLICATE KEY';
-        query += ' UPDATE ts = NOW(),';
-        query += ' channel = ' + db.escape(info.channel) + ',';
-        query += ' message = ' + db.escape(info.message) + ',';
-        query += ' host    = ' + db.escape(info.host);
+    var query = ' INSERT INTO logs SET ?, ts = NOW()';
     
-    db.qry(query, function (err, result) {
+    db.connection.query(query, info, function (err, result) {
         callback(result, err);
     });
 };
@@ -50,10 +45,8 @@ logger.getLastMessage = function (nick, callback) {
         q   += ' ORDER BY ts DESC';
         q   += ' LIMIT 1';
     
-    db.qry(q, [nick], function (err, rows, fields) {
-        var result = rows.length === 1 ? rows[0] : rows;
-        
-        callback(result, err);
+    db.connection.query(q, [nick], function (err, rows, fields) {
+        callback(rows[0], err);
     });
 };
 
