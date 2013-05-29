@@ -36,6 +36,27 @@ logger.log = function (info, callback) {
     });
 };
 
+logger.getRandomQuote = function (nick, callback) {
+    var cols = ['message'];
+    var q    = ' SELECT ';
+        q   += cols.join(',');
+        q   += ' FROM logs';
+        q   += ' WHERE 1=1';
+        q   += ' AND nick = ?';
+        q   += ' ORDER BY RAND()';
+        q   += ' LIMIT 1';
+    
+    var parsedQry = db.connection.query(q, [nick], function (err, rows, fields) {
+        if (err) {
+            console.log('logger error: ' + err);
+        } else {
+            callback(rows[0], err);
+        }
+    });
+    
+    //console.log(parsedQry.sql);
+};
+
 logger.searchByMessage = function (nick, searchQuery, callback) {
     var cols = ['nick', 'host', 'message', 'ts', 'channel'];
     var q    = ' SELECT ';
