@@ -36,6 +36,28 @@ logger.log = function (info, callback) {
     });
 };
 
+logger.searchByMessage = function (nick, searchQuery, callback) {
+    var cols = ['nick', 'host', 'message', 'ts', 'channel'];
+    var q    = ' SELECT ';
+        q   += cols.join(',');
+        q   += ' FROM logs';
+        q   += ' WHERE 1=1';
+        q   += ' AND nick <> ' + db.connection.escape(nick);
+        q   += ' AND message LIKE ?';
+        q   += ' ORDER BY ts DESC';
+        q   += ' LIMIT 1';
+    
+    var parsedQry = db.connection.query(q, ['%' + searchQuery + '%'], function (err, rows, fields) {
+        if (err) {
+            console.log('logger error: ' + err);
+        } else {
+            callback(rows[0], err);
+        }
+    });
+    
+    //console.log(parsedQry.sql);
+};
+
 logger.getLastMessage = function (nick, callback) {
     var cols = ['nick', 'host', 'message', 'ts', 'channel'];
     var q    = ' SELECT ';
