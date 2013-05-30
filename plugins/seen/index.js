@@ -10,6 +10,7 @@
 var moment = require('moment');
 var parser = require('../../lib/messageParser');
 var logger = require('../../plugins/logger');
+var ignore = require('../../plugins/ignore');
 var seen   = {};
 
 seen.init = function (client) {

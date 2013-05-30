@@ -9,6 +9,7 @@
 var moment = require('moment');
 var logger = require('../../plugins/logger');
 var parser = require('../../lib/messageParser');
+var ignore  = require('../../plugins/ignore/');
 var quote  = {};
 
 quote.init = function (client) {

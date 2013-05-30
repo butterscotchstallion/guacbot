@@ -8,25 +8,25 @@
  */
 "use strict";
 
+var db         = require('../../plugins/db/');
 var moment     = require('moment');
 var parser     = require('../../lib/messageParser');
 var timeParser = require('../../lib/timeUnitParser');
 var ignore     = require('../ignore/');
-var reminder   = {
-    reminders: []
-};
+var reminder   = {};
 
 reminder.init = function (client) {
-    // Check reminders every second
+    var thirtySecondsInMS = 30000;
+    
     setInterval(function () {
         reminder.processPendingReminders(client);
-    }, 1000);
+    }, thirtySecondsInMS);
     
-    client.addListener('message#', function (nick, channel, text, message) {
+    client.addListener('message#', function (nick, channel, text, msgInfo) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         
         if (isAddressingBot) {
-            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
+            ignore.isIgnored(msgInfo.user + '@' + msgInfo.host, function (ignored) {
                 if (!ignored) {
                     var words           = parser.splitMessageIntoWords(text);
                     var command         = words[1];
@@ -35,20 +35,24 @@ reminder.init = function (client) {
                     
                     if (command === 'remind') {
                         if (message.length > 1) {
-                            var d         = timeParser.parseDuration(duration);
-                            var remindAt  = moment().add(d.unit, d.length);
-                            var formatted = remindAt.format('h:m:sA M-D-YYYY');
+                            var d           = timeParser.parseDuration(duration);
+                            var remindAt    = moment().add(d.unit, d.length);
+                            var fmtRemindAt = remindAt.format('YYYY-MM-DD HH:mm:ss');
+                            var formatted   = remindAt.format('h:m:sA M-D-YYYY');
                             
                             if (d.length > 0 && d.unit) {
-                                client.say(channel, 'reminding you at \u0002' + formatted);
+                                client.say(channel, 'reminding you around \u0002' + formatted);
                                 
                                 reminder.add({
-                                    'nick'     : nick,
-                                    'channel'  : channel,
-                                    'createdAt': moment(),
-                                    'message'  : message,
-                                    'duration' : duration,
-                                    'remindAt' : remindAt
+                                    'nick'      : nick,
+                                    'channel'   : channel,
+                                    'message'   : message,
+                                    'host'      : msgInfo.user + '@' + msgInfo.host,
+                                    'remind_at' : fmtRemindAt
+                                }, function (result, err) {
+                                    if (err) {
+                                        console.log(err);
+                                    }
                                 });
                                 
                             } else {
@@ -65,6 +69,31 @@ reminder.init = function (client) {
     });
 };
 
+reminder.getPendingReminders = function (callback) {
+    var cols = ['id', 'nick', 'host', 'message', 'remind_at AS remindAt', 'channel'];
+    var q    = ' SELECT ' + cols.join(',');
+        q   += ' FROM reminders';
+        q   += ' WHERE 1=1';
+        q   += ' AND remind_at <= NOW()';
+        q   += ' ORDER BY remind_at DESC';
+        q   += ' LIMIT 5';
+    
+    var qry = db.connection.query(q, function (err, rows, fields) {
+        callback(rows, err);
+    });
+    
+    //console.log(qry.sql);
+};
+
+reminder.removeMany = function (arrayOfReminderIDs, callback) {
+    var query  = ' DELETE FROM reminders';
+        query += ' WHERE id IN (' + arrayOfReminderIDs.join(',') + ')';
+    
+    db.connection.query(query, arrayOfReminderIDs, function (err, result) {
+        callback(result, err);
+    });
+};
+
 /**
  * Iterate all reminders and check if the current message is from
  * someone who added a reminder, and the creation time + duration is
@@ -72,29 +101,33 @@ reminder.init = function (client) {
  *
  */
 reminder.processPendingReminders = function (client) {    
-    var rmdrs        = reminder.reminders;
-    var rlen         = rmdrs.length;
-    var now          = moment();
-    var duration     = {};    
-    var msg          = '';
-    var reminderTime;
-    
-    for (var j = 0; j < rlen; j++) {
-        if (rmdrs[j]) {
-            duration     = timeParser.parseDuration(rmdrs[j].duration);
-            reminderTime = rmdrs[j].remindAt;
-            
-            if (reminderTime.isBefore(now)) {
-                console.log('reminder created at ' + rmdrs[j].createdAt._d + ' expired!!!');
-                
-                msg  = rmdrs[j].nick + ': ' + rmdrs[j].message;
-                
-                client.say(rmdrs[j].channel, msg);
-                
-                delete rmdrs[j];
-            }
+    reminder.getPendingReminders(function (rmdrs, err) {
+        if (err) {
+            console.log(err);
         }
-    }
+        
+        var rlen = rmdrs.length;
+        var msg  = '';
+        var ids  = [];
+        
+        for (var j = 0; j < rlen; j++) {
+            msg  = rmdrs[j].nick + ': *REMINDER* ' + rmdrs[j].message;
+            
+            client.say(rmdrs[j].channel, msg);
+            
+            ids.push(rmdrs[j].id);
+        }
+        
+        if (ids.length > 0) {
+            reminder.removeMany(ids, function (err, result) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log('reminder: removed ' + ids.length + ' reminders');
+                }
+            });
+        }
+    });
 };
 
 /**
@@ -106,8 +139,14 @@ reminder.processPendingReminders = function (client) {
  * };
  *
  */
-reminder.add = function (rmdr) {
-    reminder.reminders.push(rmdr);
+reminder.add = function (rmdr, callback) {
+    var query = " INSERT INTO reminders SET ?, created_at = NOW()";
+    
+    var qry = db.connection.query(query, rmdr, function (err, result) {
+        callback(result, err);
+    });
+    
+    //console.log(qry.sql);
 };
 
 module.exports = reminder;

@@ -6,6 +6,7 @@
 
 var arbiter = {};
 var parser  = require('../../lib/messageParser');
+var ignore  = require('../../plugins/ignore/');
 
 arbiter.init = function (client) {
     client.addListener('message#', function (nick, channel, text, message) {
