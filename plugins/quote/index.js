@@ -23,11 +23,13 @@ quote.init = function (client) {
                 var targetNick = words[2] && words[2].length > 0 ? words[2].trim() : nick;
                 
                 logger.getRandomQuote(targetNick, function (result, err) {
-                    if (result) {
+                    if (!err && result) {
                         var msg  = '<' + targetNick + '> ';
                             msg += result.message;
                         
                         client.say(channel, msg);
+                    } else {
+                        client.say(channel, 'no quotes found');
                     }
                 });
             }

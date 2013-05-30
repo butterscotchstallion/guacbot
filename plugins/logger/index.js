@@ -63,12 +63,13 @@ logger.searchByMessage = function (nick, searchQuery, callback) {
         q   += cols.join(',');
         q   += ' FROM logs';
         q   += ' WHERE 1=1';
-        q   += ' AND nick <> ' + db.connection.escape(nick);
+        q   += ' AND nick <> ?';
         q   += ' AND message LIKE ?';
         q   += ' ORDER BY ts DESC';
         q   += ' LIMIT 1';
     
-    var parsedQry = db.connection.query(q, ['%' + searchQuery + '%'], function (err, rows, fields) {
+    var params    = [nick, '%' + searchQuery + '%'];
+    var parsedQry = db.connection.query(q, params, function (err, rows, fields) {
         if (err) {
             console.log('logger error: ' + err);
         } else {
