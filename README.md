@@ -15,3 +15,9 @@ Features/Plugins
 * Arbiter        - Let an irc bot make decisions for you
 * Invite         - Join channels automatically when invited
 * Ignore         - Ignore users by hostmask 
+* Note           - Leave someone a note
+* Logger         - Logs channel messages
+* Seen           - Find out when someone last said something
+* Quote          - Random quotes from the logs
+* Shortener      - Shortens URLs posted in the channel using goo.gl
+* Repost         - Searches logs for the last mention of URLs
