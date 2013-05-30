@@ -21,8 +21,8 @@ repost.init = function (client) {
             // but also ignore the person saying it
             if (rpst && rpst.nick !== nick) {
                 var postDate = moment(rpst.ts).fromNow();
-                var msg      = 'posted by ' + rpst.nick + ' ' + postDate;
-                    msg     += ' - "' + rpst.message + '"';
+                var msg      = 'Thanks for posting this again (' + rpst.nick + ' ' + postDate;
+                    msg     += ') - "' + rpst.message + '"';
                 
                 client.say(channel, msg);
             }
