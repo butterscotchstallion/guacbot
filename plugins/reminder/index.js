@@ -25,38 +25,42 @@ reminder.init = function (client) {
     client.addListener('message#', function (nick, channel, text, message) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         
-        if (isAddressingBot && !ignore.isIgnored(message.user + '@' + message.host)) {
-            var words           = parser.splitMessageIntoWords(text);
-            var command         = words[1];
-            var duration        = words[2] ? words[2] : '1m';
-            var message         = words.slice(3).join(' ');
-            
-            if (command === 'remind') {
-                if (message.length > 1) {
-                    var d         = timeParser.parseDuration(duration);
-                    var remindAt  = moment().add(d.unit, d.length);
-                    var formatted = remindAt.format('h:m:sA M-D-YYYY');
+        if (isAddressingBot) {
+            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
+                if (!ignored) {
+                    var words           = parser.splitMessageIntoWords(text);
+                    var command         = words[1];
+                    var duration        = words[2] ? words[2] : '1m';
+                    var message         = words.slice(3).join(' ');
                     
-                    if (d.length > 0 && d.unit) {
-                        client.say(channel, 'reminding you at \u0002' + formatted);
-                        
-                        reminder.add({
-                            'nick'     : nick,
-                            'channel'  : channel,
-                            'createdAt': moment(),
-                            'message'  : message,
-                            'duration' : duration,
-                            'remindAt' : remindAt
-                        });
-                        
-                    } else {
-                        client.say(channel, 'does not compute');
+                    if (command === 'remind') {
+                        if (message.length > 1) {
+                            var d         = timeParser.parseDuration(duration);
+                            var remindAt  = moment().add(d.unit, d.length);
+                            var formatted = remindAt.format('h:m:sA M-D-YYYY');
+                            
+                            if (d.length > 0 && d.unit) {
+                                client.say(channel, 'reminding you at \u0002' + formatted);
+                                
+                                reminder.add({
+                                    'nick'     : nick,
+                                    'channel'  : channel,
+                                    'createdAt': moment(),
+                                    'message'  : message,
+                                    'duration' : duration,
+                                    'remindAt' : remindAt
+                                });
+                                
+                            } else {
+                                client.say(channel, 'does not compute');
+                            }
+                            
+                        } else {
+                            client.say(channel, 'that reminder sux');
+                        }
                     }
-                    
-                } else {
-                    client.say(channel, 'that reminder sux');
                 }
-            }
+            });
         }
     });
 };

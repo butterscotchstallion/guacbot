@@ -8,13 +8,9 @@
  */
 "use strict";
 
-var minimatch = require('minimatch');
 var parser    = require('../../lib/messageParser');
-var ig        = {
-    ignored: [
-    
-    ]
-};
+var db        = require('../../plugins/db');
+var ig        = {};
 
 ig.init = function (client) {
     client.addListener('message#', function (nick, channel, text, message) {
@@ -27,19 +23,19 @@ ig.init = function (client) {
             
             if (nick && (command === 'ignore' || command === 'unignore')) {
                 client.whois(nick, function (data) {
-                    var hostmask = typeof(data.host) !== 'undefined' ? '*@' + data.host : false;
+                    var hostmask = typeof(data.host) !== 'undefined' ? data.user + '@' + data.host : false;
                     
                     if (hostmask) {
                         if (command === 'ignore') {
-                            ig.add(hostmask);
-                            
-                            client.say(channel, 'k');
+                            ig.add(hostmask, function () {                            
+                                client.say(channel, 'k');
+                            });
                         }
                         
                         if (command === 'unignore') {
-                            ig.remove(hostmask);
-                            
-                            client.say(channel, 'k');
+                            ig.remove(hostmask, function () {                            
+                                client.say(channel, 'k');
+                            });
                         }
                         
                     } else {
@@ -51,35 +47,40 @@ ig.init = function (client) {
     });
 };
 
-ig.remove = function (hostmask) {
-    var iglen   = ig.ignored.length;
+ig.remove = function (hostmask, callback) {
+    var q  = ' DELETE FROM ignored';
+        q += ' WHERE host = ?';
     
-    for (var j = 0; j < iglen; j++) {
-        if (minimatch(hostmask, ig.ignored[j])) {
-            delete ig.ignored[j];
+    db.connection.query(q, [hostmask], function (err, result) {
+        callback(result, err);
+    });
+};
+
+ig.add = function (hostmask, callback) {
+    var q  = ' INSERT INTO ignored (host, ts)';
+        q += ' VALUES (?, NOW())';
+        q += ' ON DUPLICATE KEY UPDATE';
+        q += ' ts = NOW()';
+    
+    db.connection.query(q, [hostmask], function (err, result) {
+        callback(result, err);
+    });
+};
+
+ig.isIgnored = function (hostmask, callback) {
+    var q  = ' SELECT COUNT(*) AS ignored';
+        q += ' FROM ignored';
+        q += ' WHERE host = ?';
+    
+    db.connection.query(q, [hostmask], function (err, rows, fields) {
+        if (err) {
+            console.log(err);
         }
-    }
-};
-
-ig.add = function (hostmask) {
-    if (!ig.isIgnored(hostmask)) { 
-        ig.ignored.push(hostmask);
-    }
-};
-
-ig.isIgnored = function (hostmask) {
-    var iglen   = ig.ignored.length;
-    var ignored = false;
-    
-    for (var j = 0; j < iglen; j++) {
-        if (ig.ignored[j] && minimatch(hostmask, ig.ignored[j])) {            
-            ignored = true;
-            
-            break;            
-        } 
-    }
-    
-    return ignored;
+        
+        if (rows && typeof callback === 'function' ) {
+            callback(!!rows[0].ignored, err);
+        }
+    });
 };
 
 module.exports = ig;

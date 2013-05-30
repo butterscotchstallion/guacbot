@@ -15,23 +15,25 @@ info.init  = function (client) {
         var words           = parser.splitMessageIntoWords(text);
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         var command         = words[1];
-        var isUptimeCommand = words[1] === 'uptime';
-        var isNotIgnored    = !ignore.isIgnored(message.user + '@' + message.host);
         
-        if (isAddressingBot && isNotIgnored) {
-            switch (command) {
-                case 'uptime': 
-                    info.getUptime(client.connectTime, function (uptime) {
-                        client.say(channel, uptime);
-                    });
-                break;
-                
-                case 'plugins': 
-                    info.getLoadedPlugins(function (plugins) {
-                        client.say(channel, 'Loaded plugins (' + plugins.length + '): ');
-                    });
-                break;
-            }
+        if (isAddressingBot) {
+            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
+                if (!ignored) {
+                    switch (command) {
+                        case 'uptime': 
+                            info.getUptime(client.connectTime, function (uptime) {
+                                client.say(channel, uptime);
+                            });
+                        break;
+                        
+                        case 'plugins': 
+                            info.getLoadedPlugins(function (plugins) {
+                                client.say(channel, 'Loaded plugins (' + plugins.length + '): ');
+                            });
+                        break;
+                    }
+                }
+            });
         }
     });
 };

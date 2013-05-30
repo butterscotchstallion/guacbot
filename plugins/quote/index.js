@@ -16,23 +16,27 @@ quote.init = function (client) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         
         if (isAddressingBot) {
-            var words    = parser.splitMessageIntoWords(text);
-            var command  = words[1];
-            
-            if (command === 'quote') {
-                var targetNick = words[2] && words[2].length > 0 ? words[2].trim() : nick;
-                
-                logger.getRandomQuote(targetNick, function (result, err) {
-                    if (!err && result) {
-                        var msg  = '<' + targetNick + '> ';
-                            msg += result.message;
+            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
+                if (!ignored) {
+                    var words    = parser.splitMessageIntoWords(text);
+                    var command  = words[1];
+                    
+                    if (command === 'quote') {
+                        var targetNick = words[2] && words[2].length > 0 ? words[2].trim() : nick;
                         
-                        client.say(channel, msg);
-                    } else {
-                        client.say(channel, 'no quotes found');
+                        logger.getRandomQuote(targetNick, function (result, err) {
+                            if (!err && result) {
+                                var msg  = '<' + targetNick + '> ';
+                                    msg += result.message;
+                                
+                                client.say(channel, msg);
+                            } else {
+                                client.say(channel, 'no quotes found');
+                            }
+                        });
                     }
-                });
-            }
+                }
+            });
         }
     });
 };

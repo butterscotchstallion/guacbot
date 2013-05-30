@@ -19,36 +19,40 @@ note.init = function (client) {
     client.addListener('message#', function (nick, channel, text, message) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         
-        if (isAddressingBot && !ignore.isIgnored(message.user + '@' + message.host)) {
-            var words     = parser.splitMessageIntoWords(text);
-            var command   = words[1];
-            var recipient = words[2];
-            var nMessage  = words.slice(3).join(' ');
-            
-            if (command === 'note') {
-                if (recipient && nMessage) {                    
-                    if (recipient !== nick) {
-                        notePendingDelivery = {
-                            nick: recipient,
-                            channel: channel,
-                            timestamp: moment(),
-                            message: nMessage,
-                            from: nick
-                        };
-                        
-                        client.send('NAMES', channel);
-                        
-                    } else {
-                        var msg  = "can't send a note to yourself ";
-                            msg += irc.colors.wrap('magenta', 'friend');
-                        
-                        client.say(channel, msg);
-                    }
+        if (isAddressingBot) {
+            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
+                if (!ignored) {
+                    var words     = parser.splitMessageIntoWords(text);
+                    var command   = words[1];
+                    var recipient = words[2];
+                    var nMessage  = words.slice(3).join(' ');
                     
-                } else {
-                    client.say(channel, 'does not compute');
+                    if (command === 'note') {
+                        if (recipient && nMessage) {                    
+                            if (recipient !== nick) {
+                                notePendingDelivery = {
+                                    nick: recipient,
+                                    channel: channel,
+                                    timestamp: moment(),
+                                    message: nMessage,
+                                    from: nick
+                                };
+                                
+                                client.send('NAMES', channel);
+                                
+                            } else {
+                                var msg  = "can't send a note to yourself ";
+                                    msg += irc.colors.wrap('magenta', 'friend');
+                                
+                                client.say(channel, msg);
+                            }
+                            
+                        } else {
+                            client.say(channel, 'does not compute');
+                        }
+                    }
                 }
-            }
+            });
         }
         
         var newNote = note.get(nick, channel);

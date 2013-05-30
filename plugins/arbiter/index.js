@@ -12,19 +12,23 @@ arbiter.init = function (client) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         
         if (isAddressingBot) {
-            var words      = parser.splitMessageIntoWords(text);
-            var choiceTxt  = words.slice(1).join(' ');
-            var isDecision = arbiter.isDecision(text);
-            
-            if (isDecision) {
-                var output = arbiter.decide(choiceTxt);
-                
-                if (output) {
-                    client.say(channel, output);
-                } else {
-                    client.say(channel, 'idk lol');
+            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
+                if (!ignored) {
+                    var words      = parser.splitMessageIntoWords(text);
+                    var choiceTxt  = words.slice(1).join(' ');
+                    var isDecision = arbiter.isDecision(text);
+                    
+                    if (isDecision) {
+                        var output = arbiter.decide(choiceTxt);
+                        
+                        if (output) {
+                            client.say(channel, output);
+                        } else {
+                            client.say(channel, 'idk lol');
+                        }
+                    }
                 }
-            }
+            });
         }
     });
 };

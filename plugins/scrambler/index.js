@@ -27,7 +27,7 @@ sc.init = function (client) {
 sc.getHint = function (word, counter) {
     var firstLetter = word.substring(0, 1);
     
-    return;
+    
 };
 
 sc.descramble = function (word) {

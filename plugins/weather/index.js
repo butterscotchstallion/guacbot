@@ -12,25 +12,29 @@ weatherPlugin.init = function (client) {
     client.addListener('message#', function (nick, to, text, message) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         
-        if (isAddressingBot && !ignore.isIgnored(message.user + '@' + message.host)) {
-            var words = parser.splitMessageIntoWords(text);
-            
-            if (words[1] === 'weather') {
-                console.log('retrieving weather for ' + nick);
-                
-                var query = words.slice(2, words.length).join(' ');
-                
-                if (query) {
-                    weatherPlugin.query({
-                        apiKey: client.config.plugins.weather.apiKey,
-                        query: query,
-                        callback: function (data) {
-                            client.say(to, data);
-                        },
-                        debug: false
-                    });
+        if (isAddressingBot) {
+            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
+                if (!ignored) {
+                    var words = parser.splitMessageIntoWords(text);
+                    
+                    if (words[1] === 'weather') {
+                        console.log('retrieving weather for ' + nick);
+                        
+                        var query = words.slice(2, words.length).join(' ');
+                        
+                        if (query) {
+                            weatherPlugin.query({
+                                apiKey: client.config.plugins.weather.apiKey,
+                                query: query,
+                                callback: function (data) {
+                                    client.say(to, data);
+                                },
+                                debug: false
+                            });
+                        }
+                    }
                 }
-            }            
+            });
         }
     });
 };
