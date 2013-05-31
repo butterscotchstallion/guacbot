@@ -60,9 +60,14 @@ repost.isRepost = function (nick, input, callback) {
 };
 
 repost.getFirstURLInString = function (input) {
-    var urls = input.match(/\b(http|https)?(:\/\/)?(\S*)\.(\w{2,4})\b/ig);
+    var pattern = new RegExp(
+        "(^|[ \t\r\n])((ftp|http|https|gopher|mailto|news|nntp|telnet|wais|file|prospero|aim|webcal):(([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2}){2,}(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?([A-Za-z0-9$_+!*();/?:~-]))"
+        ,"g"
+    );
     
-    return urls ? urls[0] : false;
+    var urls = input.match(pattern);
+    
+    return urls ? urls[0].trim() : false;
 };
 
 module.exports = repost;
