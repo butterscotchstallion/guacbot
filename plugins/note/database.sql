@@ -1,0 +1,11 @@
+CREATE TABLE `notes` (
+  `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+  `origin_nick` VARCHAR(45) NOT NULL,
+  `dest_nick` VARCHAR(45) NOT NULL,
+  `created_at` DATETIME NOT NULL,
+  `message` VARCHAR(255) NOT NULL,
+  `channel` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`id`)
+)
+ENGINE = InnoDB
+CHARACTER SET utf8 COLLATE utf8_general_ci;

@@ -4,18 +4,15 @@
  */
 "use strict";
 
+var db       = require('../../plugins/db/');
 var moment   = require('moment');
 var parser   = require('../../lib/messageParser');
 var ignore   = require('../ignore/');
 var irc      = require('irc');
 
-var note     = {
-    notes: []
-};
+var note     = {};
 
 note.init = function (client) {
-    var notePendingDelivery;
-    
     client.addListener('message#', function (nick, channel, text, message) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         
@@ -30,15 +27,18 @@ note.init = function (client) {
                     if (command === 'note') {
                         if (recipient && nMessage) {                    
                             if (recipient !== nick) {
-                                notePendingDelivery = {
-                                    nick: recipient,
+                                note.add({
+                                    dest_nick: recipient,
                                     channel: channel,
-                                    timestamp: moment(),
                                     message: nMessage,
-                                    from: nick
-                                };
-                                
-                                client.send('NAMES', channel);
+                                    origin_nick: nick
+                                }, function (result, err) {
+                                    if (err) {
+                                        console.log(err);
+                                    }
+                                    
+                                    client.say(channel, 'k');
+                                });
                                 
                             } else {
                                 var msg  = "can't send a note to yourself ";
@@ -55,87 +55,104 @@ note.init = function (client) {
             });
         }
         
-        var newNote = note.get(nick, channel);
-        
-        if (newNote) {
-            var timeAgo = newNote.timestamp.fromNow();
-            var msg     = nick + ': ' + newNote.message;
-                msg    += ' (from ' + newNote.from + ' ' + timeAgo + ')';
-            
-            client.say(channel, msg);
-        }
-    });
-    
-    client.addListener('names', function (channel, nicks) {
-        if (notePendingDelivery) {            
-            if (notePendingDelivery.channel === channel) {
-                var actualNicks = Object.keys(nicks);
-                var userPresent = actualNicks.indexOf(notePendingDelivery.nick) > -1;
+        note.get(nick, channel, function (newNote) {
+            if (newNote) {
+                var timeAgo = moment(newNote.createdAt).fromNow();
+                var msg     = nick + ': ' + newNote.message;
+                    msg    += ' (from ' + newNote.originNick + ' ' + timeAgo + ')';
                 
-                if (userPresent) {
-                    note.add(notePendingDelivery,
-                    function () {
-                        client.say(channel, 'k');
-                    },
-                    function () {
-                        client.say(channel, 'too many notes!!');
-                    });
-                } else {
-                    client.say(channel, 'idk who that is');
-                }
-            }  
+                client.say(channel, msg);
+            }
+        });
+    });
+};
+
+note.removeByNickAndChannel = function (nick, channel, callback) {
+    var q      = ' DELETE FROM notes';
+        q     += ' WHERE 1=1';
+        q     += ' AND origin_nick = ?';
+        q     += ' AND channel     = ?';
+    var params = [nick, channel];
+    
+    db.connection.query(q, params, function (err, result) {
+        callback(result, err);
+    });
+};
+
+note.removeByID = function (id, callback) {
+    var q      = ' DELETE FROM notes';
+        q     += ' WHERE 1=1';
+        q     += ' AND id = ?';
+    
+    var params = [id];
+    
+    db.connection.query(q, params, function (err, result) {
+        if (err) {
+            console.log(err);
+        }
+        
+        console.log(id);
+        
+        if (typeof callback === 'function') {
+            callback(result, err);
         }
     });
 };
 
-note.removeByNickAndChannel = function (nick, channel) {
-    var nlen  = note.notes.length;
-    var notes = [];
+note.get = function (nick, channel, callback) {
+    var cols   = ['id',
+                  'origin_nick AS originNick', 
+                  'dest_nick   AS destNick', 
+                  'channel', 
+                  'message', 
+                  'created_at AS createdAt'];
+                  
+    var params = [nick, channel];
+    var q      = ' SELECT ' + cols.join(',');
+        q     += ' FROM notes';
+        q     += ' WHERE dest_nick = ?';
+        q     += ' AND channel     = ?';
+        q     += ' ORDER BY created_at DESC';
+        q     += ' LIMIT 1';
     
-    for (var j = 0; j < nlen; j++) {
-        if (note.notes[j].nick !== nick && note.notes[j].channel !== channel) {
-            notes.push(note.notes[j]);
+    db.connection.query(q, params, function (err, rows, fields) {
+        if (err) {
+            console.log('note error in get: ' + err);
+        } else {
+            if (rows) {
+                callback(rows[0], err);
+                
+                // after note is successfully retrieved, remove it
+                note.removeByID(rows[0].id);
+            }
         }
-    }
-    
-    note.notes = notes;
+    });
 };
 
-note.get = function (nick, channel) {
-    var newNote = note.hasNotes(nick, channel);
+note.add = function (n, callback) {
+    var q = 'INSERT INTO notes SET ?, created_at = NOW()';
     
-    if (newNote) {
-        note.removeByNickAndChannel(nick, channel);
-    }
-    
-    return newNote;
-};
-
-note.add = function (n, successCallback, errBack) {
-    if (!note.hasNotes(n.nick, n.channel)) {
-        note.notes.push(n);
-        
-        if (successCallback) {
-            successCallback();
-        }
-        
-    } else {
-        if (errBack) {
-            errBack();
-        }
-    }
+    db.connection.query(q, n, function (err, result) {
+        callback(result, err);
+    });
 };
 
 note.hasNotes = function (nick, channel) {
-    var nlen = note.notes.length;
+    var q  = ' SELECT COUNT(*) as noteCount';
+        q += ' FROM notes';
+        q += ' WHERE 1=1';
+        q += ' AND nick    = ?';
+        q += ' AND channel = ?';
     
-    for (var j = 0; j < nlen; j++) {
-        if (note.notes[j].nick === nick && note.notes[j].channel === channel) {
-            return note.notes[j];
+    var params = [nick, channel];
+    
+    db.connection.query(q, params, function (err, rows, fields) {
+        if (err) {
+            console.log('notes error in hasNotes: ' + err);
+        } else {
+            callback(rows[0], err);
         }
-    }
-    
-    return false;
+    });
 };
 
 module.exports = note;
