@@ -24,8 +24,13 @@ quote.init = function (client) {
                     
                     if (command === 'quote') {
                         var targetNick = words[2] && words[2].length > 0 ? words[2].trim() : nick;
+                        var searchQry  = false;
                         
-                        logger.getRandomQuote(targetNick, function (result, err) {
+                        if (words.length >= 3) {
+                            searchQry = words.slice(3).join(' ');
+                        } 
+                        
+                        quote.getRandomQuote(targetNick, searchQry, function (result, err) {
                             if (!err && result) {
                                 var msg  = '<' + targetNick + '> ';
                                     msg += result.message;
@@ -34,11 +39,17 @@ quote.init = function (client) {
                             } else {
                                 client.say(channel, 'no quotes found');
                             }
-                        });
+                        });                        
                     }
                 }
             });
         }
+    });
+};
+
+quote.getRandomQuote = function (targetNick, searchQry, callback) {
+    logger.getRandomQuote(targetNick, searchQry, function (result, err) {
+        callback(result, err);
     });
 };
 

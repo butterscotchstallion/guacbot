@@ -36,17 +36,26 @@ logger.log = function (info, callback) {
     });
 };
 
-logger.getRandomQuote = function (nick, callback) {
-    var cols = ['message'];
+logger.getRandomQuote = function (nick, searchQuery, callback) {
+    var cols      = ['message'];
+    var searchQry = searchQuery ? searchQuery.trim() : '';
+    var searchCls = searchQry ? ' AND message LIKE ?' : '';
+    var params    = [nick];
+    
+    if (searchCls) {
+        params.push('%' + searchQry + '%');
+    }
+    
     var q    = ' SELECT ';
         q   += cols.join(',');
         q   += ' FROM logs';
         q   += ' WHERE 1=1';
         q   += ' AND nick = ?';
+        q   += searchCls;
         q   += ' ORDER BY RAND()';
         q   += ' LIMIT 1';
     
-    var parsedQry = db.connection.query(q, [nick], function (err, rows, fields) {
+    var parsedQry = db.connection.query(q, params, function (err, rows, fields) {
         if (err) {
             console.log('logger error: ' + err);
         } else {
@@ -54,7 +63,8 @@ logger.getRandomQuote = function (nick, callback) {
         }
     });
     
-    //console.log(parsedQry.sql);
+    console.log(params);
+    console.log(parsedQry.sql);
 };
 
 logger.searchByMessage = function (nick, searchQuery, callback) {
