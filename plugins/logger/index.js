@@ -38,8 +38,8 @@ logger.log = function (info, callback) {
 
 logger.getRandomQuote = function (nick, searchQuery, callback) {
     var cols      = ['message'];
-    var searchQry = searchQuery ? searchQuery.trim() : '';
-    var searchCls = searchQry ? ' AND message LIKE ?' : '';
+    var searchQry = searchQuery ? searchQuery.trim()  : '';
+    var searchCls = searchQry   ? ' AND message LIKE ?' : '';
     var params    = [nick];
     
     if (searchCls) {
@@ -63,8 +63,8 @@ logger.getRandomQuote = function (nick, searchQuery, callback) {
         }
     });
     
-    console.log(params);
-    console.log(parsedQry.sql);
+    //console.log(params);
+    //console.log(parsedQry.sql);
 };
 
 logger.searchByMessage = function (nick, searchQuery, callback) {
