@@ -77,6 +77,7 @@ logger.searchByMessage = function (nick, searchQuery, callback) {
         }
     });
     
+    //console.log(searchQuery);
     //console.log(parsedQry.sql);
 };
 
