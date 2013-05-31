@@ -91,8 +91,6 @@ note.removeByID = function (id, callback) {
             console.log(err);
         }
         
-        console.log(id);
-        
         if (typeof callback === 'function') {
             callback(result, err);
         }
@@ -119,7 +117,7 @@ note.get = function (nick, channel, callback) {
         if (err) {
             console.log('note error in get: ' + err);
         } else {
-            if (rows) {
+            if (rows.length > 0) {
                 callback(rows[0], err);
                 
                 // after note is successfully retrieved, remove it
