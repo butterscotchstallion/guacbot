@@ -15,22 +15,6 @@ cls.init = function (client) {
         cls.loaded = true;
     }
     
-    // User changes nick
-    client.addListener('nick', function (oldNick, newNick, channels, message) {
-        var clen = channels.length;
-        
-        for (var j = 0; j < clen; j++) {
-            cls.voiceUserIfNickIsUppercase(client, channels[j], newNick);
-        }
-    });
-    
-    // User joins channel
-    client.addListener('join', function (channel, nick, message) {
-        if (nick !== client.config.nick && cls.isSaturday()) {
-            cls.voiceUserIfNickIsUppercase(client, channel, nick);
-        }
-    });
-    
     // Each time there is a ping, check if it's saturday
     // and if so, change nick
     var oneMinuteInMS = 60000;
