@@ -8,6 +8,24 @@ var assert        = require("assert");
 var messageParser = require('../../lib/messageParser');
  
 describe('messageParser.isMessageAddressingBot', function () {
+    it('should be true when the nick is not capitalized', function () {
+        var expected = true;
+        var input    = 'n';
+        var nick     = 'n';
+        var actual   = messageParser.isMessageAddressingBot(input, nick);
+        
+        assert.equal(expected, actual);
+    });
+    
+    it('should be true when the nick is capitalized', function () {
+        var expected = true;
+        var input    = 'N';
+        var nick     = 'n';
+        var actual   = messageParser.isMessageAddressingBot(input, nick);
+        
+        assert.equal(expected, actual);
+    });
+    
     it('should not be true when first word contains nick but isnt nick', function () {
         var expected = false;
         var input    = 'sanitary napkin';
