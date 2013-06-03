@@ -70,7 +70,14 @@ titler.getPageHTML = function (url, callback) {
     if (!isIgnoredDomain) {
         //console.log('Retrieving page HTML for URL: ' + url);
         
-        request(url, function (error, response, body) {
+        var options = {
+            uri: url,
+            headers: {
+                'user-agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.94 Safari/537.36'
+            },
+        };
+        
+        request(options, function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 callback(body);
             } else {
