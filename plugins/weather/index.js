@@ -39,11 +39,11 @@ weatherPlugin.init = function (client) {
                                         console.log(err);
                                     }
                                 });
-                            }
-                            
+                            } 
+
                             // get location from db
                             weatherPlugin.getStoredLocation(nick, host, function (stored) {
-                                if (stored.location) {
+                                if (typeof stored !== 'undefined' && stored.location) {
                                     weatherPlugin.query({
                                         apiKey: client.config.plugins.weather.apiKey,
                                         query: stored.location,
