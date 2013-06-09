@@ -35,11 +35,14 @@ weatherPlugin.init = function (client) {
                                     host: host,
                                     location: query,
                                     callback: function (result, err) {
-                                        console.log(result);
-                                        console.log(err);
+                                        //console.log(result);
+                                        
+                                        if (err) {
+                                            console.log('weather store location err', err);
+                                        }
                                     }
                                 });
-                            } 
+                            }
 
                             // get location from db
                             weatherPlugin.getStoredLocation(nick, host, function (stored) {
@@ -92,7 +95,7 @@ weatherPlugin.getStoredLocation = function (nick, host, callback) {
 };
 
 weatherPlugin.storeLocation = function (info) {
-    var query  = ' INSERT INTO weather SET ?';
+    var query  = ' INSERT INTO weather SET ?, last_query = NOW()';
         query += ' ON DUPLICATE KEY UPDATE';
         query += ' location = ' + db.connection.escape(info.location) + ',';
         query += ' last_query = NOW(),';
