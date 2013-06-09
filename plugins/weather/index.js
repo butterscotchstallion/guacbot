@@ -5,37 +5,102 @@
 "use strict";
 
 var ignore        = require('../ignore/');
+var db            = require('../db/');
 var parser        = require('../../lib/messageParser');
 var weatherPlugin = { };
 
 weatherPlugin.init = function (client) {
+    weatherPlugin.weatherCfg = client.config.plugins.weather;
+    
     client.addListener('message#', function (nick, to, text, message) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
+        var host            = message.user + '@' + message.host;
         
         if (isAddressingBot) {
-            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
+            
+            ignore.isIgnored(host, function (ignored) {
                 if (!ignored) {
                     var words = parser.splitMessageIntoWords(text);
                     
                     if (words[1] === 'weather') {
                         console.log('retrieving weather for ' + nick);
                         
-                        var query = words.slice(2, words.length).join(' ');
+                        var query = words.slice(2, words.length).join(' ').trim();                        
+                        var storeLocationEnabled = weatherPlugin.weatherCfg.rememberLocation || false;
                         
-                        if (query) {
-                            weatherPlugin.query({
-                                apiKey: client.config.plugins.weather.apiKey,
-                                query: query,
-                                callback: function (data) {
-                                    client.say(to, data);
-                                },
-                                debug: false
+                        if (storeLocationEnabled) {
+                            if (query) {
+                                weatherPlugin.storeLocation({
+                                    nick: nick,
+                                    host: host,
+                                    location: query,
+                                    callback: function (result, err) {
+                                        console.log(result);
+                                        console.log(err);
+                                    }
+                                });
+                            }
+                            
+                            // get location from db
+                            weatherPlugin.getStoredLocation(nick, host, function (stored) {
+                                if (stored.location) {
+                                    weatherPlugin.query({
+                                        apiKey: client.config.plugins.weather.apiKey,
+                                        query: stored.location,
+                                        callback: function (data) {
+                                            client.say(to, data);
+                                        },
+                                        debug: false
+                                    });
+                                    
+                                } else {
+                                    client.say(to, 'No results for that query');
+                                }
                             });
+                            
+                        } else {
+                            if (query) {
+                                weatherPlugin.query({
+                                    apiKey: client.config.plugins.weather.apiKey,
+                                    query: query,
+                                    callback: function (data) {
+                                        client.say(to, data);
+                                    },
+                                    debug: false
+                                });
+                            } else {
+                                client.say(to, 'No results for that query');
+                            }
                         }
                     }
                 }
             });
         }
+    });
+};
+
+weatherPlugin.getStoredLocation = function (nick, host, callback) {
+    var query  = ' SELECT location';
+        query += ' FROM weather';
+        query += ' WHERE 1=1';
+        query += ' AND nick = ?';
+        query += ' AND host = ?';
+    
+    db.connection.query(query, [nick, host], function (err, rows, fields) {
+        callback(rows[0], err);
+    });
+};
+
+weatherPlugin.storeLocation = function (info) {
+    var query  = ' INSERT INTO weather SET ?';
+        query += ' ON DUPLICATE KEY UPDATE';
+        query += ' location = ' + db.connection.escape(info.location) + ',';
+        query += ' last_query = NOW(),';
+        query += ' nick = ' + db.connection.escape(info.nick) + ',';
+        query += ' host = ' + db.connection.escape(info.host);
+    
+    db.connection.query(query, info, function (err, result) {
+        info.callback(result, err);
     });
 };
 
