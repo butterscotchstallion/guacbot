@@ -41,9 +41,27 @@ describe('messageParser.isMessageAddressingBot', function () {
         assert.equal(expected, actual);
     });
     
-    it('should be true when first word is the nick with a single character after it', function () {
+    it('should be true when first word is the nick with a colon after it', function () {
         var expected = true;
         var input    = 'n:';
+        var nick     = 'n';
+        var actual   = messageParser.isMessageAddressingBot(input, nick);
+        
+        assert.equal(expected, actual);
+    });
+    
+    it('should be true when first word is the nick with a comma after it', function () {
+        var expected = true;
+        var input    = 'n,';
+        var nick     = 'n';
+        var actual   = messageParser.isMessageAddressingBot(input, nick);
+        
+        assert.equal(expected, actual);
+    });
+    
+    it('should be false when the first word contains nick but doesnt end in colon/comma', function () {
+        var expected = false;
+        var input    = 'np';
         var nick     = 'n';
         var actual   = messageParser.isMessageAddressingBot(input, nick);
         
