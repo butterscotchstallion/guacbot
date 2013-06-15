@@ -43,9 +43,9 @@ weatherPlugin.init = function (client) {
                                     }
                                 });
                             }
-
+                            
                             // get location from db
-                            weatherPlugin.getStoredLocation(nick, host, function (stored) {
+                            weatherPlugin.getStoredLocation(host, function (stored) {
                                 if (typeof stored !== 'undefined' && stored.location) {
                                     weatherPlugin.query({
                                         apiKey: client.config.plugins.weather.apiKey,
@@ -82,14 +82,13 @@ weatherPlugin.init = function (client) {
     });
 };
 
-weatherPlugin.getStoredLocation = function (nick, host, callback) {
+weatherPlugin.getStoredLocation = function (host, callback) {
     var query  = ' SELECT location';
         query += ' FROM weather';
         query += ' WHERE 1=1';
-        query += ' AND nick = ?';
         query += ' AND host = ?';
     
-    db.connection.query(query, [nick, host], function (err, rows, fields) {
+    db.connection.query(query, [host], function (err, rows, fields) {
         callback(rows[0], err);
     });
 };
