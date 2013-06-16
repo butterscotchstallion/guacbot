@@ -11,22 +11,38 @@ var parser     = require('../../lib/messageParser');
 var g          = require('goo.gl');
 var news       = {
     headlines: [],
-    feeds: [
-        // top headlines
-        'http://hosted2.ap.org/atom/APDEFAULT/3d281c11a96b4ad082fe88aa0db04305',
+    
+    feeds: {
+        ap: [
+            // top headlines
+            'http://hosted2.ap.org/atom/APDEFAULT/3d281c11a96b4ad082fe88aa0db04305',
+            
+            // strange
+            'http://hosted2.ap.org/atom/APDEFAULT/aa9398e6757a46fa93ed5dea7bd3729e'
+        ],
         
-        // offbeat
-        'http://hosted2.ap.org/atom/APDEFAULT/aa9398e6757a46fa93ed5dea7bd3729e'
-    ],
-    xml: [
-        
-    ]
+        hp: [
+            // latest news
+            'http://feeds.huffingtonpost.com/huffingtonpost/LatestNews',
+            
+            // full feed
+            'http://feeds.huffingtonpost.com/huffingtonpost/raw_feed',
+            
+            // weird
+            'http://www.huffingtonpost.com/feeds/verticals/weird-news/index.xml'
+        ]
+    },
+    
+    cache: {
+    
+    }
 };
 
 news.init = function (client) {
-    if (news.xml.length === 0) {
+    // Refresh feeds on load
+    //if (news.cache.length === 0) {
         news.refreshFeeds();
-    }
+    //}
     
     /** 
      * Refresh feeds every hour
@@ -83,17 +99,23 @@ news.init = function (client) {
 news.refreshFeeds = function () {
     var f, newFeeds = 0;
     
-    console.log('refreshing ' + news.feeds.length + ' feeds');
-    
-    for (var j = 0; j < news.feeds.length; j++) {
-        f = news.feeds[j];
-        
-        news.getFeed(f, function (xml) {
-            if (news.xml.indexOf(xml) === -1) {
-                news.xml.push(xml);
-                newFeeds++;
-            }
-        });
+    for (var site in news.feeds) {
+        for (var j = 0; j < news.feeds[site].length; j++) {
+            f = news.feeds[site][j];
+            
+            console.log('refreshing ' + site + ' feed');
+            
+            news.getFeed(f, function (xml) {
+                if (typeof news.cache[site] === 'undefined') {
+                    news.cache[site] = [];
+                }
+                
+                if (news.cache[site].indexOf(xml) === -1) {
+                    news.cache[site].push(xml);
+                    newFeeds++;
+                }
+            });
+        }
     }
     
     console.log('Found ' + newFeeds + ' new feed!');
@@ -119,12 +141,14 @@ news.getFeed = function (url, callback) {
 news.getHeadline = function (callback) {    
     var hl, allHeadlines = [];
     
-    for (var j = 0; j < news.xml.length; j++) {
-        news.getHeadlines(news.xml[j], function (headlines) {
-            for (var k = 0; k < headlines.length; k++) {
-                allHeadlines.push(headlines[k]);
-            }
-        });
+    for (var site in news.cache) {
+        for (var j = 0; j < news.cache[site].length; j++) {
+            news.getHeadlines(news.cache[site][j], site, function (headlines) {
+                for (var k = 0; k < headlines.length; k++) {
+                    allHeadlines.push(headlines[k]);
+                }
+            });
+        }
     }
     
     hl = news.getRandomHeadline(allHeadlines);
@@ -150,36 +174,42 @@ news.shortenLink = function (link, callback) {
     g.shorten(link, callback);
 };
 
-news.getHeadlines = function (xml, callback) {
+news.getHeadlines = function (xml, site, callback) {
     xml2js.parseString(xml, function (err, result) {
         if (err) {
             console.log(err);
         }
         
         var headlines = [];
-        var entries   = result.feed.entry;
-        var link, longLink;
         
-        for (var j = 0; j < entries.length; j++) {
-            longLink = entries[j].link[0]['$'].href;
-
-            headlines.push({
-                title: entries[j].summary[0]['_'],
-                link: longLink
-            });
+        console.log('parsing headlines for ' + site);
+        
+        switch (site) {
+            case 'hp':
+                var entries = result.feed.entry;
+                
+                for (var j = 0; j < entries.length; j++) {
+                    headlines.push({
+                        title: entries[j].title[0],
+                        link: entries[j].link[0]['$'].href
+                    });
+                }
+            break;
             
-            /*
-            news.shortenLink(longLink, function (s) {
-                link = s.id || longLink;
+            default:
+            case 'ap':
+                var entries   = result.feed.entry;
+                var link, longLink;
                 
-                console.log(link);
-                
-                headlines.push({
-                    title: entries[j].summary[0]['_'],
-                    link: link
-                });
-            });
-            */
+                for (var j = 0; j < entries.length; j++) {
+                    longLink = entries[j].link[0]['$'].href;
+
+                    headlines.push({
+                        title: entries[j].summary[0]['_'],
+                        link: longLink
+                    });
+                }
+            break;
         }
         
         callback(headlines);
