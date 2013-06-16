@@ -6,10 +6,9 @@
     "wundernode": "~0.3.0",
     "moment": "~2.0.0",
     "qs": "~0.5.6",
-    "cradle": "~0.6.5",
-    "feedparser": "~0.15.2",
     "minimatch": "~0.2.12",
     "goo.gl": "0.0.2",
-    "mysql": "~2.0.0-alpha8"
+    "mysql": "~2.0.0-alpha8",
+    "xml2js": "~0.2.8"
   }
 }
