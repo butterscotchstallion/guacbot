@@ -8,7 +8,7 @@ var fs         = require('fs');
 var xml2js     = require('xml2js');
 var request    = require('request');
 var parser     = require('../../lib/messageParser');
-var g          = require('goo.gl');
+//var g          = require('goo.gl');
 var news       = {
     headlines: [],
     
@@ -29,8 +29,22 @@ var news       = {
             'http://feeds.huffingtonpost.com/huffingtonpost/raw_feed',
             
             // weird
-            'http://www.huffingtonpost.com/feeds/verticals/weird-news/index.xml'
+            'http://www.huffingtonpost.com/feeds/verticals/weird-news/index.xml',
+            
+            // sports
+            'http://www.huffingtonpost.com/feeds/verticals/sports/index.xml',
+            
+            // most popular
+            'http://www.huffingtonpost.com/feeds/verticals/most_popular_entries/index.xml'
+        ],
+        
+        npr: ['http://www.npr.org/rss/rss.php?id=1001']
+        
+        /*
+        drudgereport: [
+            'http://feeds.feedburner.com/DrudgeReportFeed'
         ]
+        */
     },
     
     cache: {
@@ -103,7 +117,7 @@ news.refreshFeeds = function () {
         for (var j = 0; j < news.feeds[site].length; j++) {
             f = news.feeds[site][j];
             
-            console.log('refreshing ' + site + ' feed');
+            //console.log('refreshing ' + site + ' feed');
             
             news.getFeed(f, function (xml) {
                 if (typeof news.cache[site] === 'undefined') {
@@ -118,7 +132,7 @@ news.refreshFeeds = function () {
         }
     }
     
-    console.log('Found ' + newFeeds + ' new feed!');
+    //console.log('Found ' + newFeeds + ' new feed!');
 };
 
 news.getFeed = function (url, callback) {
@@ -128,6 +142,8 @@ news.getFeed = function (url, callback) {
             'user-agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.94 Safari/537.36'
         },
     };
+    
+    console.log('news fetching ' + url);
     
     request(options, function (error, response, body) {
         if (!error && response.statusCode == 200) {
@@ -182,33 +198,77 @@ news.getHeadlines = function (xml, site, callback) {
         
         var headlines = [];
         
-        console.log('parsing headlines for ' + site);
+        //console.log('parsing headlines for ' + site);
         
         switch (site) {
             case 'hp':
+                var entries = result.feed.entry;
+                var title, link;
+                
+                for (var j = 0; j < entries.length; j++) {
+                    title = entries[j].title[0];
+                    link  = entries[j].link[0]['$'].href;
+                    
+                    //if (typeof title !== 'string' || typeof link !== 'string') {
+                        console.dir(entries[j].title[0]);
+                        console.dir(entries[j].link[0]['$'].href);
+                    //}
+                    
+                    headlines.push({
+                        title: title,
+                        link: link
+                    });
+                }
+            break;
+            
+            //case 'drudgereport':
+            case 'ap':
+                var entries = result.feed.entry;
+                var longLink, title;
+                
+                for (var j = 0; j < entries.length; j++) {
+                    longLink = entries[j].link[0]['$'].href;
+                    title    = entries[j].summary[0]['_'];
+                    
+                    //if (typeof title !== 'string') {
+                    //console.log(title);
+                    //}
+                    
+                    headlines.push({
+                        title: title,
+                        link: longLink
+                    });
+                }
+            break;
+            
+            case 'npr':
+                var items = typeof result.rss !== 'undefined' ? result.rss.channel[0].item : result.feed.entry;
+                var link;
+                
+                for (var j = 0; j < items.length; j++) {
+                    link  = items[j].link[0];
+                    title = items[j].title[0];
+                    
+                    headlines.push({
+                        title: title,
+                        link: link
+                    });
+                }
+            break;
+            
+            case 'drudgereport':
                 var entries = result.feed.entry;
                 
                 for (var j = 0; j < entries.length; j++) {
                     headlines.push({
                         title: entries[j].title[0],
-                        link: entries[j].link[0]['$'].href
+                        link: entries[j]['feedburner:origLink'][0]
                     });
                 }
             break;
             
             default:
-            case 'ap':
-                var entries   = result.feed.entry;
-                var link, longLink;
-                
-                for (var j = 0; j < entries.length; j++) {
-                    longLink = entries[j].link[0]['$'].href;
-
-                    headlines.push({
-                        title: entries[j].summary[0]['_'],
-                        link: longLink
-                    });
-                }
+                console.log('news: invalid site: ' + site);
             break;
         }
         
