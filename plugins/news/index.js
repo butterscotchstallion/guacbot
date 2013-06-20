@@ -59,6 +59,8 @@ var news       = {
 };
 
 news.init = function (client) {
+    var pluginCfg = client.config.plugins.news;
+    
     // Refresh feeds on load
     news.refreshFeeds();
     
@@ -92,7 +94,7 @@ news.init = function (client) {
             }
         });
         
-    }, fiveMinutesInMS);
+    }, pluginCfg.intervalInMilliseconds);
     
     client.addListener('message#', function (nick, channel, message) {
         var words           = parser.splitMessageIntoWords(message);
