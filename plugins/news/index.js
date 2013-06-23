@@ -12,7 +12,7 @@ var db         = require('../db/');
 //var g          = require('goo.gl');
 var news       = {
     // Don't log to db when testing
-    testMode: false,
+    testMode: true,
     
     headlines: [],
     
@@ -27,9 +27,11 @@ var news       = {
         ],
         */
         
+        bbc: ['http://feeds.bbci.co.uk/news/rss.xml'],
+        
         hp: [
             // latest news
-            'http://feeds.huffingtonpost.com/huffingtonpost/LatestNews',
+            //'http://feeds.huffingtonpost.com/huffingtonpost/LatestNews',
             
             // full feed
             'http://feeds.huffingtonpost.com/huffingtonpost/raw_feed',
@@ -43,10 +45,14 @@ var news       = {
             // most popular
             'http://www.huffingtonpost.com/feeds/verticals/most_popular_entries/index.xml'
         ],
-        /*
-        npr: ['http://www.npr.org/rss/rss.php?id=1001']
-
         
+        npr: ['http://www.npr.org/rss/rss.php?id=1001'],
+
+        freedomsphoenix: ['http://www.freedomsphoenix.com/RSS/RSS-Feed.xml?EdNo=001&Page=Art'],
+        
+        onion: ['http://feeds.theonion.com/theonion/daily']
+        
+        /*
         drudgereport: [
             'http://feeds.feedburner.com/DrudgeReportFeed'
         ]
@@ -75,12 +81,13 @@ news.init = function (client) {
     }, oneHourInMS);
     
     /**
-     * Send headlines every 30 minutes
+     * Send headlines periodically according to config
      *
      */
     var thirtyMinutesInMS = 1800000;
     var fiveMinutesInMS   = 300000;
     var fiveSecondsInMS   = 5000;
+    var oneMinuteInMS     = 60000;
     
     setInterval(function () {
         news.getHeadline(function (headline) {
@@ -89,7 +96,20 @@ news.init = function (client) {
                 var channels = cfg.channels;
                 
                 for (var j = 0; j < channels.length; j++) {
-                    client.say(channels[j], headline.title + ' - ' + headline.link);
+                    var titleType = typeof headline.title;
+                    var linkType = typeof headline.link;
+                    
+                    console.dir(headline);
+                    console.dir(titleType);
+                    console.dir(linkType);
+                    
+                    if (titleType === 'string' && linkType === 'string') {
+                        client.say(channels[j], headline.title + ' - ' + headline.link);
+                    } else {
+                        console.log('');
+                        console.dir('objects!', headline);  
+                        console.log('');                    
+                    }
                 }
             }
         });
@@ -104,7 +124,17 @@ news.init = function (client) {
             if (words[1] === 'news') {
                 news.getHeadline(function (headline) {
                     if (headline) {
-                        client.say(channel, headline.title + ' - ' + headline.link);
+                        var titleType = typeof headline.title;
+                        var linkType = typeof headline.link;
+                        
+                        console.dir(headline);
+                        console.dir(titleType, linkType);
+                        
+                        if (titleType === 'string' && linkType === 'string') {
+                            client.say(channel, headline.title + ' - ' + headline.link);
+                        } else {
+                            console.dir('objects!', headline);                           
+                        }           
                     } else {
                         client.say(channel, 'no news :[ (' + news.headlines.length + ' cached)');
                     }
@@ -237,7 +267,7 @@ news.getHeadlines = function (xml, site, callback) {
                     link  = entries[j].link[0]['$'].href;
                     
                     if (typeof link !== 'string') {
-                        console.log(link);
+                        link = entries[j].link[0]['$'].href['$'].href;
                     }
                     
                     headlines.push({
@@ -257,18 +287,13 @@ news.getHeadlines = function (xml, site, callback) {
                     longLink = entries[k].link[0]['$'].href;
                     title    = entries[k].summary[0]['_'];
                     
-                    //console.dir(longLink);
-                    //console.dir(title);
-                    
-                    //if (typeof title !== 'string') {
-                    //console.log(title);
-                    //}
-                    
-                    headlines.push({
-                        title: title,
-                        link: longLink,
-                        site: site
-                    });
+                    if (typeof title === 'string' && typeof longLink === 'stirng') {
+                        headlines.push({
+                            title: title,
+                            link: longLink,
+                            site: site
+                        });
+                    }
                 }
             break;
             
@@ -302,6 +327,30 @@ news.getHeadlines = function (xml, site, callback) {
                 }
             break;
             
+            case 'onion':
+            case 'freedomsphoenix':                
+            case 'bbc':
+                var items = [];
+                
+                //console.log(result);
+                
+                if (typeof result.rss !== 'undefined') {
+                    items = result.rss.channel[0].item;
+                } else {
+                    items = result.feed.entry;
+                }
+                
+                for (var y = 0; y < items.length; y++) {
+                    //console.log(items[y].link[0]);
+                    
+                    headlines.push({
+                        title: items[y].title[0],
+                        link: items[y].link[0],
+                        site: site
+                    });
+                }
+            break;
+          
             default:
                 console.log('news: invalid site: ' + site);
             break;
