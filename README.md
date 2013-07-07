@@ -1,4 +1,4 @@
-NodeBot
+guacbot
 =======
 
 IRC bot written in Javascript with Node
