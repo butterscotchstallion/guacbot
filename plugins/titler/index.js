@@ -7,7 +7,11 @@
 var request = require('request');
 var ignore  = require('../ignore/');
 var parser  = require('../../lib/messageParser');
-var titler  = { };
+var moment  = require('moment');
+
+var titler  = {
+    lastTopicChange: null
+};
 
 titler.loadConfig = function (cfg) {
     titler.cfg = cfg.plugins.titler;
@@ -20,34 +24,65 @@ titler.init = function (client) {
     client.addListener('message#', function (nick, channel, text, message) {
         ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
             if (!ignored) {
-                /**
-                 * sometimes people have text in the same line as the URL,
-                 * so split the entire message into words
-                 * and only get the title of the first URL found
-                 *
-                 */
-                var words = parser.splitMessageIntoWords(text);
-                var wlen  = words.length;
-                var word  = '';
+                var link = titler.getFirstLinkFromString(text);
                 
-                for (var j = 0; j < wlen; j++) {
-                    word = words[j];
-                    
-                    // Only try to get source of things that look like a URL
-                    if (titler.matchURL(word)) {
-                        titler.getTitle (word, function (title) {
-                            if (title) {
-                                client.say(channel, '^ ' + title);
-                            }
-                        });
-                        
-                        // Only care about first URL found
-                        break;
+                titler.getTitle (link, function (title) {
+                    if (title) {
+                        client.say(channel, '^ ' + title);
                     }
-                }
+                });
             }
         });
     });
+    
+    // Look for topics that have URLs in them
+    client.addListener('topic', function (channel, topic, nick, message) {
+        if (!titler.lastTopicChange) {
+            titler.lastTopicChange = moment();
+        }
+        
+        // We want to ignore the topic event that occurs when joining a channel
+        var timeElapsedSinceLastTopicChange = moment().diff(titler.lastTopicChange, 'seconds');
+        var threshold                       = 30;
+        var isInitialJoinTopicChange        = timeElapsedSinceLastTopicChange < threshold;
+        
+        if (!isInitialJoinTopicChange) {
+            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
+                if (!ignored) {
+                    var link = titler.getFirstLinkFromString(topic);
+                    
+                    titler.getTitle (link, function (title) {
+                        if (title) {
+                            client.say(channel, '^ ' + title);
+                        }
+                    });
+                }
+            });
+        }
+    });
+};
+
+titler.getFirstLinkFromString = function (input) {
+    var link, word;
+    var words = parser.splitMessageIntoWords(input);
+
+    /**
+     * sometimes people have text in the same line as the URL,
+     * so split the entire message into words
+     * and only get the title of the first URL found
+     *
+     */
+    for (var j = 0; j < words.length; j++) {
+        word = words[j];
+        
+        // Only try to get source of things that look like a URL
+        if (titler.matchURL(word)) {
+            link = word;
+            break;
+        }
+    }
+    
+    return link;
 };
 
 titler.matchURL = function (url) {
