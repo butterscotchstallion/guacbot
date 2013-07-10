@@ -51,11 +51,15 @@ titler.init = function (client) {
                 if (!ignored) {
                     var link = titler.getFirstLinkFromString(topic);
                     
-                    titler.getTitle (link, function (title) {
-                        if (title) {
-                            client.say(channel, '^ ' + title);
-                        }
-                    });
+                    console.log(link);
+                    
+                    if (link) {
+                        titler.getTitle (link, function (title) {
+                            if (title) {
+                                client.say(channel, '^ ' + title);
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -63,7 +67,7 @@ titler.init = function (client) {
 };
 
 titler.getFirstLinkFromString = function (input) {
-    var link, word;
+    var link  = '', word = '';
     var words = parser.splitMessageIntoWords(input);
 
     /**
@@ -142,27 +146,32 @@ titler.parseHTMLAndGetTitle = function (html, callback) {
 };
 
 titler.getTitle = function (url, callback) {
-    // Parse the URL and see if it's a youtube video    
-    var u    = require('url');
-    var info = u.parse(url);
-    
-    // If so, query the API and get extra info about the video
-    if (info.host && titler.isYoutubeURL(info.host)) {        
+    if (url) {
+        // Parse the URL and see if it's a youtube video    
+        var u    = require('url');
+        var info = u.parse(url);
         
-        // Build title based on API data
-        titler.getYoutubeVideoInfo(url, function (data) {
-            var title = titler.getYoutubeVideoTitleDetailString(data);
+        // If so, query the API and get extra info about the video
+        if (info.host && titler.isYoutubeURL(info.host)) {        
             
-            callback(title);
-        });
-        
-    } else {
-        titler.getPageHTML(url, function (html) {
-            //console.log('parsing title out of HTML');
-            titler.parseHTMLAndGetTitle(html, function (title) {
+            // Build title based on API data
+            titler.getYoutubeVideoInfo(url, function (data) {
+                var title = titler.getYoutubeVideoTitleDetailString(data);
+                
                 callback(title);
             });
-        });
+            
+        } else {
+            titler.getPageHTML(url, function (html) {
+                //console.log('parsing title out of HTML');
+                titler.parseHTMLAndGetTitle(html, function (title) {
+                    callback(title);
+                });
+            });
+        }
+        
+    } else {
+        callback('');
     }
 };
 
