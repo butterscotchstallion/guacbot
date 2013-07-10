@@ -1,0 +1,82 @@
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+<rss version="2.0">
+  <channel>
+    <title>AL JAZEERA ENGLISH (AJE)</title>
+    <description>Al Jazeera Network</description>
+    <link>http://www.aljazeera.com/default.html</link>
+    <image>
+      <title>AJE</title>
+      <url>http://www.aljazeera.com/Media/images/AJLOGOGOOGLE.png</url>
+      <link>http://www.aljazeera.com/default.html</link>
+    </image>
+    <copyright>© 2013 Aljazeera Network</copyright>
+    <managingEditor>feedback@aljazeera.net</managingEditor>
+    <webMaster>webmaster@aljazeera.net</webMaster>
+    <docs>Aljazeera</docs>
+    <generator>Generator</generator>
+    <item>
+      <title>Top judge sworn in as Egypt interim president</title>
+      <description>Chief justice Adly Mansour takes oath hours after democratically elected Mohamed Morsi overthrown by military.</description>
+      <link>http://www.aljazeera.com/news/middleeast/2013/07/20137483232739935.html</link>
+      <guid isPermaLink="False">20137483232739935</guid>
+      <pubDate>Thu, 04 Jul 2013 14:16:17 GMT</pubDate>
+    </item>
+    <item>
+      <title>Key players in Egypt's politics</title>
+      <description>Al Jazeera examines key players in Egypt's politics. </description>
+      <link>http://www.aljazeera.com/news/middleeast/2013/07/20137312219878492.html</link>
+      <guid isPermaLink="False">20137312219878492</guid>
+      <pubDate>Thu, 04 Jul 2013 07:15:21 GMT</pubDate>
+    </item>
+    <item>
+      <title>International reactions to Morsi's removal</title>
+      <description>World leaders weigh in after Egypt's army commander announces that president had been removed.</description>
+      <link>http://www.aljazeera.com/news/middleeast/2013/07/201373223029610370.html</link>
+      <guid isPermaLink="False">201373223029610370</guid>
+      <pubDate>Thu, 04 Jul 2013 12:07:41 GMT</pubDate>
+    </item>
+    <item>
+      <title>Despondent scenes at pro-Morsi rally</title>
+      <description>As the army takes control of Egypt, demonstrators in favour of the ousted president feel isolated and ignored.</description>
+      <link>http://www.aljazeera.com/news/middleeast/2013/07/20137412240752156.html</link>
+      <guid isPermaLink="False">20137412240752156</guid>
+      <pubDate>Thu, 04 Jul 2013 09:26:53 GMT</pubDate>
+    </item>
+    <item>
+      <title>Egypt's military shuts down news channels</title>
+      <description>Four TV channels, including Al Jazeera's Mubasher Misr, taken off air and staff detained.</description>
+      <link>http://www.aljazeera.com/news/middleeast/2013/07/2013740531685326.html</link>
+      <guid isPermaLink="False">2013740531685326</guid>
+      <pubDate>Thu, 04 Jul 2013 02:25:32 GMT</pubDate>
+    </item>
+    <item>
+      <title>Assad: My opponents failed to oust me</title>
+      <description>Syrian president says the opposition has used all tools to overthrow his regime but failed.</description>
+      <link>http://www.aljazeera.com/news/middleeast/2013/07/201374101640272185.html</link>
+      <guid isPermaLink="False">201374101640272185</guid>
+      <pubDate>Thu, 04 Jul 2013 10:46:06 GMT</pubDate>
+    </item>
+    <item>
+      <title>Family confirms Mandela on life support</title>
+      <description>The critically-ill South African iconic leader is breathing with the help of machine, according to family members.</description>
+      <link>http://www.aljazeera.com/news/africa/2013/07/2013745118577524.html</link>
+      <guid isPermaLink="False">2013745118577524</guid>
+      <pubDate>Thu, 04 Jul 2013 05:43:07 GMT</pubDate>
+    </item>
+    <item>
+      <title>France apologises to Bolivia over jet row</title>
+      <description>Morales's plane not allowed to country because of 'conflicting information' about passengers, says French President.</description>
+      <link>http://www.aljazeera.com/news/europe/2013/07/2013747914179924.html</link>
+      <guid isPermaLink="False">2013747914179924</guid>
+      <pubDate>Thu, 04 Jul 2013 10:46:22 GMT</pubDate>
+    </item>
+    <item>
+      <title>Belgium's King Albert II to abdicate</title>
+      <description>Monarch says that he will vacate throne in favour of his son, Crown Prince Philippe, on July 21.</description>
+      <link>http://www.aljazeera.com/news/europe/2013/07/2013747929180190.html</link>
+      <guid isPermaLink="False">2013747929180190</guid>
+      <pubDate>Thu, 04 Jul 2013 10:35:44 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

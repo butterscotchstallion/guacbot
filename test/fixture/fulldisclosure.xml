@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Full Disclosure</title>
+    <link>http://seclists.org/#fulldisclosure</link>
+    <atom:link href="http://seclists.org/rss/fulldisclosure.rss" rel="self" type="application/rss+xml" />
+    <language>en-us</language>
+    <description>A &lt;a href=&quot;http://seclists.org/fulldisclosure/2010/Mar/459&quot;&gt;lightly moderated&lt;/a&gt; high-traffic forum for disclosure of security information.  Fresh vulnerabilities sometimes hit this list many hours before they pass through the Bugtraq moderation queue.  The relaxed atmosphere of this quirky list provides some comic relief and certain industry gossip.  Unfortunately, most of the posts are worthless drivel, so finding the gems takes patience.</description>
+    <pubDate>Wed, 26 Jun 2013 23:30:15 GMT</pubDate>
+    <lastBuildDate>Wed, 26 Jun 2013 23:30:15 GMT</lastBuildDate>
+<!-- MHonArc v2.6.16 -->
+
+ 
+
+  <item>
+    <title>Re: How to lock up a VirtualBox host machine with a guest using tracepath over virtio-net network interface</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/214</link>
+    <description>&lt;p&gt;Posted by Nick Boyce on Jun 26&lt;/p&gt;FWIW: *not* confirmed for :&lt;br&gt;
+64-bit Linux host = Debian Squeeze 6.0.7 amd64&lt;br&gt;
+32-bit Linux guest = Debian Squeeze 6.0.7 i386&lt;br&gt;
+VirtualBox = 4.1.26 (guest network adapter set to virtio for the test)&lt;br&gt;
+&lt;br&gt;
+&amp;apos;$ tracepath 8.8.8.8&amp;apos; run in the guest works fine, and no unpleasant&lt;br&gt;
+effects are noticed on either host or guest.&lt;br&gt;
+&lt;br&gt;
+I note that VirtualBox 4.1.26 (latest update to 4.1 series) was&lt;br&gt;
+released on the same day as 4.2.14 (latest update to 4.2 series) -...&lt;br&gt;</description>
+    <pubDate>Wed, 26 Jun 2013 23:19:35 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/214</guid>
+  </item>
+  <item>
+    <title>[Security-news] SA-CONTRIB-2013-054 - Fast	Permissions	Administration - Access Bypass</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/213</link>
+    <description>&lt;p&gt;Posted by security-news on Jun 26&lt;/p&gt;View online: &lt;a  rel=&quot;nofollow&quot; href=&quot;https://drupal.org/node/2028813&quot;&gt;https://drupal.org/node/2028813&lt;/a&gt;&lt;br&gt;
+&lt;br&gt;
+  * Advisory ID: DRUPAL-SA-CONTRIB-2013-054&lt;br&gt;
+  * Project: Fast Permissions Administration [1] (third-party module)&lt;br&gt;
+  * Version: 6.x, 7.x&lt;br&gt;
+  * Date: 2013-June-26&lt;br&gt;
+  * Security risk: Highly critical [2]&lt;br&gt;
+  * Exploitable from: Remote&lt;br&gt;
+  * Vulnerability: Access bypass&lt;br&gt;
+&lt;br&gt;
+-------- DESCRIPTION  &lt;br&gt;
+---------------------------------------------------------&lt;br&gt;
+&lt;br&gt;
+The Fast Permissions Administration module enables you to use...&lt;br&gt;</description>
+    <pubDate>Wed, 26 Jun 2013 17:52:04 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/213</guid>
+  </item>
+  <item>
+    <title>[Security-news] SA-CONTRIB-2012-136 - Apache Solr	Search	Autocomplete - Cross Site Scripting (XSS)</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/212</link>
+    <description>&lt;p&gt;Posted by security-news on Jun 26&lt;/p&gt;View online: &lt;a  rel=&quot;nofollow&quot; href=&quot;https://drupal.org/node/1762734&quot;&gt;https://drupal.org/node/1762734&lt;/a&gt;&lt;br&gt;
+&lt;br&gt;
+  * Advisory ID: DRUPAL-SA-CONTRIB-2012-136&lt;br&gt;
+  * Project: Apache Solr Autocomplete [1] (third-party module)&lt;br&gt;
+  * Version: 6.x, 7.x&lt;br&gt;
+  * Date: 2012-August-29&lt;br&gt;
+  * Security risk: Moderately critical [2]&lt;br&gt;
+  * Exploitable from: Remote&lt;br&gt;
+  * Vulnerability: Cross Site Scripting&lt;br&gt;
+&lt;br&gt;
+-------- DESCRIPTION  &lt;br&gt;
+---------------------------------------------------------&lt;br&gt;
+&lt;br&gt;
+Apache Solr Search Autocomplete module enables you to...&lt;br&gt;</description>
+    <pubDate>Wed, 26 Jun 2013 17:50:44 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/212</guid>
+  </item>
+  <item>
+    <title>[ MDVSA-2013:179 ] firefox</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/211</link>
+    <description>&lt;p&gt;Posted by security on Jun 26&lt;/p&gt; _______________________________________________________________________&lt;br&gt;
+&lt;br&gt;
+ Mandriva Linux Security Advisory                         MDVSA-2013:179&lt;br&gt;
+ &lt;a  rel=&quot;nofollow&quot; href=&quot;http://www.mandriva.com/en/support/security/&quot;&gt;http://www.mandriva.com/en/support/security/&lt;/a&gt;&lt;br&gt;
+ _______________________________________________________________________&lt;br&gt;
+&lt;br&gt;
+ Package : firefox&lt;br&gt;
+ Date    : June 26, 2013&lt;br&gt;
+ Affected: Enterprise Server 5.0&lt;br&gt;
+ _______________________________________________________________________&lt;br&gt;
+&lt;br&gt;
+ Problem Description:&lt;br&gt;
+&lt;br&gt;
+ Multiple...&lt;br&gt;</description>
+    <pubDate>Wed, 26 Jun 2013 17:25:54 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/211</guid>
+  </item>
+  <item>
+    <title>Cisco Security Advisory: Cisco ASA	Next-Generation Firewall Fragmented Traffic Denial of Service	Vulnerability</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/210</link>
+    <description>&lt;p&gt;Posted by Cisco Systems Product Security Incident Response Team on Jun 26&lt;/p&gt;Cisco Security Advisory:Cisco ASA Next-Generation Firewall Fragmented Traffic&lt;br&gt;
+Denial of Service Vulnerability&lt;br&gt;
+&lt;br&gt;
+Advisory ID: cisco-sa-20130626-ngfw&lt;br&gt;
+&lt;br&gt;
+&lt;a  rel=&quot;nofollow&quot; href=&quot;http://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/&quot;&gt;http://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/&lt;/a&gt;&lt;br&gt;
+cisco-sa-20130626-ngfw&lt;br&gt;
+&lt;br&gt;
+Revision 1.0&lt;br&gt;
+&lt;br&gt;
+For Public Release 2013 June 26 16:00  UTC (GMT)&lt;br&gt;
+&lt;br&gt;
++------------------------------------------------------------------------------&lt;br&gt;
+&lt;br&gt;
+Summary&lt;br&gt;
+=======&lt;br&gt;
+&lt;br&gt;
+Cisco ASA Next-Generation Firewall (NGFW)...&lt;br&gt;</description>
+    <pubDate>Wed, 26 Jun 2013 16:58:06 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/210</guid>
+  </item>
+  <item>
+    <title>Cisco Security Advisory: Multiple Vulnerabilities	in Cisco Content Security Management Appliance</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/209</link>
+    <description>&lt;p&gt;Posted by Cisco Systems Product Security Incident Response Team on Jun 26&lt;/p&gt;Cisco Security Advisory: Multiple Vulnerabilities in Cisco Content Security Management Appliance&lt;br&gt;
+&lt;br&gt;
+Advisory ID: cisco-sa-20130626-sma&lt;br&gt;
+&lt;br&gt;
+Revision 1.0&lt;br&gt;
+&lt;br&gt;
+For Public Release 2013 June 26 16:00  UTC (GMT)&lt;br&gt;
+&lt;br&gt;
++-------------------------------------------------------------------------------&lt;br&gt;
+&lt;br&gt;
+Summary&lt;br&gt;
+=======&lt;br&gt;
+&lt;br&gt;
+Cisco IronPort AsyncOS Software for Cisco Content Security Management Appliance&lt;br&gt;
+is affected by the following vulnerabilities:&lt;br&gt;
+&lt;br&gt;
+  * Web Framework...&lt;br&gt;</description>
+    <pubDate>Wed, 26 Jun 2013 16:56:21 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/209</guid>
+  </item>
+  <item>
+    <title>Cisco Security Advisory: Multiple Vulnerabilities	in Cisco Web Security Appliance</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/208</link>
+    <description>&lt;p&gt;Posted by Cisco Systems Product Security Incident Response Team on Jun 26&lt;/p&gt;Cisco Security Advisory: Multiple Vulnerabilities in Cisco Web Security Appliance&lt;br&gt;
+&lt;br&gt;
+Advisory ID: cisco-sa-20130626-wsa&lt;br&gt;
+&lt;br&gt;
+Revision 1.0&lt;br&gt;
+&lt;br&gt;
+For Public Release 2013 June 26 16:00  UTC (GMT)&lt;br&gt;
+&lt;br&gt;
+-------------------------------------------------------------------------------&lt;br&gt;
+&lt;br&gt;
+Summary&lt;br&gt;
+=======&lt;br&gt;
+&lt;br&gt;
+Cisco IronPort AsyncOS Software for Cisco Web Security Appliance is affected by&lt;br&gt;
+the following vulnerabilities:&lt;br&gt;
+&lt;br&gt;
+  * Two authenticated command injection vulnerabilities...&lt;br&gt;</description>
+    <pubDate>Wed, 26 Jun 2013 16:54:49 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/208</guid>
+  </item>
+  <item>
+    <title>Cisco Security Advisory: Multiple Vulnerabilities	in Cisco Email Security Appliance</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/207</link>
+    <description>&lt;p&gt;Posted by Cisco Systems Product Security Incident Response Team on Jun 26&lt;/p&gt;Cisco Security Advisory: Multiple Vulnerabilities in Cisco Email Security Appliance&lt;br&gt;
+&lt;br&gt;
+Advisory ID: cisco-sa-20130626-esa&lt;br&gt;
+&lt;br&gt;
+Revision 1.0&lt;br&gt;
+&lt;br&gt;
+For Public Release 2013 June 26 16:00  UTC (GMT)&lt;br&gt;
+&lt;br&gt;
++------------------------------------------------------------------------------&lt;br&gt;
+&lt;br&gt;
+Summary&lt;br&gt;
+=======&lt;br&gt;
+&lt;br&gt;
+Cisco IronPort AsyncOS Software for Cisco Email Security Appliance is affected&lt;br&gt;
+by the following vulnerabilities:&lt;br&gt;
+&lt;br&gt;
+  * Web Framework Authenticated Command Injection...&lt;br&gt;</description>
+    <pubDate>Wed, 26 Jun 2013 16:53:01 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/207</guid>
+  </item>
+  <item>
+    <title>[SECURITY] [DSA 2716-1] iceweasel security update</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/206</link>
+    <description>&lt;p&gt;Posted by Moritz Muehlenhoff on Jun 26&lt;/p&gt;-------------------------------------------------------------------------&lt;br&gt;
+Debian Security Advisory DSA-2716-1                   security () debian org&lt;br&gt;
+&lt;a  rel=&quot;nofollow&quot; href=&quot;http://www.debian.org/security/&quot;&gt;http://www.debian.org/security/&lt;/a&gt;                        Moritz Muehlenhoff&lt;br&gt;
+June 26, 2013                          &lt;a  rel=&quot;nofollow&quot; href=&quot;http://www.debian.org/security/faq&quot;&gt;http://www.debian.org/security/faq&lt;/a&gt;&lt;br&gt;
+-------------------------------------------------------------------------&lt;br&gt;
+&lt;br&gt;
+Package        : iceweasel&lt;br&gt;
+Vulnerability  : several&lt;br&gt;
+Problem type   : remote...&lt;br&gt;</description>
+    <pubDate>Wed, 26 Jun 2013 14:03:01 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/206</guid>
+  </item>
+  <item>
+    <title>Re: How to lock up a VirtualBox host machine with	a guest using tracepath over virtio-net network interface</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/205</link>
+    <description>&lt;p&gt;Posted by Agostino Sarubbo on Jun 26&lt;/p&gt;Usually oracle make the requests if needed.&lt;br&gt;</description>
+    <pubDate>Wed, 26 Jun 2013 07:22:37 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/205</guid>
+  </item>
+  <item>
+    <title>Re: How to lock up a VirtualBox host machine with a guest using tracepath over virtio-net network interface</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/204</link>
+    <description>&lt;p&gt;Posted by Zmicier Januszkiewicz on Jun 26&lt;/p&gt;Hi,&lt;br&gt;
+&lt;br&gt;
+Tested this on Windows 7 x64 host instead (no Linux box available atm);&lt;br&gt;
+confirmed the issue (consumes CPU and kills the host network adapter).&lt;br&gt;
+&lt;br&gt;
+Can someone assign a CVE for this? Looks like this can be exploited to at&lt;br&gt;
+least DoS other VMs on the same host.&lt;br&gt;
+&lt;br&gt;
+2013/6/21 Thomas Dreibholz &amp;lt;dreibh () simula no&amp;gt;&lt;br&gt;</description>
+    <pubDate>Wed, 26 Jun 2013 07:11:41 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/204</guid>
+  </item>
+
+
+  <item>
+    <title>[SECURITY] [DSA 2714-1] kfreebsd-9 security update</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/203</link>
+    <description>&lt;p&gt;Posted by Moritz Muehlenhoff on Jun 25&lt;/p&gt;-------------------------------------------------------------------------&lt;br&gt;
+Debian Security Advisory DSA-2714-1                   security () debian org&lt;br&gt;
+&lt;a  rel=&quot;nofollow&quot; href=&quot;http://www.debian.org/security/&quot;&gt;http://www.debian.org/security/&lt;/a&gt;                        Moritz Muehlenhoff&lt;br&gt;
+June 25, 2013                          &lt;a  rel=&quot;nofollow&quot; href=&quot;http://www.debian.org/security/faq&quot;&gt;http://www.debian.org/security/faq&lt;/a&gt;&lt;br&gt;
+-------------------------------------------------------------------------&lt;br&gt;
+&lt;br&gt;
+Package        : kfreebsd-9&lt;br&gt;
+Vulnerability  : programming error&lt;br&gt;
+Problem type...&lt;br&gt;</description>
+    <pubDate>Tue, 25 Jun 2013 17:25:56 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/203</guid>
+  </item>
+  <item>
+    <title>Magnolia CMS multiple access control	vulnerabilities</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/202</link>
+    <description>&lt;p&gt;Posted by Adrian Furtuna on Jun 25&lt;/p&gt;Subject:&lt;br&gt;
+======&lt;br&gt;
+Multiple access control vulnerabilities in Magnolia CMS, Community and&lt;br&gt;
+Enterprise editions&lt;br&gt;
+&lt;br&gt;
+CVE ID:&lt;br&gt;
+=======&lt;br&gt;
+CVE-2013-4621&lt;br&gt;
+&lt;br&gt;
+Summary:&lt;br&gt;
+========&lt;br&gt;
+A non-admin user (such as default users eric / peter) can access and&lt;br&gt;
+execute multiple administrative functionalities of the CMS by accessing&lt;br&gt;
+directly the specific URLs.&lt;br&gt;
+&lt;br&gt;
+Product:&lt;br&gt;
+========&lt;br&gt;
+Magnolia CMS&lt;br&gt;
+&lt;br&gt;
+Vendor:&lt;br&gt;
+=======&lt;br&gt;
+Magnolia International Ltd.&lt;br&gt;
+&lt;br&gt;
+Affected versions:&lt;br&gt;
+==================&lt;br&gt;
+Magnolia...&lt;br&gt;</description>
+    <pubDate>Tue, 25 Jun 2013 15:35:21 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/202</guid>
+  </item>
+  <item>
+    <title>[ MDVSA-2013:178 ] nfs-utils</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/201</link>
+    <description>&lt;p&gt;Posted by security on Jun 25&lt;/p&gt; _______________________________________________________________________&lt;br&gt;
+&lt;br&gt;
+ Mandriva Linux Security Advisory                         MDVSA-2013:178&lt;br&gt;
+ &lt;a  rel=&quot;nofollow&quot; href=&quot;http://www.mandriva.com/en/support/security/&quot;&gt;http://www.mandriva.com/en/support/security/&lt;/a&gt;&lt;br&gt;
+ _______________________________________________________________________&lt;br&gt;
+&lt;br&gt;
+ Package : nfs-utils&lt;br&gt;
+ Date    : June 25, 2013&lt;br&gt;
+ Affected: Business Server 1.0&lt;br&gt;
+ _______________________________________________________________________&lt;br&gt;
+&lt;br&gt;
+ Problem Description:&lt;br&gt;
+&lt;br&gt;
+ Updated...&lt;br&gt;</description>
+    <pubDate>Tue, 25 Jun 2013 12:19:42 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/201</guid>
+  </item>
+  <item>
+    <title>[ MDVSA-2013:177 ] dbus</title>
+    <link>http://seclists.org/fulldisclosure/2013/Jun/200</link>
+    <description>&lt;p&gt;Posted by security on Jun 25&lt;/p&gt; _______________________________________________________________________&lt;br&gt;
+&lt;br&gt;
+ Mandriva Linux Security Advisory                         MDVSA-2013:177&lt;br&gt;
+ &lt;a  rel=&quot;nofollow&quot; href=&quot;http://www.mandriva.com/en/support/security/&quot;&gt;http://www.mandriva.com/en/support/security/&lt;/a&gt;&lt;br&gt;
+ _______________________________________________________________________&lt;br&gt;
+&lt;br&gt;
+ Package : dbus&lt;br&gt;
+ Date    : June 25, 2013&lt;br&gt;
+ Affected: Business Server 1.0&lt;br&gt;
+ _______________________________________________________________________&lt;br&gt;
+&lt;br&gt;
+ Problem Description:&lt;br&gt;
+&lt;br&gt;
+ Updated dbus...&lt;br&gt;</description>
+    <pubDate>Tue, 25 Jun 2013 12:15:58 GMT</pubDate>
+    <guid isPermaLink="true">http://seclists.org/fulldisclosure/2013/Jun/200</guid>
+  </item>
+
+ 
+
+<!-- MHonArc v2.6.16 -->
+  </channel>
+</rss>

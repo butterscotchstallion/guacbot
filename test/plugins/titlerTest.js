@@ -148,7 +148,7 @@ describe('Youtube Info', function () {
         var info = JSON.parse(fs.readFileSync('fixture/youtubeVideoResponse.json', 'utf8'));
         var url  = 'http://www.youtube.com/watch?v=7B9z6VEzfDE';
         
-        var info = titler.getYoutubeVideoInfo(url, function (data) {
+        titler.getYoutubeVideoInfo(url, function (data) {
             assert.equal(data.id, '7B9z6VEzfDE');
             assert.equal(data.title, 'Ray J...I Hit It First!!!!');
             assert.notEqual(data.viewCount, 'undefined');
@@ -162,8 +162,10 @@ describe('URL Matcher', function() {
     it('should match valid URLs', function () {
         var validURLs = [
             'http://google.com',
+            'http://youtu.be/j2fmevbZi40',
             'https://www.youtube.com/watch?v=mqFLXayD6e8',
-            'http://www.youtube.com/watch?v=7B9z6VEzfDE'
+            'http://www.youtube.com/watch?v=7B9z6VEzfDE',
+            'https://www.youtube.com/watch?v=MJ17szvj1gk&feature=player_detailpage'
         ];
         
         var validURLsLen = validURLs.length;
