@@ -136,6 +136,14 @@ describe('ignore domains', function () {
 });
 
 describe('Youtube Info', function () {
+    it('should get the video ID given a shortened URL', function () {
+        var url     = 'http://youtu.be/veNtA5EziU0';
+        
+        var videoID = titler.getYoutubeVideoID(url);
+        
+        assert.equal(videoID, 'veNtA5EziU0');
+    });
+    
     it('should get the video ID given a URL', function () {
         var url     = 'http://www.youtube.com/watch?v=7B9z6VEzfDE';
         

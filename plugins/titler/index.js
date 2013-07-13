@@ -219,9 +219,24 @@ titler.getYoutubeVideoID = function (url) {
     var query   = info.query;
     var videoID = '';
     
+    console.log(info);
+    
     if (query) {
         var qsInfo = qs.parse(info.query);        
         videoID    = qsInfo.v;
+        
+        //console.log(info);
+        
+        // shortened video URLs may not contain this query string
+        // parameter, so instead use everything after the last slash
+        if (!videoID) {
+            console.log(qsInfo);
+        }
+        
+    } else {
+        if (info.hostname === 'youtu.be') {
+            videoID = info.path.substring(1);
+        }
     }
     
     return videoID;
