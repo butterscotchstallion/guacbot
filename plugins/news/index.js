@@ -50,7 +50,13 @@ var news       = {
 
         freedomsphoenix: ['http://www.freedomsphoenix.com/RSS/RSS-Feed.xml?EdNo=001&Page=Art'],
         
-        onion: ['http://feeds.theonion.com/theonion/daily']
+        onion: ['http://feeds.theonion.com/theonion/daily'],
+        
+        hackernews: ['https://news.ycombinator.com/rss'],
+        
+        fulldisclosure: ['http://seclists.org/rss/fulldisclosure.rss'],
+        
+        aljazeera: ['http://www.aljazeera.com/Services/Rss/?PostingId=2007731105943979989']
         
         /*
         drudgereport: [
@@ -88,6 +94,7 @@ news.init = function (client) {
     var fiveMinutesInMS   = 300000;
     var fiveSecondsInMS   = 5000;
     var oneMinuteInMS     = 60000;
+    var oneHourInMS       = 3600000;
     
     setInterval(function () {
         news.getHeadline(function (headline) {
@@ -99,10 +106,14 @@ news.init = function (client) {
                     var titleType = typeof headline.title;
                     var linkType = typeof headline.link;
                     
+                    /*
                     console.dir(headline);
                     console.dir(titleType);
                     console.dir(linkType);
+                    */
                     
+                    // TODO figure out why this even happens so I don't need
+                    // this ugly thing here
                     if (titleType === 'string' && linkType === 'string') {
                         client.say(channels[j], headline.title + ' - ' + headline.link);
                     } else {
@@ -134,7 +145,8 @@ news.init = function (client) {
                             client.say(channel, headline.title + ' - ' + headline.link);
                         } else {
                             console.dir('objects!', headline);                           
-                        }           
+                        }
+                        
                     } else {
                         client.say(channel, 'no news :[ (' + news.headlines.length + ' cached)');
                     }
@@ -330,9 +342,10 @@ news.getHeadlines = function (xml, site, callback) {
             case 'onion':
             case 'freedomsphoenix':                
             case 'bbc':
+            case 'hackernews':
+            case 'fulldisclosure':
+            case 'aljazeera':
                 var items = [];
-                
-                //console.log(result);
                 
                 if (typeof result.rss !== 'undefined') {
                     items = result.rss.channel[0].item;
@@ -340,17 +353,17 @@ news.getHeadlines = function (xml, site, callback) {
                     items = result.feed.entry;
                 }
                 
-                for (var y = 0; y < items.length; y++) {
-                    //console.log(items[y].link[0]);
-                    
-                    headlines.push({
-                        title: items[y].title[0],
-                        link: items[y].link[0],
-                        site: site
-                    });
+                if (items) {
+                    for (var y = 0; y < items.length; y++) {
+                        headlines.push({
+                            title: items[y].title[0],
+                            link: items[y].link[0],
+                            site: site
+                        });
+                    }
                 }
             break;
-          
+            
             default:
                 console.log('news: invalid site: ' + site);
             break;
