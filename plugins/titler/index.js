@@ -133,7 +133,9 @@ titler.parseHTMLAndGetTitle = function (html, callback) {
     var title = $('title').text();
     
     if (title && title.length > 0) {
-        title = title.replace("\n", " ");
+        title = title.replace(/\t/g, '');
+        title = title.replace(/\r\n/g, '');
+        title = title.replace(/\n/g, ' ');
     }
     
     callback(title);

@@ -242,3 +242,16 @@ describe('non html input', function() {
     });
 });
 
+describe('title with newline', function() {
+    it('should return a blank string if its not valid HTML', function (done) {
+        var html = fs.readFileSync('fixture/title-with-newline.html', 'utf8');
+        
+        titler.parseHTMLAndGetTitle(html, function (title) {
+            assert.equal(title.indexOf("\r\n"), -1);
+            assert.equal(title.indexOf("\n"), -1);
+            assert.equal(title.indexOf("\t"), -1);
+            assert.equal(title, "Melissa Nelson fired for being 'irresistible' | News.com.au");
+            done();
+        });
+    });
+});
