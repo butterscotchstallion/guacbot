@@ -8,6 +8,7 @@ var request = require('request');
 var ignore  = require('../ignore/');
 var parser  = require('../../lib/messageParser');
 var moment  = require('moment');
+var cheerio = require('cheerio');
 
 var titler  = {
     lastTopicChange: null
@@ -130,19 +131,9 @@ titler.getPageHTML = function (url, callback) {
 };
 
 titler.parseHTMLAndGetTitle = function (html, callback) {
-    var re    = /(<\s*title[^>]*>(.+?)<\s*\/\s*title)>/gi;
-    var match = re.exec(html);
+    var $ = cheerio.load(html);
     
-    if (match && match[2]) {
-        // Decode HTML entities in title
-        var ent   = require('ent');
-        var title = ent.decode(match[2]);
-        
-        callback(title);
-        
-    } else {
-        console.log('Failed to find title in html!');
-    }
+    callback($('title').text());
 };
 
 titler.getTitle = function (url, callback) {
@@ -219,20 +210,11 @@ titler.getYoutubeVideoID = function (url) {
     var query   = info.query;
     var videoID = '';
     
-    console.log(info);
+    //console.log(info);
     
     if (query) {
         var qsInfo = qs.parse(info.query);        
-        videoID    = qsInfo.v;
-        
-        //console.log(info);
-        
-        // shortened video URLs may not contain this query string
-        // parameter, so instead use everything after the last slash
-        if (!videoID) {
-            console.log(qsInfo);
-        }
-        
+        videoID    = qsInfo.v;        
     } else {
         if (info.hostname === 'youtu.be') {
             videoID = info.path.substring(1);

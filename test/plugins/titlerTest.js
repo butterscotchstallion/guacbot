@@ -195,20 +195,38 @@ describe('URL Matcher', function() {
         for (var j = 0; j < invalidURLsLen; j++) {
             assert.equal(titler.matchURL(invalidURLs[j]), false);
         }
-    });
-    
-    it('should find the title tag in html', function () {
-        var html  = '<html><head><title>in the moooood</title></head></html>';
+    });   
+});
+
+describe('html', function() {
+    it('should find the title tag in this html', function (done) {
+        var html = fs.readFileSync('fixture/titler-cant-find-title.html', 'utf8');
         
         titler.parseHTMLAndGetTitle(html, function (title) {
-            assert.equal(title, 'in the moooood');
+            assert.equal(title, 'Chuck Palahniuk Announces a Graphic Novel Sequel to FIGHT CLUB! - ChuckPalahniuk');
+            done();
         });
-        
-        // now with capital title
-        html      = '<html><head><TITLE>sway with me, sway with ease</TITLE></head></html>';
+    });
+});
+
+describe('html part 2', function() {
+    it('should find the title tag in this html', function (done) {
+        var html = fs.readFileSync('fixture/titler.html', 'utf8');
         
         titler.parseHTMLAndGetTitle(html, function (title) {
-            assert.equal(title, 'sway with me, sway with ease');
+            assert.equal(title, 'Capybara - Wikipedia, the free encyclopedia');
+            done();
+        });
+    });
+});
+
+describe('html with special characters', function() {
+    it('should find the title tag in this html', function (done) {
+        var html = fs.readFileSync('fixture/titler-with-special-chars.html', 'utf8');
+        
+        titler.parseHTMLAndGetTitle(html, function (title) {
+            assert.equal(title, '& bacon & bacon & bacon & bacon & bacon');
+            done();
         });
     });
 });
