@@ -231,4 +231,14 @@ describe('html with special characters', function() {
     });
 });
 
+describe('non html input', function() {
+    it('should return a blank string if its not valid HTML', function (done) {
+        var html = fs.readFileSync('fixture/titler-non-html.html', 'utf8');
+        
+        titler.parseHTMLAndGetTitle(html, function (title) {
+            assert.equal(title, '');
+            done();
+        });
+    });
+});
 
