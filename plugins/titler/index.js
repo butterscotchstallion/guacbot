@@ -129,9 +129,14 @@ titler.getPageHTML = function (url, callback) {
 };
 
 titler.parseHTMLAndGetTitle = function (html, callback) {
-    var $ = cheerio.load(html);
+    var $     = cheerio.load(html);
+    var title = $('title').text();
     
-    callback($('title').text());
+    if (title && title.length > 0) {
+        title = title.replace("\n", " ");
+    }
+    
+    callback(title);
 };
 
 titler.getTitle = function (url, callback) {
