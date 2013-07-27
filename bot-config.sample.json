@@ -1,11 +1,11 @@
 {
     "server": "irc.slashnet.org",
     
-    "nick": "nodebot",
+    "nick": "guacbot",
     
-    "realName": "nodebot",
+    "realName": "guacbot",
     
-    "userName": "nodebot",
+    "userName": "guacbot",
     
     "channels": [
         "#guacamole"
@@ -85,7 +85,8 @@
         },
         "arbiter": {
         
-        }"invite": {
+        },
+        "invite": {
         
         },
         "note": {
