@@ -52,8 +52,6 @@ titler.init = function (client) {
                 if (!ignored) {
                     var link = titler.getFirstLinkFromString(topic);
                     
-                    console.log(link);
-                    
                     if (link) {
                         titler.getTitle (link, function (title) {
                             if (title) {
