@@ -9,6 +9,10 @@
     "minimatch": "~0.2.12",
     "goo.gl": "0.0.2",
     "mysql": "~2.0.0-alpha8",
-    "xml2js": "~0.2.8"
+    "xml2js": "~0.2.8",
+    "supervisor": "~0.5.3",
+    "twit": "~1.1.6",
+    "underscore": "~1.4.4",
+    "cheerio": "~0.12.0"
   }
 }
