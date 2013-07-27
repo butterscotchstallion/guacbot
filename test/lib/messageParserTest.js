@@ -77,3 +77,24 @@ describe('messageParser.isMessageAddressingBot', function () {
         assert.equal(expected, actual);
     });
 });
+
+describe('messageParser.splitMessageIntoWords', function () {
+    it('should return an empty array when the input is undefined', function () {
+        var actual = messageParser.splitMessageIntoWords();
+        
+        assert.deepEqual([], actual);
+    });
+    
+    it('should return an empty array when the input is blank', function () {
+        var actual = messageParser.splitMessageIntoWords('');
+        
+        assert.deepEqual([], actual);
+    });
+    
+    it('should return the words of a string', function () {
+        var input  = 'biggie smalls is the illest';
+        var actual = messageParser.splitMessageIntoWords(input);
+        
+        assert.deepEqual(input.split(' '), actual);
+    });
+});
