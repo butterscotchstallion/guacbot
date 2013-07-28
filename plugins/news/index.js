@@ -9,69 +9,20 @@ var xml2js     = require('xml2js');
 var request    = require('request');
 var parser     = require('../../lib/messageParser');
 var db         = require('../db/');
-//var g          = require('goo.gl');
+
 var news       = {
     // Don't log to db when testing
     testMode: true,
     
     headlines: [],
     
-    feeds: {
-        /*
-        ap: [
-            // top headlines
-            //'http://hosted2.ap.org/atom/APDEFAULT/3d281c11a96b4ad082fe88aa0db04305',
-            
-            // strange
-            'http://hosted2.ap.org/atom/APDEFAULT/aa9398e6757a46fa93ed5dea7bd3729e'
-        ],
-        */
-        
-        bbc: ['http://feeds.bbci.co.uk/news/rss.xml'],
-        
-        hp: [
-            // latest news
-            //'http://feeds.huffingtonpost.com/huffingtonpost/LatestNews',
-            
-            // full feed
-            'http://feeds.huffingtonpost.com/huffingtonpost/raw_feed',
-            
-            // weird
-            'http://www.huffingtonpost.com/feeds/verticals/weird-news/index.xml',
-            
-            // sports (link obj)
-            'http://www.huffingtonpost.com/feeds/verticals/sports/index.xml',
-            
-            // most popular
-            'http://www.huffingtonpost.com/feeds/verticals/most_popular_entries/index.xml'
-        ],
-        
-        npr: ['http://www.npr.org/rss/rss.php?id=1001'],
-
-        freedomsphoenix: ['http://www.freedomsphoenix.com/RSS/RSS-Feed.xml?EdNo=001&Page=Art'],
-        
-        onion: ['http://feeds.theonion.com/theonion/daily'],
-        
-        hackernews: ['https://news.ycombinator.com/rss'],
-        
-        fulldisclosure: ['http://seclists.org/rss/fulldisclosure.rss'],
-        
-        aljazeera: ['http://www.aljazeera.com/Services/Rss/?PostingId=2007731105943979989']
-        
-        /*
-        drudgereport: [
-            'http://feeds.feedburner.com/DrudgeReportFeed'
-        ]
-        */
-    },
-    
-    cache: {
-    
-    }
+    cache: { }
 };
 
 news.init = function (client) {
-    var pluginCfg = client.config.plugins.news;
+    var pluginCfg  = client.config.plugins.news;
+    
+    news.pluginCfg = pluginCfg;
     
     // Refresh feeds on load
     news.refreshFeeds();
@@ -104,7 +55,7 @@ news.init = function (client) {
                 
                 for (var j = 0; j < channels.length; j++) {
                     var titleType = typeof headline.title;
-                    var linkType = typeof headline.link;
+                    var linkType  = typeof headline.link;
                     
                     /*
                     console.dir(headline);
@@ -138,8 +89,8 @@ news.init = function (client) {
                         var titleType = typeof headline.title;
                         var linkType = typeof headline.link;
                         
-                        console.dir(headline);
-                        console.dir(titleType, linkType);
+                        //console.dir(headline);
+                        //console.dir(titleType, linkType);
                         
                         if (titleType === 'string' && linkType === 'string') {
                             client.say(channel, headline.title + ' - ' + headline.link);
@@ -166,9 +117,9 @@ news.refreshFeeds = function () {
     
     console.log(new Date(), ' Fetching feeds!');
     
-    for (var site in news.feeds) {
-        for (var j = 0; j < news.feeds[site].length; j++) {
-            f = news.feeds[site][j];
+    for (var site in news.pluginCfg.feeds) {
+        for (var j = 0; j < news.pluginCfg.feeds[site].length; j++) {
+            f = news.pluginCfg.feeds[site][j];
             
             //console.log('refreshing ' + site + ' feed');
             
@@ -290,7 +241,6 @@ news.getHeadlines = function (xml, site, callback) {
                 }
             break;
             
-            //case 'drudgereport':
             case 'ap':
                 var entries = result.feed.entry;
                 var longLink, title;
@@ -312,8 +262,6 @@ news.getHeadlines = function (xml, site, callback) {
             case 'npr':
                 var items = typeof result.rss !== 'undefined' ? result.rss.channel[0].item : result.feed.entry;
                 var link;
-                
-                //console.dir(result);
                 
                 for (var e = 0; e < items.length; e++) {
                     link  = items[e].link[0];
