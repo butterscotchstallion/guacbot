@@ -95,8 +95,12 @@ titler.matchURL = function (url) {
 };
 
 titler.isIgnoredDomain = function (domain) {
-    var domains = typeof(titler.cfg.ignoreDomains) !== 'undefined' ? titler.cfg.ignoreDomains : [];
-
+    var domains = [];
+    
+    if (typeof titler.cfg !== 'undefined') {
+        domains = typeof(titler.cfg.ignoreDomains) !== 'undefined' ? titler.cfg.ignoreDomains : [];
+    }
+    
     return domains && domains.indexOf(domain) > -1;
 };
 
@@ -116,16 +120,24 @@ titler.getPageHTML = function (url, callback) {
         };
         
         request(options, function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                callback(body);
-            } else {
-                console.log('titler error: ', error);
+            var isWebsite = titler.isHTML(response.headers['content-type']);
+            
+            if (isWebsite) {
+                if (!error && response.statusCode == 200) {
+                    callback(body);
+                } else {
+                    console.log('titler error: ', error);
+                }
             }
         });
         
     } else {
         return false;
     }
+};
+
+titler.isHTML = function (contentType) {
+    return contentType.indexOf('text/html') > -1;
 };
 
 titler.parseHTMLAndGetTitle = function (html, callback) {

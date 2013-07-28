@@ -255,3 +255,16 @@ describe('title with newline', function() {
         });
     });
 });
+
+describe('more non-html', function() {
+    it('should return a blank string if its not valid HTML', function (done) {
+        var url = 'http://24.media.tumblr.com/be6c8c73fa1e005e79f881ee24cea28e/tumblr_mqlmmpuZc41r3gb3zo1_400.gif';
+            url = 'http://reddit.com';
+            url = 'http://25.media.tumblr.com/b8cdb075875ebcd66eba4b51bf40c42b/tumblr_mqmeg5gOY11qdlh1io1_400.gif';
+        
+        titler.getPageHTML(url, function (response) {
+            
+            done();
+        });
+    });
+});
