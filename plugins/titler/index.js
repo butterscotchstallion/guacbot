@@ -120,7 +120,7 @@ titler.getPageHTML = function (url, callback) {
         };
         
         request(options, function (error, response, body) {
-            var isWebsite = titler.isHTML(response.headers['content-type']);
+            var isWebsite = !error ? titler.isHTML(response.headers['content-type']) : false;
             
             if (isWebsite) {
                 if (!error && response.statusCode == 200) {
