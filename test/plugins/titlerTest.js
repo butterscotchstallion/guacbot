@@ -268,3 +268,17 @@ describe('more non-html', function() {
         });
     });
 });
+
+describe('title with extra spaces', function() {
+    it('should return a string without spaces on the end', function (done) {
+        var html = fs.readFileSync('fixture/titler-with-spaces.html', 'utf8');
+        
+        titler.parseHTMLAndGetTitle(html, function (title) {
+            assert.equal(title.indexOf("\r\n"), -1);
+            assert.equal(title.indexOf("\n"), -1);
+            assert.equal(title.indexOf("\t"), -1);
+            assert.equal(title, "Fighting Gifs - Imgur");
+            done();
+        });
+    });
+});
