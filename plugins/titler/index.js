@@ -148,6 +148,7 @@ titler.parseHTMLAndGetTitle = function (html, callback) {
         title = title.replace(/\t/g, '');
         title = title.replace(/\r\n/g, '');
         title = title.replace(/\n/g, ' ');
+        title = title.trim();
     }
     
     callback(title);
