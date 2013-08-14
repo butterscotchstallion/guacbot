@@ -36,4 +36,12 @@ describe('should detect questions', function () {
         
         assert.equal(expected, actual);
     });
+    
+    it('should parse a basic question with spaces at the end', function () {
+        var input    = 'guacamole: clipse wamp wamp?           ';
+        var expected = true;
+        var actual   = sleuth.isQuestion(input);
+        
+        assert.equal(expected, actual);
+    });
 });

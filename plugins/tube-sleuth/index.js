@@ -10,17 +10,27 @@ var request    = require('request');
 var sleuth     = {};
 
 sleuth.init = function (client) {
-    client.addListener('message#', function (nick, channel, message) {
-        var isAddressingBot = parser.isMessageAddressingBot(message, client.config.nick);
-        var isQuestion      = sleuth.isQuestion(message);
+    client.addListener('message#', function (nick, channel, text, message) {
+        var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
+        var isQuestion      = sleuth.isQuestion(text);
+        
+        console.log('text:', text);
+        console.log('addr:', isAddressingBot);
+        console.log('isQuestion:', isQuestion);
         
         if (isAddressingBot && isQuestion) {
             ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
+                console.log('ig:', ignored);
+                
                 if (!ignored) {
-                    var query  = sleuth.parseInputIntoQuery(message);
+                    var query  = sleuth.parseInputIntoQuery(text);
+                    
+                    console.log('query:', query);
                     
                     if (query) {
                         sleuth.getFirstSearchResult(query, function (video) {
+                            console.log(video);
+                            
                             var msg = [video.title, video.link].join(' - ');
 
                             client.say(channel, msg);
@@ -28,12 +38,15 @@ sleuth.init = function (client) {
                     }
                 }
             });
+        } else {
+            console.log('is not addr bot or not question');
         }
     });
 };
 
 sleuth.isQuestion = function (input) {
-    var lastChr = input.substring(input.length-1);
+    var trimmed = input.trim()
+    var lastChr = trimmed.substring(trimmed.length-1);
     
     return lastChr === '?';
 };
@@ -72,6 +85,8 @@ sleuth.getYoutubeSearchResponse = function (query, callback) {
     console.log(apiURL);
     
     request(apiURL, function (error, response, body) {
+        console.log(body);
+        
         if (!error && response.statusCode == 200) {
             var rawResponse  = JSON.parse(body);
             var videoInfo    = sleuth.parseResponse(rawResponse);
