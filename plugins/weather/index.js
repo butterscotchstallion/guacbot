@@ -16,8 +16,7 @@ weatherPlugin.init = function (client) {
         var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
         var host            = message.user + '@' + message.host;
         
-        if (isAddressingBot) {
-            
+        if (isAddressingBot) { 
             ignore.isIgnored(host, function (ignored) {
                 if (!ignored) {
                     var words = parser.splitMessageIntoWords(text);
@@ -54,10 +53,18 @@ weatherPlugin.init = function (client) {
                                             client.say(to, data);
                                         },
                                         debug: false
-                                    });
-                                    
+                                    });                                    
                                 } else {
-                                    client.say(to, 'No results for that query');
+                                    var messages = typeof weatherPlugin.weatherCfg.rememberLocationNotFoundMessages !== 'undefined' ? weatherPlugin.weatherCfg.rememberLocationNotFoundMessages : [];
+                                    var msg      = '';
+                                    
+                                    if (messages.length > 0) {
+                                        msg = messages[Math.floor(Math.random() * messages.length)];
+                                    } else {
+                                        msg = "I don't remember your zip code. Perhaps you could be kind of enough to remind me.";
+                                    }
+                                    
+                                    client.say(to, msg);
                                 }
                             });
                             
