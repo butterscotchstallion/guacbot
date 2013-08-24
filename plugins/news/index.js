@@ -214,7 +214,7 @@ news.getHeadlines = function (xml, site, callback) {
     
     parser.parseString(xml, function (err, result) {
         if (err) {
-            console.log(err);
+            console.log('Error parsing XML: ', err);
         }
         
         var headlines = [];
@@ -275,24 +275,13 @@ news.getHeadlines = function (xml, site, callback) {
                 }
             break;
             
-            case 'drudgereport':
-                var entries = result.feed.entry;
-                
-                for (var y = 0; y < entries.length; y++) {
-                    headlines.push({
-                        title: entries[y].title[0],
-                        link: entries[y]['feedburner:origLink'][0],
-                        site: site
-                    });
-                }
-            break;
-            
             case 'onion':
             case 'freedomsphoenix':                
             case 'bbc':
             case 'hackernews':
             case 'fulldisclosure':
             case 'aljazeera':
+            case 'fark':
                 var items = [];
                 
                 if (typeof result.rss !== 'undefined') {
