@@ -1,0 +1,120 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="/yrss.xsl" type="text/xsl" media="screen"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <ttl>10</ttl>
+    <copyright>Copyright (c) 2013 Yahoo!, Inc. All rights reserved.</copyright>
+    <language>en-us</language>
+    <image>
+      <width>126</width>
+      <height>15</height>
+      <link>http://sports.yahoo.com</link>
+      <title>Yahoo! Sports</title>
+      <url>http://l.yimg.com/a/i/us/sp/b/ysp_logo_rss.gif</url>
+    </image>
+    <title>Yahoo! Sports - NHL News</title>
+    <link>http://sports.yahoo.com/nhl</link>
+    <description>Latest news and information about the NHL.</description>
+    <item>
+      <media:content url="http://l.yimg.com/iu/api/res/1.2/bWsKYRkOhAc1U16RpA9i8A--/YXBwaWQ9eXZpZGVvO2NoPTEzNDg7Y3I9MTtjdz0xMzQ4O2R4PTE7ZHk9MTtmaT11bGNyb3A7aD0xMzA7cT0xMDA7dz0xMzA-/http://media.zenfs.com/en_us/Sports/ap/201309061333487863630" height="130" width="130" type="image/jpeg"/>
+      <media:credit role="provider">The Associated Press</media:credit>
+      <media:text type="html"><![CDATA[Pavel Bure of Vancouver Canucks dashes with the puck during the 3rd period of the game against Mighty Ducks of Anaheim in the National Hockey League season-opening series at Yoyogi Arena in Tokyo Sunday, Oct. 5, 1997. Anaheim defeated Vancouver 3-2 to split the two games, the first ever NHL season-opening series outside Noth America. (AP Photo/Itsuo Inouye)]]></media:text>
+      <title>Canucks to retire Pavel Bure's No. 10 (Yahoo! Sports)</title>
+      <link>http://us.rd.yahoo.com/sports/rss/nhl/SIG=12in4bf16/*http%3A//sports.yahoo.com/news/canucks-retire-pavel-bures-no-183152963--nhl.html</link>
+      <description><![CDATA[<p><a href="http://us.rd.yahoo.com/sports/rss/nhl/SIG=12in4bf16/*http%3A//sports.yahoo.com/news/canucks-retire-pavel-bures-no-183152963--nhl.html"><img src="http://l.yimg.com/iu/api/res/1.2/bWsKYRkOhAc1U16RpA9i8A--/YXBwaWQ9eXZpZGVvO2NoPTEzNDg7Y3I9MTtjdz0xMzQ4O2R4PTE7ZHk9MTtmaT11bGNyb3A7aD0xMzA7cT0xMDA7dz0xMzA-/http://media.zenfs.com/en_us/Sports/ap/201309061333487863630"  width="130" height="130"  alt="Pavel Bure of Vancouver Canucks dashes with the puck during the 3rd period of the game against Mighty Ducks of Anaheim in the National Hockey League season-opening series at Yoyogi Arena in Tokyo Sunday, Oct. 5, 1997. Anaheim defeated Vancouver 3-2 to split the two games, the first ever NHL season-opening series outside Noth America. (AP Photo/Itsuo Inouye)" align="left" border="0"></a></p><p>VANCOUVER, British Columbia (AP) -- The Canucks will retire Pavel Bure's No. 10 when Vancouver hosts the Toronto Maple Leafs on Nov. 2 at Rogers Arena.</p><br clear="all" />]]></description>
+      <pubDate>Fri, 06 Sep 2013 11:33:58 PDT</pubDate>
+      <category>NHL</category>
+      <guid isPermaLink="false">urn:newsml:sports.yahoo,lego:19780928:top,article,cf486118-3913-3c88-b7f0-372419642a85-l:1</guid>
+    </item>
+    <item>
+      <media:content url="http://l.yimg.com/iu/api/res/1.2/k1zWjWGh6ehnxckGJQSXnQ--/YXBwaWQ9eXZpZGVvO2NoPTIxMjE7Y3I9MTtjdz0yMTIxO2R4PTU5MDtkeT0xO2ZpPXVsY3JvcDtoPTEzMDtxPTEwMDt3PTEzMA--/http://media.zenfs.com/en_us/Sports/ap/201309051200432571402" height="130" width="130" type="image/jpeg"/>
+      <media:credit role="provider">The Associated Press</media:credit>
+      <media:text type="html"><![CDATA[Toronto Maple Leafs general manger Brian Burke at the first round of the National Hockey League entry draft Friday June, 24, 2011 in St. Paul, Minn..(AP Photo/Andy King)]]></media:text>
+      <title>Flames hire Burke to head hockey operations (Yahoo! Sports)</title>
+      <link>http://us.rd.yahoo.com/sports/rss/nhl/SIG=12thqcrkb/*http%3A//sports.yahoo.com/news/burke-flames-president-hockey-operations-165832832--nhl.html</link>
+      <description><![CDATA[<p><a href="http://us.rd.yahoo.com/sports/rss/nhl/SIG=12thqcrkb/*http%3A//sports.yahoo.com/news/burke-flames-president-hockey-operations-165832832--nhl.html"><img src="http://l.yimg.com/iu/api/res/1.2/k1zWjWGh6ehnxckGJQSXnQ--/YXBwaWQ9eXZpZGVvO2NoPTIxMjE7Y3I9MTtjdz0yMTIxO2R4PTU5MDtkeT0xO2ZpPXVsY3JvcDtoPTEzMDtxPTEwMDt3PTEzMA--/http://media.zenfs.com/en_us/Sports/ap/201309051200432571402"  width="130" height="130"  alt="Toronto Maple Leafs general manger Brian Burke at the first round of the National Hockey League entry draft Friday June, 24, 2011 in St. Paul, Minn..(AP Photo/Andy King)" align="left" border="0"></a></p><p>CALGARY, Alberta (AP) -- The Calgary Flames are looking to Brian Burke to help with their rebuilding effort.</p><br clear="all" />]]></description>
+      <pubDate>Thu, 05 Sep 2013 12:57:23 PDT</pubDate>
+      <category>NHL</category>
+      <guid isPermaLink="false">urn:newsml:sports.yahoo,lego:19780928:top,article,9f61a712-da22-34cb-ab37-35d9762bf317-l:1</guid>
+    </item>
+    <item>
+      <title>US to open 2014 hockey worlds against host Belarus (Yahoo! Sports)</title>
+      <link>http://us.rd.yahoo.com/sports/rss/nhl/SIG=12fp384bq/*http%3A//sports.yahoo.com/news/us-open-2014-hockey-worlds-095000825--nhl.html</link>
+      <description>ZURICH (AP) -- The United States will play host Belarus on the opening day of the 2014 hockey world championship.</description>
+      <pubDate>Thu, 05 Sep 2013 02:50:00 PDT</pubDate>
+      <category>NHL</category>
+      <guid isPermaLink="false">urn:newsml:sports.yahoo,lego:19780928:top,article,f824a782-b484-385f-8709-3df98ad33ff7-l:1</guid>
+    </item>
+    <item>
+      <title>Retired Stars star Mike Modano remarries (Yahoo! Sports)</title>
+      <link>http://us.rd.yahoo.com/sports/rss/nhl/SIG=12jvtonse/*http%3A//sports.yahoo.com/news/retired-stars-star-mike-modano-161218819--nhl.html</link>
+      <description>DALLAS (AP) -- Retired Dallas Stars center Mike Modano is on a Caribbean honeymoon after marrying professional golfer Allison Micheletti.</description>
+      <pubDate>Thu, 05 Sep 2013 09:12:18 PDT</pubDate>
+      <category>NHL</category>
+      <guid isPermaLink="false">urn:newsml:sports.yahoo,lego:19780928:top,article,1cff47c5-538c-3024-b30b-6e15be85d426-l:1</guid>
+    </item>
+    <item>
+      <media:content url="http://l.yimg.com/iu/api/res/1.2/3svL6eIgqS5Su11qZ6RV1g--/YXBwaWQ9eXZpZGVvO2NoPTI1Njg7Y3I9MTtjdz0yNTY4O2R4PTUxNTtkeT0xO2ZpPXVsY3JvcDtoPTEzMDtxPTEwMDt3PTEzMA--/http://media.zenfs.com/en_us/Sports/ap/201309041104398969379" height="130" width="130" type="image/jpeg"/>
+      <media:credit role="provider">The Associated Press</media:credit>
+      <media:text type="html"><![CDATA[FILE - In this Feb. 28, 2013 file photo, Chicago Blackhawks' Niklas Hjalmarsson, of Sweden, controls the puck during the second period of an NHL hockey game against the St. Louis Blues in St. Louis. The Blackhawks have agreed to a five-year contract extension with Hjalmarsson. The deal announced Wednesday, Sept. 4, 2013, runs through the 2018-19 season. (AP Photo/Jeff Roberson, File)]]></media:text>
+      <title>Blackhawks, Hjalmarsson agree to extension (Yahoo! Sports)</title>
+      <link>http://us.rd.yahoo.com/sports/rss/nhl/SIG=12rp8s9m3/*http%3A//sports.yahoo.com/news/blackhawks-hjalmarsson-agree-extension-145101572--nhl.html</link>
+      <description><![CDATA[<p><a href="http://us.rd.yahoo.com/sports/rss/nhl/SIG=12rp8s9m3/*http%3A//sports.yahoo.com/news/blackhawks-hjalmarsson-agree-extension-145101572--nhl.html"><img src="http://l.yimg.com/iu/api/res/1.2/3svL6eIgqS5Su11qZ6RV1g--/YXBwaWQ9eXZpZGVvO2NoPTI1Njg7Y3I9MTtjdz0yNTY4O2R4PTUxNTtkeT0xO2ZpPXVsY3JvcDtoPTEzMDtxPTEwMDt3PTEzMA--/http://media.zenfs.com/en_us/Sports/ap/201309041104398969379"  width="130" height="130"  alt="FILE - In this Feb. 28, 2013 file photo, Chicago Blackhawks' Niklas Hjalmarsson, of Sweden, controls the puck during the second period of an NHL hockey game against the St. Louis Blues in St. Louis. The Blackhawks have agreed to a five-year contract extension with Hjalmarsson. The deal announced Wednesday, Sept. 4, 2013, runs through the 2018-19 season. (AP Photo/Jeff Roberson, File)" align="left" border="0"></a></p><p>CHICAGO (AP) -- The Chicago Blackhawks have agreed to a five-year contract extension with defenseman Niklas Hjalmarsson.</p><br clear="all" />]]></description>
+      <pubDate>Wed, 04 Sep 2013 14:47:37 PDT</pubDate>
+      <category>NHL</category>
+      <guid isPermaLink="false">urn:newsml:sports.yahoo,lego:19780928:top,article,e872b4d6-4c38-325d-bc8b-822c6b3ba8da-l:1</guid>
+    </item>
+    <item>
+      <title>Blues promote Armstrong, Affleck (Yahoo! Sports)</title>
+      <link>http://us.rd.yahoo.com/sports/rss/nhl/SIG=12kn9r1i5/*http%3A//sports.yahoo.com/news/blues-promote-armstrong-affleck-174613008--nhl.html</link>
+      <description>ST. LOUIS (AP) -- The St. Louis Blues promoted general manager Doug Armstrong to president of hockey operations and Bruce Affleck to president of business operations.</description>
+      <pubDate>Wed, 04 Sep 2013 10:46:13 PDT</pubDate>
+      <category>NHL</category>
+      <guid isPermaLink="false">urn:newsml:sports.yahoo,lego:19780928:top,article,effe1ca0-d6cb-3362-a16b-3504be1baa3a-l:1</guid>
+    </item>
+    <item>
+      <title>Sabres' Grigorenko ineligible for prospect tourney (Yahoo! Sports)</title>
+      <link>http://us.rd.yahoo.com/sports/rss/nhl/SIG=132fhvt4s/*http%3A//sports.yahoo.com/news/sabres-grigorenko-ineligible-prospect-tourney-205243467--nhl.html</link>
+      <description>BUFFALO, N.Y. (AP) -- Sabres rookie center Mikhail Grigorenko has been ruled ineligible to play in the NHL Prospect Tournament this week because of the number of games he played with Buffalo last season.</description>
+      <pubDate>Wed, 04 Sep 2013 13:52:43 PDT</pubDate>
+      <category>NHL</category>
+      <guid isPermaLink="false">urn:newsml:sports.yahoo,lego:19780928:top,article,150454c6-3d53-36cf-87e3-561f1475abfc-l:1</guid>
+    </item>
+    <item>
+      <media:content url="http://l.yimg.com/iu/api/res/1.2/5m9Ac0LsoQD7yO65O_a2EA--/YXBwaWQ9eXZpZGVvO2NoPTM4Nztjcj0xO2N3PTM4NztkeD02MztkeT0xO2ZpPXVsY3JvcDtoPTEzMDtxPTEwMDt3PTEzMA--/http://media.zenfs.com/en_us/Sports/ap/201309020941348735955" height="130" width="130" type="image/jpeg"/>
+      <media:credit role="provider">The Associated Press</media:credit>
+      <media:text type="html"><![CDATA[FILE - In this June 24, 2013 file photo, Chicago Blackhawks goalie Corey Crawford hoists the Stanley Cup after the Blackhawks beat the Boston Bruins 3-2 in Game 6 of the NHL hockey Stanley Cup Finals, in Boston. The Blackhawks and Crawford have agreed to a six-year contract extension. The Blackhawks announced the deal on Monday, Sept. 2, 2013.(AP Photo/Elise Amendola, File)]]></media:text>
+      <title>Blackhawks announce extension for G Crawford (Yahoo! Sports)</title>
+      <link>http://us.rd.yahoo.com/sports/rss/nhl/SIG=12t6rhlop/*http%3A//sports.yahoo.com/news/blackhawks-announce-extension-g-crawford-143553685--nhl.html</link>
+      <description><![CDATA[<p><a href="http://us.rd.yahoo.com/sports/rss/nhl/SIG=12t6rhlop/*http%3A//sports.yahoo.com/news/blackhawks-announce-extension-g-crawford-143553685--nhl.html"><img src="http://l.yimg.com/iu/api/res/1.2/5m9Ac0LsoQD7yO65O_a2EA--/YXBwaWQ9eXZpZGVvO2NoPTM4Nztjcj0xO2N3PTM4NztkeD02MztkeT0xO2ZpPXVsY3JvcDtoPTEzMDtxPTEwMDt3PTEzMA--/http://media.zenfs.com/en_us/Sports/ap/201309020941348735955"  width="130" height="130"  alt="FILE - In this June 24, 2013 file photo, Chicago Blackhawks goalie Corey Crawford hoists the Stanley Cup after the Blackhawks beat the Boston Bruins 3-2 in Game 6 of the NHL hockey Stanley Cup Finals, in Boston. The Blackhawks and Crawford have agreed to a six-year contract extension. The Blackhawks announced the deal on Monday, Sept. 2, 2013.(AP Photo/Elise Amendola, File)" align="left" border="0"></a></p><p>CHICAGO (AP) -- Corey Crawford is having one great summer.</p><br clear="all" />]]></description>
+      <pubDate>Mon, 02 Sep 2013 18:26:32 PDT</pubDate>
+      <category>NHL</category>
+      <guid isPermaLink="false">urn:newsml:sports.yahoo,lego:19780928:top,article,996b6912-2934-38b8-97b0-428be8a52442-l:1</guid>
+    </item>
+    <item>
+      <media:content url="http://l.yimg.com/iu/api/res/1.2/hMkF2mQIKuQ1BBUsuFpqmg--/YXBwaWQ9eXZpZGVvO2NoPTI3NzY7Y3I9MTtjdz0yNzc2O2R4PTYwNDtkeT0xO2ZpPXVsY3JvcDtoPTEzMDtxPTEwMDt3PTEzMA--/http://media.zenfs.com/en_us/Sports/ap/201308301437526737494" height="130" width="130" type="image/jpeg"/>
+      <media:credit role="provider">The Associated Press</media:credit>
+      <media:text type="html"><![CDATA[FILE - In this April 3, 2013, file photo, Anaheim Ducks' Teemu Selanne, of Finland, celebrates his goal against the Dallas Stars during the second period of an NHL hockey game in Anaheim, Calif.. Selanne says he's returning to the Ducks for his 21st and final NHL season. (AP Photo/Jae C. Hong, File)]]></media:text>
+      <title>Teemu Selanne returns to Ducks for last NHL season (Yahoo! Sports)</title>
+      <link>http://us.rd.yahoo.com/sports/rss/nhl/SIG=12losps4a/*http%3A//sports.yahoo.com/news/teemu-selanne-returns-ducks-last-192347469--nhl.html</link>
+      <description><![CDATA[<p><a href="http://us.rd.yahoo.com/sports/rss/nhl/SIG=12losps4a/*http%3A//sports.yahoo.com/news/teemu-selanne-returns-ducks-last-192347469--nhl.html"><img src="http://l.yimg.com/iu/api/res/1.2/hMkF2mQIKuQ1BBUsuFpqmg--/YXBwaWQ9eXZpZGVvO2NoPTI3NzY7Y3I9MTtjdz0yNzc2O2R4PTYwNDtkeT0xO2ZpPXVsY3JvcDtoPTEzMDtxPTEwMDt3PTEzMA--/http://media.zenfs.com/en_us/Sports/ap/201308301437526737494"  width="130" height="130"  alt="FILE - In this April 3, 2013, file photo, Anaheim Ducks' Teemu Selanne, of Finland, celebrates his goal against the Dallas Stars during the second period of an NHL hockey game in Anaheim, Calif.. Selanne says he's returning to the Ducks for his 21st and final NHL season. (AP Photo/Jae C. Hong, File)" align="left" border="0"></a></p><p>ANAHEIM, Calif. (AP) -- Teemu Selanne is ready for his last skate.</p><br clear="all" />]]></description>
+      <pubDate>Fri, 30 Aug 2013 14:41:42 PDT</pubDate>
+      <category>NHL</category>
+      <guid isPermaLink="false">urn:newsml:sports.yahoo,lego:19780928:top,article,853e6205-da01-3d6e-84ab-f9e9cbacefd1-l:1</guid>
+    </item>
+    <item>
+      <media:content url="http://l.yimg.com/iu/api/res/1.2/vB7nRPIm0r786jAZZEg0lA--/YXBwaWQ9eXZpZGVvO2NoPTE2NjQ7Y3I9MTtjdz0xNjY0O2R4PTMyODtkeT0xO2ZpPXVsY3JvcDtoPTEzMDtxPTEwMDt3PTEzMA--/http://media.zenfs.com/en_us/Sports/ap/201308301217442747186" height="130" width="130" type="image/jpeg"/>
+      <media:credit role="provider">The Associated Press</media:credit>
+      <media:text type="html"><![CDATA[FILE - In this Jan. 13, 2013, file phot, Boston Bruins general manager Peter Chiarelli responds to a question from a reporter during a news conference before NHL hockey practice in Boston., The Bruins signed Chiarelli, who built the team that reached the Stanley Cup Finals twice in three years, to a four-year contract extension that would keep him in Boston through the 2017-18 season. (AP Photo/Steven Senne, File)]]></media:text>
+      <title>Bruins extend GM Peter Chiarelli 4 years (Yahoo! Sports)</title>
+      <link>http://us.rd.yahoo.com/sports/rss/nhl/SIG=12lhja0db/*http%3A//sports.yahoo.com/news/bruins-extend-gm-peter-chiarelli-211829961--nhl.html</link>
+      <description><![CDATA[<p><a href="http://us.rd.yahoo.com/sports/rss/nhl/SIG=12lhja0db/*http%3A//sports.yahoo.com/news/bruins-extend-gm-peter-chiarelli-211829961--nhl.html"><img src="http://l.yimg.com/iu/api/res/1.2/vB7nRPIm0r786jAZZEg0lA--/YXBwaWQ9eXZpZGVvO2NoPTE2NjQ7Y3I9MTtjdz0xNjY0O2R4PTMyODtkeT0xO2ZpPXVsY3JvcDtoPTEzMDtxPTEwMDt3PTEzMA--/http://media.zenfs.com/en_us/Sports/ap/201308301217442747186"  width="130" height="130"  alt="FILE - In this Jan. 13, 2013, file phot, Boston Bruins general manager Peter Chiarelli responds to a question from a reporter during a news conference before NHL hockey practice in Boston., The Bruins signed Chiarelli, who built the team that reached the Stanley Cup Finals twice in three years, to a four-year contract extension that would keep him in Boston through the 2017-18 season. (AP Photo/Steven Senne, File)" align="left" border="0"></a></p><p>Boston Bruins general manager Peter Chiarelli has a new contract.</p><br clear="all" />]]></description>
+      <pubDate>Fri, 30 Aug 2013 15:27:00 PDT</pubDate>
+      <category>NHL</category>
+      <guid isPermaLink="false">urn:newsml:sports.yahoo,lego:19780928:top,article,8d88c02c-4b4d-38ab-9e3b-49d0d373bfa2-l:1</guid>
+    </item>
+    <lastBuildDate>Fri, 06 Sep 2013 11:33:58 PDT</lastBuildDate>
+  </channel>
+</rss>
+<!-- fe64.sports.bf1.yahoo.com uncompressed/chunked Fri Sep  6 17:08:12 PDT 2013 -->

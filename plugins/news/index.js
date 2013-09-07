@@ -282,6 +282,9 @@ news.getHeadlines = function (xml, site, callback) {
             case 'fulldisclosure':
             case 'aljazeera':
             case 'fark':
+            case 'yahoo':
+            case 'tumblr':
+            case 'guardian':
                 var items = [];
                 
                 if (typeof result.rss !== 'undefined') {
