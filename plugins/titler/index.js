@@ -4,13 +4,20 @@
  *
  */
 "use strict";
-var request = require('request');
-var ignore  = require('../ignore/');
-var parser  = require('../../lib/messageParser');
-var moment  = require('moment');
-var cheerio = require('cheerio');
+var request    = require('request');
+var ignore     = require('../ignore/');
+var parser     = require('../../lib/messageParser');
+var moment     = require('moment');
+var cheerio    = require('cheerio');
+var easyimg    = require('easyimage');
+var path       = require('path');
+var fs         = require('fs');
+var filesize   = require('filesize');
+var repost     = require('../../plugins/repost');
+var Handlebars = require('handlebars');
 
 var titler  = {
+    imageInfoEnabled: false,
     lastTopicChange: null
 };
 
@@ -19,6 +26,7 @@ titler.loadConfig = function (cfg) {
 };
 
 titler.init = function (client) {
+    titler.pluginConfig = client.config.plugins.titler;
     titler.loadConfig(client.config);
     
     // Listen to messages from any channel
@@ -29,7 +37,7 @@ titler.init = function (client) {
                 
                 titler.getTitle (link, function (title) {
                     if (title) {
-                        client.say(channel, '^ ' + title);
+                        client.say(channel, titler.getTitleFromTemplate(title));
                     }
                 });
             }
@@ -54,8 +62,8 @@ titler.init = function (client) {
                     
                     if (link) {
                         titler.getTitle (link, function (title) {
-                            if (title) {
-                                client.say(channel, '^ ' + title);
+                            if (title) {                               
+                                client.say(channel, titler.getTitleFromTemplate(title));
                             }
                         });
                     }
@@ -63,6 +71,35 @@ titler.init = function (client) {
             });
         }
     });
+};
+
+titler.isBoldEnabled = function () {
+    var enabled = true;
+    
+    if (typeof titler.pluginConfig.boldTitles !== 'undefined') {
+        enabled = titler.pluginConfig.boldTitles;
+    }
+    
+    return enabled;
+};
+
+titler.getBoldString = function (input) {
+    return "\u0002" + input;
+};
+
+titler.getTitleFromTemplate = function (title) {
+    var defaultTemplate = '^ {{title}}';
+    var compileMe       = titler.pluginConfig.titleTemplate || defaultTemplate;
+    var titleTemplate   = Handlebars.compile(compileMe);
+    var tpl             = titleTemplate({
+        title: title
+    });
+    
+    if (titler.isBoldEnabled()) {
+        tpl = titler.getBoldString(tpl);
+    }
+    
+    return tpl;
 };
 
 titler.getFirstLinkFromString = function (input) {
@@ -104,7 +141,7 @@ titler.isIgnoredDomain = function (domain) {
     return domains && domains.indexOf(domain) > -1;
 };
 
-titler.getPageHTML = function (url, callback) {
+titler.requestWebsite = function (url, websiteCallback, imageCallback) {
     var u               = require('url');
     var host            = u.parse(url).host;
     var isIgnoredDomain = titler.isIgnoredDomain(host);
@@ -119,21 +156,78 @@ titler.getPageHTML = function (url, callback) {
             },
         };
         
-        request(options, function (error, response, body) {
-            var isWebsite = !error ? titler.isHTML(response.headers['content-type']) : false;
-            
-            if (isWebsite) {
-                if (!error && response.statusCode == 200) {
-                    callback(body);
+        request(options, function (error, response, body) {            
+            if (!error) {
+                var type      = response.headers['content-type'];
+                var isWebsite = titler.isHTML(type);
+                
+                if (isWebsite) {
+                    if (response.statusCode == 200) {
+                        websiteCallback(body);
+                    } else {
+                        console.log('titler error: ', 
+                                    error, 
+                                    ' response code:', 
+                                    response.statusCode,
+                                    " URL: ", url);
+                    }
                 } else {
-                    console.log('titler error: ', error);
+                    if (titler.imageInfoEnabled) {
+                        var isImage = titler.isImage(type);
+                        
+                        if (isImage) {
+                            repost.isRepost(null, url, function (rpst) {
+                                if (rpst === false) {
+                                    titler.downloadFile(options.uri, function (filename, length) {
+                                        console.log('file downloaded:', filename);
+                                        
+                                        titler.getImageInfo(filename, function (err, img, stderr) {
+                                            if (err || stderr) {
+                                                console.log('Error getting image info: ', err, stderr);
+                                            } else {
+                                                imageCallback(err, img, stderr, length, filename);
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+                        }
+                    } else {
+                        //console.log('not an image:', type);
+                    }
                 }
             }
         });
-        
-    } else {
-        return false;
     }
+};
+
+titler.downloadFile = function (uri, callback) {
+    request.head(uri, function (err, res, body) {
+        //console.log('content-type:', res.headers['content-type']);
+        //console.log('content-length:', res.headers['content-length']);
+        
+        var filename  = './images/';
+            filename += titler.generateFilename(uri);
+        
+        var req = request(uri).pipe(fs.createWriteStream(filename));
+        
+        req.on('finish', function () {
+            callback(filename, res.headers['content-length']);
+        });
+    });
+};
+
+titler.generateFilename = function (uri) {
+    var p         = path.normalize(uri);
+    var basename  = path.basename(p);
+    var filename  = Math.floor(Math.random() * 100000);
+        filename += '-' + basename;
+    
+    return filename;
+};
+
+titler.isImage = function (contentType) {
+    return contentType.indexOf('image/') > -1;
 };
 
 titler.isHTML = function (contentType) {
@@ -145,7 +239,8 @@ titler.parseHTMLAndGetTitle = function (html, callback) {
     var title = $('title').text();
     
     if (title && title.length > 0) {
-        title = title.replace(/\t/g, '');
+        title = title.replace(/\t\t/g, '');
+        title = title.replace(/\t/g, ' ');
         title = title.replace(/\r\n/g, '');
         title = title.replace(/\n/g, ' ');
         title = title.trim();
@@ -171,12 +266,37 @@ titler.getTitle = function (url, callback) {
             });
             
         } else {
-            titler.getPageHTML(url, function (html) {
-                //console.log('parsing title out of HTML');
+            var websiteCallback = function (html) {
                 titler.parseHTMLAndGetTitle(html, function (title) {
                     callback(title);
                 });
-            });
+            };
+            
+            var imageCallback = function (err, img, stderr, length, filename) {
+                //console.log(length);
+                //console.log(err);
+                //console.log(stderr);
+                
+                var hrfs  = length ? filesize(length, 0) : 0;
+                var msg   = [img.type, 
+                             img.width + 'x' + img.height];
+                
+                if (length) {             
+                    msg.push(hrfs);
+                }
+                
+                var title = msg.join(' ');
+                
+                if (err) {
+                    console.log('Image info error: ', err);
+                } else {
+                    callback(title);
+                    fs.unlinkSync(filename);
+                    console.log('file deleted: ', filename);
+                }
+            };
+            
+            titler.requestWebsite(url, websiteCallback, imageCallback);
         }
         
     } else {
@@ -228,8 +348,6 @@ titler.getYoutubeVideoID = function (url) {
     var query   = info.query;
     var videoID = '';
     
-    //console.log(info);
-    
     if (query) {
         var qsInfo = qs.parse(info.query);        
         videoID    = qsInfo.v;        
@@ -247,6 +365,10 @@ titler.isYoutubeURL = function (host) {
     var isShortenedYoutubeDomain = host === 'youtu.be';
     
     return looksLikeAYoutubeDomain || isShortenedYoutubeDomain;
+};
+
+titler.getImageInfo = function (path, callback) {
+    easyimg.info(path, callback);
 };
 
 module.exports = titler;

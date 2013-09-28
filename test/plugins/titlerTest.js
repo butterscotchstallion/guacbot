@@ -8,6 +8,45 @@ var fs     = require('fs');
 var assert = require("assert");
 var titler = require('../../plugins/titler/');
 
+describe('get title template', function () {
+    beforeEach(function () {
+        titler.init({
+            "config": {
+                "plugins": {
+                    "titler": {
+                        "boldTitles": false,
+                        "titleTemplate": "^ {{title}}",
+                        "ignoreDomains": [
+                        
+                        ]
+                    }
+                }
+            },
+            
+            "addListener": function () {
+            
+            }
+        });
+    });
+    
+    it('given a title', function () {
+        var expected = '^ the only thing hotter than my flow is da block';
+        var actual   = titler.getTitleFromTemplate('the only thing hotter than my flow is da block');  
+        
+        assert.equal(expected, actual);
+    });
+});
+
+describe('getYoutubeVideoID', function () {
+    it('should get video id given a URL', function () {   
+        var url      = 'http://youtu.be/veNtA5EziU0';
+        var expected = 'veNtA5EziU0';
+        var actual   = titler.getYoutubeVideoID(url);  
+        
+        assert.equal(expected, actual);
+    });
+});
+
 describe('youtube views undefined bug', function () {
     it('views should be defined', function () {   
         var videoTitle = "One Mint Julep";
@@ -81,7 +120,6 @@ describe('reload', function () {
 });
 
 describe('ignore domains', function () {
-
     it('should not return false domain is not ignored', function () {
         var input    = 'http://momentjs.com/docs';
         var expected = false;    
@@ -102,16 +140,16 @@ describe('ignore domains', function () {
             }
         });
         
-        var actual = titler.getPageHTML(input, function (body) {
+        var actual = titler.requestWebsite(input, function (body) {
             return body;
         });
         
         assert.notEqual(expected, actual);
     }); 
     
-    it('should return false if domain is ignored', function () {
+    it('should be undefined if domain is ignored', function () {
         var input    = 'http://i.imgur.com/dSTFnd3.gif';
-        var expected = false;
+        var expected = undefined;
         
         titler.init({
             "config": {
@@ -129,10 +167,11 @@ describe('ignore domains', function () {
             }
         });
         
-        var actual   = titler.getPageHTML(input);
-        
-        assert.equal(expected, actual);
-    }); 
+        titler.requestWebsite(input, function (html) {
+            assert.equal(expected, html);
+            done();
+        });
+    });
 });
 
 describe('Youtube Info', function () {
@@ -256,19 +295,6 @@ describe('title with newline', function() {
     });
 });
 
-describe('more non-html', function() {
-    it('should return a blank string if its not valid HTML', function (done) {
-        var url = 'http://24.media.tumblr.com/be6c8c73fa1e005e79f881ee24cea28e/tumblr_mqlmmpuZc41r3gb3zo1_400.gif';
-            url = 'http://reddit.com';
-            url = 'http://25.media.tumblr.com/b8cdb075875ebcd66eba4b51bf40c42b/tumblr_mqmeg5gOY11qdlh1io1_400.gif';
-        
-        titler.getPageHTML(url, function (response) {
-            
-            done();
-        });
-    });
-});
-
 describe('title with extra spaces', function() {
     it('should return a string without spaces on the end', function (done) {
         var html = fs.readFileSync('fixture/titler-with-spaces.html', 'utf8');
@@ -281,4 +307,36 @@ describe('title with extra spaces', function() {
             done();
         });
     });
+    
+    it('should replace tabs with spaces', function (done) {
+        var html = fs.readFileSync('fixture/titler-with-tabs.html', 'utf8');
+        
+        titler.parseHTMLAndGetTitle(html, function (title) {
+            assert.equal(title.indexOf("\r\n"), -1);
+            assert.equal(title.indexOf("\n"), -1);
+            assert.equal(title.indexOf("\t"), -1);
+            assert.equal(title, "Full Disclosure: [SECURITY] [DSA 2741-1] chromium-browser security	update");
+            done();
+        });
+    });
 });
+
+/*
+describe('title image info', function() {
+    it('should return info about an image', function (done) {
+        //var data = fs.readFileSync('fixture/costanza-russian-hat.jpg', 'utf8');
+        
+        titler.getImageInfo('./fixture/costanza-russian-hat.jpg', function (err, img, stderr) {
+            console.log(img);
+            
+            // 510x370
+            assert.equal(img.width, 510);
+            assert.equal(img.height, 370);
+            assert.equal(img.type, 'JPEG');
+            assert.equal(img.size, '54467B');
+            
+            done();
+        });
+    });
+});
+*/
