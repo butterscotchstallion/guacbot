@@ -27,8 +27,12 @@ info.init  = function (client) {
                         break;
                         
                         case 'plugins': 
-                            info.getLoadedPlugins(function (plugins) {
-                                client.say(channel, 'Loaded plugins (' + plugins.length + '): ');
+                            info.getLoadedPlugins(function (plugins) {                            
+                                var enabledPlugins = pm.getEnabledPlugins();                                
+                                var msg  = 'Loaded plugins (' + plugins.length + '): ';
+                                    msg += enabledPlugins.join(', ');
+                                
+                                client.say(channel, msg);
                             });
                         break;
                     }
@@ -49,7 +53,7 @@ info.getUptime = function (clientConnectTime, callback) {
 };
 
 info.getLoadedPlugins = function (callback) {
-    callback(pm.getLoadedPlugins().join(', '));
+    callback(pm.getLoadedPlugins());
 };
 
 module.exports = info;
