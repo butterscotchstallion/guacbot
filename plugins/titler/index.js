@@ -9,12 +9,13 @@ var ignore     = require('../ignore/');
 var parser     = require('../../lib/messageParser');
 var moment     = require('moment');
 var cheerio    = require('cheerio');
-//var easyimg    = require('easyimage');
+var easyimg    = require('easyimage');
 var path       = require('path');
 var fs         = require('fs');
 var filesize   = require('filesize');
 var repost     = require('../../plugins/repost');
 var Handlebars = require('handlebars');
+var ent        = require('ent');
 
 var titler  = {
     imageInfoEnabled: false,
@@ -99,6 +100,8 @@ titler.getTitleFromTemplate = function (title) {
         tpl = titler.getBoldString(tpl);
     }
     
+    tpl = ent.decode(tpl);
+    
     return tpl;
 };
 
@@ -138,7 +141,7 @@ titler.isIgnoredDomain = function (domain) {
         domains = typeof(titler.cfg.ignoreDomains) !== 'undefined' ? titler.cfg.ignoreDomains : [];
     }
     
-    return domains && domains.indexOf(domain) > -1;
+    return domains && domains.indexOf(domain) !== -1;
 };
 
 titler.requestWebsite = function (url, websiteCallback, imageCallback) {
@@ -203,9 +206,6 @@ titler.requestWebsite = function (url, websiteCallback, imageCallback) {
 
 titler.downloadFile = function (uri, callback) {
     request.head(uri, function (err, res, body) {
-        //console.log('content-type:', res.headers['content-type']);
-        //console.log('content-length:', res.headers['content-length']);
-        
         var filename  = './images/';
             filename += titler.generateFilename(uri);
         
@@ -227,11 +227,11 @@ titler.generateFilename = function (uri) {
 };
 
 titler.isImage = function (contentType) {
-    return contentType.indexOf('image/') > -1;
+    return contentType.indexOf('image/')    !== -1;
 };
 
 titler.isHTML = function (contentType) {
-    return contentType.indexOf('text/html') > -1;
+    return contentType.indexOf('text/html') !== -1;
 };
 
 titler.parseHTMLAndGetTitle = function (html, callback) {
@@ -305,16 +305,14 @@ titler.getTitle = function (url, callback) {
 };
 
 titler.getYoutubeVideoTitleDetailString = function (data) {
-    var viewCount = typeof(data.viewCount) !== 'undefined' ? data.viewCount : 0;
-    var rating    = typeof(data.rating)    !== 'undefined' ? data.rating    : 0;
-    var likeCount = typeof(data.likeCount) !== 'undefined' ? data.likeCount : 0;
+    var viewCount = typeof data.viewCount !== 'undefined' ? data.viewCount : 0;
+    var rating    = typeof data.rating    !== 'undefined' ? data.rating    : 0;
+    var likeCount = typeof data.likeCount !== 'undefined' ? data.likeCount : 0;
     
-    var title     = data.title;
+    var title     = ent.decode(data.title);
         title    += ' - Rating: ' + rating; 
         title    += ' - Views: '  + viewCount;
         title    += ' - Likes: '  + likeCount;
-    
-    //console.log(title);
     
     return title;
 };
