@@ -2,9 +2,6 @@
  * ignore - ignore by hostmask. other plugins use this to check if the nick
  * asking for something is ignored first
  *
- * TODO:
- * - persist ignores to db
- *
  */
 "use strict";
 
@@ -68,9 +65,16 @@ ig.add = function (hostmask, callback) {
 };
 
 ig.isIgnored = function (hostmask, callback) {
+    // Temporary really ugly fix until refactor
+    if (hostmask === 'undefined@undefined') {
+        return false;
+    }
+    
     var q  = ' SELECT COUNT(*) AS ignored';
         q += ' FROM ignored';
         q += ' WHERE host = ?';
+    
+    console.log('checking if ' + hostmask + ' is ignored');
     
     db.connection.query(q, [hostmask], function (err, rows, fields) {
         if (err) {
@@ -79,6 +83,10 @@ ig.isIgnored = function (hostmask, callback) {
         
         if (rows && typeof callback === 'function' ) {
             callback(!!rows[0].ignored, err);
+            
+            if (!!rows[0].ignored) {
+                console.log(hostmask + ' is ignored');
+            }
         }
     });
 };
