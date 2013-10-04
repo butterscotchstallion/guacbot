@@ -84,8 +84,14 @@ titler.isBoldEnabled = function () {
     return enabled;
 };
 
-titler.getBoldString = function (input) {
-    return "\u0002" + input;
+titler.getBoldString = function (input, closingTag) {
+    var boldString = "\u0002" + input;
+    
+    if (typeof closingTag === 'undefined' || closingTag) {
+        boldString += "\u0002";
+    }
+    
+    return boldString;
 };
 
 titler.getCompiledTemplate = function (compileMe, data) {
@@ -101,7 +107,7 @@ titler.getYoutubeTitleFromTemplate = function (data, template) {
     var tpl             = typeof template === 'string' ? template : defaultTemplate;
     
     if (titler.isBoldEnabled()) {
-        tpl = titler.getBoldString(tpl);
+        tpl = '^ ' + titler.getBoldString('{{{title}}}', true) + ' :: {{{description}}}';
     }
     
     return titler.getCompiledTemplate(tpl, details);
