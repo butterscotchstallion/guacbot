@@ -8,6 +8,31 @@ var fs     = require('fs');
 var assert = require("assert");
 var titler = require('../../plugins/titler/');
 
+describe('youtube title templates', function () {
+    var info    = JSON.parse(fs.readFileSync('fixture/youtubeVideoLongDecimal.json', 'utf8')); 
+    var details = titler.getYoutubeVideoTitleDetails(info);
+    
+    it('should get template', function () {   
+        var info     = JSON.parse(fs.readFileSync('fixture/youtubeVideoLongDecimal.json', 'utf8')); 
+        var input    = '^ {{{title}}} :: {{{description}}}';
+        var expected = "^ A Prostitute Attacks Oklahoma's Own Video Vigilante & is Arrested :: 1/26/2010 - OKC, OK USA -- A business owner in South OKC calls Oklahoma\'s own Video Vigilante Brian Bates and asks for his assistance in running off street hookers working near his business. When Bat...";
+        var data     = {
+            title: details.title,
+            description: details.description
+        };
+        var actual   = titler.getYoutubeTitleFromTemplate(data, input);
+        
+        assert.equal(expected, actual);
+    });
+    
+    it('should not have newlines in the description', function () {
+        var jsonWithNewLines = JSON.parse(fs.readFileSync('fixture/youtubeVideoNewlinesInDescription.json', 'utf8')); 
+        var actual           = titler.getYoutubeVideoTitleDetails(jsonWithNewLines);
+        
+        assert.equal(actual.description.indexOf('\n'), -1);
+    });
+});
+
 describe('get title template', function () {
     beforeEach(function () {
         titler.init({
@@ -175,6 +200,13 @@ describe('ignore domains', function () {
 });
 
 describe('Youtube Info', function () {
+    it('should url decode titles', function () {
+        var info = JSON.parse(fs.readFileSync('fixture/youtubeVideoTitleWithQuotes.json', 'utf8'));
+        var title = titler.getYoutubeVideoTitleDetailString(info);
+        
+        assert.equal(title.indexOf('&quot;'), -1);
+    });
+    
     it('should get the video ID given a shortened URL', function () {
         var url     = 'http://youtu.be/veNtA5EziU0';
         
@@ -184,8 +216,7 @@ describe('Youtube Info', function () {
     });
     
     it('should get the video ID given a URL', function () {
-        var url     = 'http://www.youtube.com/watch?v=7B9z6VEzfDE';
-        
+        var url     = 'http://www.youtube.com/watch?v=7B9z6VEzfDE';        
         var videoID = titler.getYoutubeVideoID(url);
         
         assert.equal(videoID, '7B9z6VEzfDE');
@@ -201,7 +232,15 @@ describe('Youtube Info', function () {
             assert.notEqual(data.viewCount, 'undefined');
             assert.notEqual(data.likeCount, 'undefined');
             assert.notEqual(data.rating, 'undefined');
+            assert.notEqual(data.description, 'undefined');
         });
+    });
+    
+    it('should round the rating to two decimal places', function () {        
+        var info   = JSON.parse(fs.readFileSync('fixture/youtubeVideoLongDecimal.json', 'utf8'));
+        var actual = titler.getYoutubeVideoTitleDetails(info);
+ 
+        assert.equal(actual.rating.toString().length, 4);
     });
 });
 

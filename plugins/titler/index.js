@@ -38,7 +38,7 @@ titler.init = function (client) {
                 
                 titler.getTitle (link, function (title) {
                     if (title) {
-                        client.say(channel, titler.getTitleFromTemplate(title));
+                        client.say(channel, title);
                     }
                 });
             }
@@ -64,7 +64,7 @@ titler.init = function (client) {
                     if (link) {
                         titler.getTitle (link, function (title) {
                             if (title) {                               
-                                client.say(channel, titler.getTitleFromTemplate(title));
+                                client.say(channel, title);
                             }
                         });
                     }
@@ -88,11 +88,29 @@ titler.getBoldString = function (input) {
     return "\u0002" + input;
 };
 
+titler.getCompiledTemplate = function (compileMe, data) {
+    var titleTemplate   = Handlebars.compile(compileMe);
+    var tpl             = titleTemplate(data);
+    
+    return tpl;
+};
+
+titler.getYoutubeTitleFromTemplate = function (data, template) {
+    var details         = titler.getYoutubeVideoTitleDetails(data);
+    var defaultTemplate = '^ {{{title}}} :: {{{description}}}';
+    var tpl             = typeof template === 'string' ? template : defaultTemplate;
+    
+    if (titler.isBoldEnabled()) {
+        tpl = titler.getBoldString(tpl);
+    }
+    
+    return titler.getCompiledTemplate(tpl, details);
+};
+
 titler.getTitleFromTemplate = function (title) {
     var defaultTemplate = '^ {{title}}';
     var compileMe       = titler.pluginConfig.titleTemplate || defaultTemplate;
-    var titleTemplate   = Handlebars.compile(compileMe);
-    var tpl             = titleTemplate({
+    var tpl             = titler.getCompiledTemplate(compileMe, {
         title: title
     });
     
@@ -259,8 +277,8 @@ titler.getTitle = function (url, callback) {
         if (info.host && titler.isYoutubeURL(info.host)) {        
             
             // Build title based on API data
-            titler.getYoutubeVideoInfo(url, function (data) {
-                var title = titler.getYoutubeVideoTitleDetailString(data);
+            titler.getYoutubeVideoInfo(url, function (data) {              
+                var title = titler.getYoutubeTitleFromTemplate(data);
                 
                 callback(title);
             });
@@ -304,17 +322,31 @@ titler.getTitle = function (url, callback) {
     }
 };
 
-titler.getYoutubeVideoTitleDetailString = function (data) {
-    var viewCount = typeof data.viewCount !== 'undefined' ? data.viewCount : 0;
-    var rating    = typeof data.rating    !== 'undefined' ? data.rating    : 0;
-    var likeCount = typeof data.likeCount !== 'undefined' ? data.likeCount : 0;
+titler.getYoutubeVideoTitleDetails = function (json) {
+    //var data       = json.data;
+    var data       = json;
+    var viewCount  = typeof data.viewCount   !== 'undefined' ? data.viewCount   : 0;
+    var rating     = typeof data.rating      !== 'undefined' ? data.rating      : 0;
+    var likeCount  = typeof data.likeCount   !== 'undefined' ? data.likeCount   : 0;
+    var desc       = typeof data.description !== 'undefined' ? data.description : '';
+    var descMaxLen = 199;
     
-    var title     = ent.decode(data.title);
-        title    += ' - Rating: ' + rating; 
-        title    += ' - Views: '  + viewCount;
-        title    += ' - Likes: '  + likeCount;
+    // Replace newlines with spaces
+    desc = desc.replace(/\n/g, ' ');
     
-    return title;
+    if (desc.length > descMaxLen) {
+        desc = desc.substring(0, descMaxLen) + '...';
+    }
+    
+    //console.log(desc);
+    
+    return {
+        title: ent.decode(data.title),
+        description: desc,
+        viewCount: viewCount,
+        rating: rating.toFixed(2),
+        likeCount: likeCount
+    };
 };
 
 titler.getYoutubeVideoInfo = function (url, callback) {
