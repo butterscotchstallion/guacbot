@@ -17,14 +17,14 @@ bw.loadConfig = function (cfg) {
 bw.init = function (client) {
     bw.loadConfig(client.config);
     
-    client.addListener('message#', function (nick, channel, text, message) {
+    client.ame.on('actionableMessageAddressingBot', function (info) {
         var words                   = bw.cfg.words || [];
-        var messageContainsBadWords = bw.messageContainsBadWords(words, text);
+        var messageContainsBadWords = bw.messageContainsBadWords(words, info.message);
         var actions                 = bw.cfg.actions.split(',');
         var info                    = {
             userInfo: {
-                user: message.user,
-                host: message.host
+                user: info.info.user,
+                host: info.info.host
             },
             pluginCfg: bw.adminConfig
         };
@@ -34,7 +34,7 @@ bw.init = function (client) {
                 var alen = actions.length;
                 
                 for (var j = 0; j < alen; j++) {
-                    bw.performAction(actions[j], channel, nick);
+                    bw.performAction(actions[j], info.channel, info.nick);
                 }
             }
         }

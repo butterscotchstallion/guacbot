@@ -12,79 +12,66 @@ var weatherPlugin = { };
 weatherPlugin.init = function (client) {
     weatherPlugin.weatherCfg = client.config.plugins.weather;
     
-    client.addListener('message#', function (nick, to, text, message) {
-        var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
-        var host            = message.user + '@' + message.host;
+    client.ame.on('actionableMessageAddressingBot', function (info) {    
+        var words = parser.splitMessageIntoWords(info.message);
         
-        if (isAddressingBot) { 
-            ignore.isIgnored(host, function (ignored) {
-                if (!ignored) {
-                    var words = parser.splitMessageIntoWords(text);
-                    
-                    if (words[1] === 'weather') {
-                        console.log('retrieving weather for ' + nick);
-                        
-                        var query = words.slice(2, words.length).join(' ').trim();                        
-                        var storeLocationEnabled = weatherPlugin.weatherCfg.rememberLocation || false;
-                        
-                        if (storeLocationEnabled) {
-                            if (query) {
-                                weatherPlugin.storeLocation({
-                                    nick: nick,
-                                    host: host,
-                                    location: query,
-                                    callback: function (result, err) {
-                                        //console.log(result);
-                                        
-                                        if (err) {
-                                            console.log('weather store location err', err);
-                                        }
-                                    }
-                                });
-                            }
-                            
-                            // get location from db
-                            weatherPlugin.getStoredLocation(host, function (stored) {
-                                if (typeof stored !== 'undefined' && stored.location) {
-                                    weatherPlugin.query({
-                                        apiKey: client.config.plugins.weather.apiKey,
-                                        query: stored.location,
-                                        callback: function (data) {
-                                            client.say(to, data);
-                                        },
-                                        debug: false
-                                    });                                    
-                                } else {
-                                    var messages = typeof weatherPlugin.weatherCfg.rememberLocationNotFoundMessages !== 'undefined' ? weatherPlugin.weatherCfg.rememberLocationNotFoundMessages : [];
-                                    var msg      = '';
-                                    
-                                    if (messages.length > 0) {
-                                        msg = messages[Math.floor(Math.random() * messages.length)];
-                                    } else {
-                                        msg = "I don't remember your zip code. Perhaps you could be kind of enough to remind me.";
-                                    }
-                                    
-                                    client.say(to, msg);
-                                }
-                            });
-                            
-                        } else {
-                            if (query) {
-                                weatherPlugin.query({
-                                    apiKey: client.config.plugins.weather.apiKey,
-                                    query: query,
-                                    callback: function (data) {
-                                        client.say(to, data);
-                                    },
-                                    debug: false
-                                });
-                            } else {
-                                client.say(to, 'No results for that query');
+        if (words[1] === 'weather') {
+            var query                = words.slice(2, words.length).join(' ').trim();                        
+            var storeLocationEnabled = weatherPlugin.weatherCfg.rememberLocation || false;
+            
+            if (storeLocationEnabled) {
+                if (query) {
+                    weatherPlugin.storeLocation({
+                        nick: info.nick,
+                        host: info.info.host,
+                        location: query,
+                        callback: function (result, err) {
+                            if (err) {
+                                console.log('weather store location err: ', err);
                             }
                         }
-                    }
+                    });
                 }
-            });
+                
+                // get location from db
+                weatherPlugin.getStoredLocation(info.info.host, function (stored) {
+                    if (typeof stored !== 'undefined' && stored.location) {
+                        weatherPlugin.query({
+                            apiKey: client.config.plugins.weather.apiKey,
+                            query: stored.location,
+                            callback: function (data) {
+                                client.say(info.channel, data);
+                            },
+                            debug: false
+                        });                                    
+                    } else {
+                        var messages = typeof weatherPlugin.weatherCfg.rememberLocationNotFoundMessages !== 'undefined' ? weatherPlugin.weatherCfg.rememberLocationNotFoundMessages : [];
+                        var msg      = '';
+                        
+                        if (messages.length > 0) {
+                            msg = messages[Math.floor(Math.random() * messages.length)];
+                        } else {
+                            msg = "I don't remember your zip code. Perhaps you could be kind of enough to remind me.";
+                        }
+                        
+                        client.say(info.channel, msg);
+                    }
+                });
+                
+            } else {
+                if (query) {
+                    weatherPlugin.query({
+                        apiKey: client.config.plugins.weather.apiKey,
+                        query: query,
+                        callback: function (data) {
+                            client.say(info.channel, data);
+                        },
+                        debug: false
+                    });
+                } else {
+                    client.say(info.channel, 'No results for that query');
+                }
+            }
         }
     });
 };

@@ -20,34 +20,31 @@ admin.loadConfig = function (cfg) {
 };
 
 admin.init = function (client) {    
-    admin.client = client;
+    admin.client    = client;
+    admin.pluginCfg = client.config.plugins.admin;
     
     admin.loadConfig(client.config);
     
-    client.addListener('message#', function (nick, to, text, message) {
-        var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
-
-        if (isAddressingBot) {
-            var words    = parser.splitMessageIntoWords(text);
-            var command  = words[1];
-            var triggers = admin.getTriggersFromConfig(admin.pluginCfg);
-            var triglen  = triggers.length;
-            
-            for (var j = 0; j < triglen; j++) {
-                if (triggers[j].trigger === command) { 
-                    admin.executeCommand({
-                        client: client,
-                        command: triggers[j].command,
-                        channel: to,
-                        nick: nick,
-                        words: words,
-                        userInfo: {
-                            user: message.user,
-                            host: message.host
-                        },
-                        pluginCfg: admin.pluginCfg
-                    });
-                }
+    client.ame.on('actionableMessageAddressingBot', function (info) {        
+        var words    = parser.splitMessageIntoWords(info.message);
+        var command  = words[1];
+        var triggers = admin.getTriggersFromConfig(admin.pluginCfg);
+        var triglen  = triggers.length;
+        
+        for (var j = 0; j < triglen; j++) {
+            if (triggers[j].trigger === command) {
+                admin.executeCommand({
+                    client: client,
+                    command: triggers[j].command,
+                    channel: info.channel,
+                    nick: info.nick,
+                    words: words,
+                    userInfo: {
+                        user: info.info.user,
+                        host: info.info.host
+                    },
+                    pluginCfg: admin.pluginCfg
+                });
             }
         }
     });
@@ -55,7 +52,7 @@ admin.init = function (client) {
 
 admin.userIsAdmin = function (info) {
     var mask   = info.userInfo.user + '@' + info.userInfo.host;
-    var admins = info.pluginCfg.admins;
+    var admins = admin.pluginCfg.admins;
     var olen   = admins.length;
     var match  = false;
     

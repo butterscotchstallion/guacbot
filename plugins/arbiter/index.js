@@ -9,27 +9,19 @@ var parser  = require('../../lib/messageParser');
 var ignore  = require('../../plugins/ignore/');
 
 arbiter.init = function (client) {
-    client.addListener('message#', function (nick, channel, text, message) {
-        var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
+    client.ame.on('actionableMessageAddressingBot', function (info) {        
+        var words      = parser.splitMessageIntoWords(info.message);
+        var choiceTxt  = words.slice(1).join(' ');
+        var isDecision = arbiter.isDecision(info.message);
         
-        if (isAddressingBot) {
-            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
-                if (!ignored) {
-                    var words      = parser.splitMessageIntoWords(text);
-                    var choiceTxt  = words.slice(1).join(' ');
-                    var isDecision = arbiter.isDecision(text);
-                    
-                    if (isDecision) {
-                        var output = arbiter.decide(choiceTxt);
-                        
-                        if (output) {
-                            client.say(channel, output);
-                        } else {
-                            client.say(channel, 'idk lol');
-                        }
-                    }
-                }
-            });
+        if (isDecision) {
+            var output = arbiter.decide(choiceTxt);
+            
+            if (output) {
+                client.say(info.channel, output);
+            } else {
+                client.say(info.channel, 'idk lol');
+            }
         }
     });
 };
@@ -59,8 +51,6 @@ arbiter.applyChoiceSelectionIndicators = function (choices, selected) {
     var output            = '';
     var indicator         = '[ ] ';
     var selectedIndicator = '[✓] ';
-    
-    //console.log(choices);
     
     for (var j = 0; j < clen; j++) {
         if (choices[j]) {

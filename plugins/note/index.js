@@ -13,55 +13,51 @@ var irc      = require('irc');
 var note     = {};
 
 note.init = function (client) {
-    client.addListener('message#', function (nick, channel, text, message) {
-        var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
+    client.ame.on('actionableMessageAddressingBot', function (info) {
+        var words     = parser.splitMessageIntoWords(info.message);
+        var command   = words[1];
+        var recipient = words[2];
+        var nMessage  = words.slice(3).join(' ');
         
-        if (isAddressingBot) {
-            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
-                if (!ignored) {
-                    var words     = parser.splitMessageIntoWords(text);
-                    var command   = words[1];
-                    var recipient = words[2];
-                    var nMessage  = words.slice(3).join(' ');
-                    
-                    if (command === 'note') {
-                        if (recipient && nMessage) {                    
-                            if (recipient !== nick) {
-                                note.add({
-                                    dest_nick: recipient,
-                                    channel: channel,
-                                    message: nMessage,
-                                    origin_nick: nick
-                                }, function (result, err) {
-                                    if (err) {
-                                        console.log(err);
-                                    }
-                                    
-                                    client.say(channel, 'k');
-                                });
-                                
-                            } else {
-                                var msg  = "can't send a note to yourself ";
-                                    msg += irc.colors.wrap('magenta', 'friend');
-                                
-                                client.say(channel, msg);
-                            }
-                            
-                        } else {
-                            client.say(channel, 'does not compute');
+        if (command === 'note') {
+            if (recipient && nMessage) {                    
+                if (recipient !== info.nick) {
+                    var noteAddedCB = function (result, err) {
+                        if (err) {
+                            console.log(err);
                         }
-                    }
+                        
+                        client.say(info.channel, 'Message for ' + recipient + ' saved');
+                    };
+                    
+                    note.add({
+                        dest_nick: recipient,
+                        channel: info.channel,
+                        message: nMessage,
+                        origin_nick: info.nick
+                    }, noteAddedCB);
+                    
+                } else {
+                    var msg  = "can't send a note to yourself ";
+                        msg += irc.colors.wrap('magenta', 'friend');
+                    
+                    client.say(info.channel, msg);
                 }
-            });
+                
+            } else {
+                client.say(info.channel, 'does not compute');
+            }
         }
-        
-        note.get(nick, channel, function (newNote) {
+    });
+    
+    client.ame.on('actionableMessage', function (info) {
+        note.get(info.nick, info.channel, function (newNote) {
             if (newNote) {
                 var timeAgo = moment(newNote.createdAt).fromNow();
-                var msg     = nick + ': ' + newNote.message;
+                var msg     = info.nick + ': ' + newNote.message;
                     msg    += ' (from ' + newNote.originNick + ' ' + timeAgo + ')';
                 
-                client.say(channel, msg);
+                client.say(info.channel, msg);
             }
         });
     });

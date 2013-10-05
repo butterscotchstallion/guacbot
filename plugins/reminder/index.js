@@ -22,49 +22,41 @@ reminder.init = function (client) {
         reminder.processPendingReminders(client);
     }, thirtySecondsInMS);
     
-    client.addListener('message#', function (nick, channel, text, msgInfo) {
-        var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
+    client.ame.on('actionableMessageAddressingBot', function (info) {   
+        var words           = parser.splitMessageIntoWords(info.message);
+        var command         = words[1];
+        var duration        = words[2] ? words[2] : '1m';
+        var message         = words.slice(3).join(' ');
         
-        if (isAddressingBot) {
-            ignore.isIgnored(msgInfo.user + '@' + msgInfo.host, function (ignored) {
-                if (!ignored) {
-                    var words           = parser.splitMessageIntoWords(text);
-                    var command         = words[1];
-                    var duration        = words[2] ? words[2] : '1m';
-                    var message         = words.slice(3).join(' ');
+        if (command === 'remind') {
+            if (message.length > 1) {
+                var d           = timeParser.parseDuration(duration);
+                var remindAt    = moment().add(d.unit, d.length);
+                var fmtRemindAt = remindAt.format('YYYY-MM-DD HH:mm:ss');
+                var formatted   = remindAt.format('h:m:sA M-D-YYYY');
+                
+                if (d.length > 0 && d.unit) {
+                    client.say(info.channel, 'reminding you around \u0002' + formatted);
                     
-                    if (command === 'remind') {
-                        if (message.length > 1) {
-                            var d           = timeParser.parseDuration(duration);
-                            var remindAt    = moment().add(d.unit, d.length);
-                            var fmtRemindAt = remindAt.format('YYYY-MM-DD HH:mm:ss');
-                            var formatted   = remindAt.format('h:m:sA M-D-YYYY');
-                            
-                            if (d.length > 0 && d.unit) {
-                                client.say(channel, 'reminding you around \u0002' + formatted);
-                                
-                                reminder.add({
-                                    'nick'      : nick,
-                                    'channel'   : channel,
-                                    'message'   : message,
-                                    'host'      : msgInfo.user + '@' + msgInfo.host,
-                                    'remind_at' : fmtRemindAt
-                                }, function (result, err) {
-                                    if (err) {
-                                        console.log(err);
-                                    }
-                                });
-                                
-                            } else {
-                                client.say(channel, 'does not compute');
-                            }
-                            
-                        } else {
-                            client.say(channel, 'that reminder sux');
+                    reminder.add({
+                        'nick'      : info.nick,
+                        'channel'   : info.channel,
+                        'message'   : message,
+                        'host'      : info.info.user + '@' + info.info.host,
+                        'remind_at' : fmtRemindAt
+                    }, function (result, err) {
+                        if (err) {
+                            console.log('reminder error:', err);
                         }
-                    }
+                    });
+                    
+                } else {
+                    client.say(info.channel, 'does not compute');
                 }
-            });
+                
+            } else {
+                client.say(info.channel, 'that reminder sucks');
+            }
         }
     });
 };

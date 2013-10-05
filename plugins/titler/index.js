@@ -31,16 +31,12 @@ titler.init = function (client) {
     titler.loadConfig(client.config);
     
     // Listen to messages from any channel
-    client.addListener('message#', function (nick, channel, text, message) {
-        ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
-            if (!ignored) {
-                var link = titler.getFirstLinkFromString(text);
-                
-                titler.getTitle (link, function (title) {
-                    if (title) {
-                        client.say(channel, title);
-                    }
-                });
+    client.ame.on('actionableMessage', function (info) {
+        var link = titler.getFirstLinkFromString(info.message);
+        
+        titler.getTitle (link, function (title) {
+            if (title) {
+                client.say(info.channel, title);
             }
         });
     });

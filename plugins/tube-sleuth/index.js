@@ -11,24 +11,19 @@ var sleuth     = {};
 var hbs        = require('handlebars');
 
 sleuth.init = function (client) {
-    client.addListener('message#', function (nick, channel, text, message) {
-        var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
-        var isQuestion      = sleuth.isQuestion(text);
+    client.ame.on('actionableMessageAddressingBot', function (info) {        
+        var isQuestion = sleuth.isQuestion(info.message);
         
-        if (isAddressingBot && isQuestion) {
-            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
-                if (!ignored) {
-                    var query  = sleuth.parseInputIntoQuery(text);
+        if (isQuestion) {
+            var query  = sleuth.parseInputIntoQuery(info.message);
+            
+            if (query) {
+                sleuth.getFirstSearchResult(query, function (video) {
+                    var msg = sleuth.getTitleTemplate(video);
                     
-                    if (query) {
-                        sleuth.getFirstSearchResult(query, function (video) {
-                            var msg = sleuth.getTitleTemplate(video);
-                            
-                            client.say(channel, msg);
-                        });
-                    }
-                }
-            });
+                    client.say(info.channel, msg);
+                });
+            }
         }
     });
 };

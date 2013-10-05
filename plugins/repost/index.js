@@ -16,20 +16,16 @@ var ignore = require('../../plugins/ignore');
 var repost = {};
 
 repost.init = function (client) {
-    client.addListener('message#', function (nick, channel, text, message) {
-        ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
-            if (!ignored) {
-                repost.isRepost(nick, text, function (rpst) {
-                    // rpst returns false if nothing was found
-                    // but also ignore the person saying it
-                    if (rpst && rpst.nick !== nick) {
-                        var postDate = moment(rpst.ts).fromNow();
-                        var msg      = 'Thanks for posting this again (' + rpst.nick + ' ' + postDate;
-                            msg     += ') - "' + rpst.message + '"';
-                        
-                        client.say(channel, msg);
-                    }
-                });
+    client.ame.on('actionableMessage', function (info) {        
+        repost.isRepost(info.nick, info.message, function (rpst) {
+            // rpst returns false if nothing was found
+            // but also ignore the person saying it
+            if (rpst && rpst.nick !== info.nick) {
+                var postDate = moment(rpst.ts).fromNow();
+                var msg      = 'Thanks for posting this again (' + rpst.nick + ' ' + postDate;
+                    msg     += ') - "' + rpst.message + '"';
+                
+                client.say(info.channel, msg);
             }
         });
     });

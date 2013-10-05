@@ -5,41 +5,39 @@
  */
 "use strict";
 
-var parser    = require('../../lib/messageParser');
-var db        = require('../../plugins/db');
-var ig        = {};
+var parser      = require('../../lib/messageParser');
+var db          = require('../../plugins/db');
+var admin       = require('../../plugins/admin');
+var ig          = {};
+var ignoreCount = 0;
 
 ig.init = function (client) {
-    client.addListener('message#', function (nick, channel, text, message) {
-        var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
+    client.ame.on('actionableMessageAddressingBot', function (info) {
+        var words           = parser.splitMessageIntoWords(info.message);
+        var command         = words[1];
+        var nick            = words[2];
         
-        if (isAddressingBot) {
-            var words           = parser.splitMessageIntoWords(text);
-            var command         = words[1];
-            var nick            = words[2];
-            
-            if (nick && (command === 'ignore' || command === 'unignore')) {
-                client.whois(nick, function (data) {
-                    var hostmask = typeof(data.host) !== 'undefined' ? data.user + '@' + data.host : false;
-                    
-                    if (hostmask) {
-                        if (command === 'ignore') {
-                            ig.add(hostmask, function () {                            
-                                client.say(channel, 'k');
-                            });
-                        }
-                        
-                        if (command === 'unignore') {
-                            ig.remove(hostmask, function () {                            
-                                client.say(channel, 'k');
-                            });
-                        }
-                        
-                    } else {
-                        console.log('ignore: unable to determine hostmask of nick "', nick, '"');
+        if (nick && (command === 'ignore' || command === 'unignore')) {
+            client.whois(nick, function (data) {
+                var hostmask = typeof(data.host) !== 'undefined' ? data.user + '@' + data.host : false;
+                
+                if (hostmask) {
+                    if (command === 'ignore') {
+                        ig.add(hostmask, function () {                            
+                            client.say(info.channel, 'k');
+                        });
                     }
-                });
-            }
+                    
+                    if (command === 'unignore') {
+                        ig.remove(hostmask, function () {                            
+                            client.say(info.channel, 'k');
+                        });
+                    }
+                    
+                } else {
+                    console.log('ignore: unable to determine hostmask of nick "', nick, '"');
+                }
+            });
         }
     });
 };
@@ -67,14 +65,31 @@ ig.add = function (hostmask, callback) {
 ig.isIgnored = function (hostmask, callback) {
     // Temporary really ugly fix until refactor
     if (hostmask === 'undefined@undefined') {
+        callback(false);
         return false;
     }
+    
+    // Admins should never be ignored
+    var parts    = hostmask.split('@');
+    var maskInfo = {
+        userInfo: {
+            user: parts[0],
+            host: parts[1]
+        }
+    };
+    
+    if (admin.userIsAdmin(maskInfo)) {
+        callback(false);
+        return false;
+    }
+    
+    ignoreCount++;
     
     var q  = ' SELECT COUNT(*) AS ignored';
         q += ' FROM ignored';
         q += ' WHERE host = ?';
     
-    console.log('checking if ' + hostmask + ' is ignored');
+    console.log('#' + ignoreCount + ' :: checking if ' + hostmask + ' is ignored');
     
     db.connection.query(q, [hostmask], function (err, rows, fields) {
         if (err) {

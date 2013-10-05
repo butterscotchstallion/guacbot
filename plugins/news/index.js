@@ -25,7 +25,7 @@ news.init = function (client) {
     news.pluginCfg = pluginCfg;
     
     // Refresh feeds on load
-    news.refreshFeeds();
+    //news.refreshFeeds();
     
     /** 
      * Refresh feeds every hour
@@ -66,7 +66,7 @@ news.init = function (client) {
                     // TODO figure out why this even happens so I don't need
                     // this ugly thing here
                     if (titleType === 'string' && linkType === 'string') {
-                        client.say(channels[j], headline.title + ' - ' + headline.link);
+                        client.say(info.channels[j], headline.title + ' - ' + headline.link);
                     } else {
                         console.log('');
                         console.dir('objects!', headline);  
@@ -78,36 +78,30 @@ news.init = function (client) {
         
     }, pluginCfg.intervalInMilliseconds);
     
-    client.addListener('message#', function (nick, channel, message) {
-        var words           = parser.splitMessageIntoWords(message);
-        var isAddressingBot = parser.isMessageAddressingBot(message, client.config.nick);
+    client.ame.on('actionableMessageAddressingBot', function (info) {
+        var words           = parser.splitMessageIntoWords(info.message);
         
-        if (isAddressingBot) {
-            if (words[1] === 'news') {
-                news.getHeadline(function (headline) {
-                    if (headline) {
-                        var titleType = typeof headline.title;
-                        var linkType = typeof headline.link;
-                        
-                        //console.dir(headline);
-                        //console.dir(titleType, linkType);
-                        
-                        if (titleType === 'string' && linkType === 'string') {
-                            client.say(channel, headline.title + ' - ' + headline.link);
-                        } else {
-                            console.dir('objects!', headline);                           
-                        }
-                        
+        if (words[1] === 'news') {
+            news.getHeadline(function (headline) {
+                if (headline) {
+                    var titleType = typeof headline.title;
+                    var linkType = typeof headline.link;
+                    
+                    if (titleType === 'string' && linkType === 'string') {
+                        client.say(info.channel, headline.title + ' - ' + headline.link);
                     } else {
-                        client.say(channel, 'no news :[ (' + news.headlines.length + ' cached)');
+                        console.dir('objects!', headline);                           
                     }
-                });
-            }
-            
-            if (words[1] === 'refresh') {
-                news.refreshFeeds();
-                client.say(channel, 'okay!');
-            }
+                    
+                } else {
+                    client.say(info.channel, 'no news :[ (' + news.headlines.length + ' cached)');
+                }
+            });
+        }
+        
+        if (words[1] === 'refresh') {
+            news.refreshFeeds();
+            client.say(info.channel, 'okay!');
         }
     });
 };

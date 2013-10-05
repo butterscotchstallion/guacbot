@@ -11,33 +11,26 @@ var ignore = require('../ignore/');
 var info   = { };
 
 info.init  = function (client) {
-    client.addListener('message#', function (nick, channel, text, message) {
-        var words           = parser.splitMessageIntoWords(text);
-        var isAddressingBot = parser.isMessageAddressingBot(text, client.config.nick);
-        var command         = words[1];
+    client.ame.on('actionableMessageAddressingBot', function (msgInfo) {
+        var words    = parser.splitMessageIntoWords(msgInfo.message);
+        var command  = words[1];
         
-        if (isAddressingBot) {
-            ignore.isIgnored(message.user + '@' + message.host, function (ignored) {
-                if (!ignored) {
-                    switch (command) {
-                        case 'uptime': 
-                            info.getUptime(client.connectTime, function (uptime) {
-                                client.say(channel, uptime);
-                            });
-                        break;
-                        
-                        case 'plugins': 
-                            info.getLoadedPlugins(function (plugins) {                            
-                                var enabledPlugins = pm.getEnabledPlugins();                                
-                                var msg  = 'Loaded plugins (' + plugins.length + '): ';
-                                    msg += enabledPlugins.join(', ');
-                                
-                                client.say(channel, msg);
-                            });
-                        break;
-                    }
-                }
-            });
+        switch (command) {
+            case 'uptime': 
+                info.getUptime(client.connectTime, function (uptime) {
+                    client.say(msgInfo.channel, uptime);
+                });
+            break;
+            
+            case 'plugins':
+                info.getLoadedPlugins(function (plugins) {                            
+                    var enabledPlugins = pm.getEnabledPlugins();                                
+                    var msg  = 'Loaded plugins (' + plugins.length + '): ';
+                        msg += enabledPlugins.join(', ');
+                    
+                    client.say(msgInfo.channel, msg);
+                });
+            break;
         }
     });
 };
