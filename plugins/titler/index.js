@@ -102,33 +102,34 @@ titler.getCompiledTemplate = function (compileMe, data) {
 };
 
 titler.getYoutubeTitleFromTemplate = function (data, template) {
-    var details         = titler.getYoutubeVideoTitleDetails(data);
-    var defaultTemplate = '^ {{{title}}} :: {{{description}}}';
-    var tpl             = typeof template === 'string' ? template : defaultTemplate;
     var title           = '{{{title}}}';
+    var details         = titler.getYoutubeVideoTitleDetails(data);
     
     if (titler.isBoldEnabled()) {
         title = titler.getBoldString('{{{title}}}', true);
-        tpl   = '^ ' + title + ' :: {{{description}}}';
     }
+    
+    var defaultTemplate = '^ ' + title + ' :: {{{rating}}} :: {{{viewCount}}} views';
+    var tpl             = typeof template === 'string' ? template : defaultTemplate;
     
     return titler.getCompiledTemplate(tpl, details);
 };
 
 titler.getTitleFromTemplate = function (title) {
     var defaultTemplate = '^ {{{title}}}';
+    
+    if (titler.isBoldEnabled()) {
+        defaultTemplate = titler.getBoldString('^ {{{title}}}');
+        
+        if (typeof titler.pluginConfig.titleTemplate !== 'undefined') {
+            titler.pluginConfig.titleTemplate = titler.getBoldString(titler.pluginConfig.titleTemplate);
+        }
+    }
+    
     var compileMe       = titler.pluginConfig.titleTemplate || defaultTemplate;
     var tpl             = titler.getCompiledTemplate(compileMe, {
         title: title
     });
-    
-    console.log('tpl before: ', tpl);
-    
-    if (titler.isBoldEnabled()) {
-        tpl = titler.getBoldString(tpl);
-    }
-    
-    console.log('tpl after: ', tpl);
     
     return tpl;
 };
@@ -348,10 +349,14 @@ titler.getYoutubeVideoTitleDetails = function (json) {
         desc = desc.substring(0, descMaxLen).trim() + '...';
     }
     
+    var commafy = function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    };
+    
     return {
         title      : ent.decode(data.title),
         description: desc,
-        viewCount  : viewCount,
+        viewCount  : viewCount > 0 ? commafy(viewCount) : 0,
         rating     : rating.toFixed(2),
         likeCount  : likeCount
     };
