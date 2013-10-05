@@ -40,18 +40,16 @@ quote.init = function (client) {
                             } else {
                                 client.say(channel, 'no quotes found');
                             }
-                        });                        
-                    }
-                    else if (command === 'first') {
-                        var targetNick = words[2] && words[2].length > 0 ? words[2].trim() : nick;
-                        var searchQry  = false;
+                        });
+                    } else if (command === 'first') {
+                        var targetNick = words[3] && words[3].length > 0 ? words[3].trim() : nick;
                         
-                        if (words.length >= 3) {
-                            searchQry = words.slice(3).join(' ');
-                        } 
-                        
-                        quote.getFirstQuote(targetNick, searchQry, function (result, err) {
-                            if (!err && result) {
+                        logger.getFirstMessage(targetNick, function (result, err) {
+                            if (err) {             
+                                console.log(err);
+                            }
+                            
+                            if (result) {
                                 var msg  = '<' + targetNick + '> ';
                                     msg += result.message;
                                 
@@ -59,18 +57,16 @@ quote.init = function (client) {
                             } else {
                                 client.say(channel, 'no quotes found');
                             }
-                        });                        
-                    }
-                    else if (command === 'last') {
-                        var targetNick = words[2] && words[2].length > 0 ? words[2].trim() : nick;
-                        var searchQry  = false;
+                        });
+                    } else if (command === 'last') {
+                        var targetNick = words[3] && words[3].length > 0 ? words[3].trim() : nick;
                         
-                        if (words.length >= 3) {
-                            searchQry = words.slice(3).join(' ');
-                        } 
-                        
-                        quote.getLastQuote(targetNick, searchQry, function (result, err) {
-                            if (!err && result) {
+                        logger.getLastMessage(targetNick, function (result, err) {
+                            if (err) {                            
+                                console.log(err);
+                            }
+                            
+                            if (result) {
                                 var msg  = '<' + targetNick + '> ';
                                     msg += result.message;
                                 
@@ -78,7 +74,7 @@ quote.init = function (client) {
                             } else {
                                 client.say(channel, 'no quotes found');
                             }
-                        });                        
+                        });
                     }
                 }
             });
