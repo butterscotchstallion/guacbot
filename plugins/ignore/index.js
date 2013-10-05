@@ -9,11 +9,10 @@ var parser      = require('../../lib/messageParser');
 var db          = require('../../plugins/db');
 var admin       = require('../../plugins/admin');
 var ig          = {};
-var ignoreCount = 0;
 
 ig.init = function (client) {
     client.ame.on('actionableMessageAddressingBot', function (info) {
-        var words           = parser.splitMessageIntoWords(info.message);
+        var words           = info.words;
         var command         = words[1];
         var nick            = words[2];
         
@@ -83,13 +82,9 @@ ig.isIgnored = function (hostmask, callback) {
         return false;
     }
     
-    ignoreCount++;
-    
     var q  = ' SELECT COUNT(*) AS ignored';
         q += ' FROM ignored';
         q += ' WHERE host = ?';
-    
-    console.log('#' + ignoreCount + ' :: checking if ' + hostmask + ' is ignored');
     
     db.connection.query(q, [hostmask], function (err, rows, fields) {
         if (err) {

@@ -12,7 +12,6 @@ var db         = require('../../plugins/db/');
 var moment     = require('moment');
 var parser     = require('../../lib/messageParser');
 var timeParser = require('../../lib/timeUnitParser');
-var ignore     = require('../ignore/');
 var reminder   = {};
 
 reminder.init = function (client) {
@@ -23,7 +22,7 @@ reminder.init = function (client) {
     }, thirtySecondsInMS);
     
     client.ame.on('actionableMessageAddressingBot', function (info) {   
-        var words           = parser.splitMessageIntoWords(info.message);
+        var words           = info.words;
         var command         = words[1];
         var duration        = words[2] ? words[2] : '1m';
         var message         = words.slice(3).join(' ');

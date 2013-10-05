@@ -14,13 +14,13 @@ var note     = {};
 
 note.init = function (client) {
     client.ame.on('actionableMessageAddressingBot', function (info) {
-        var words     = parser.splitMessageIntoWords(info.message);
+        var words     = info.words;
         var command   = words[1];
         var recipient = words[2];
         var nMessage  = words.slice(3).join(' ');
         
         if (command === 'note') {
-            if (recipient && nMessage) {                    
+            if (recipient && nMessage) {         
                 if (recipient !== info.nick) {
                     var noteAddedCB = function (result, err) {
                         if (err) {

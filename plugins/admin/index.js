@@ -26,19 +26,17 @@ admin.init = function (client) {
     admin.loadConfig(client.config);
     
     client.ame.on('actionableMessageAddressingBot', function (info) {        
-        var words    = parser.splitMessageIntoWords(info.message);
-        var command  = words[1];
         var triggers = admin.getTriggersFromConfig(admin.pluginCfg);
         var triglen  = triggers.length;
         
         for (var j = 0; j < triglen; j++) {
-            if (triggers[j].trigger === command) {
+            if (triggers[j].trigger === info.command) {
                 admin.executeCommand({
                     client: client,
                     command: triggers[j].command,
                     channel: info.channel,
                     nick: info.nick,
-                    words: words,
+                    words: info.words,
                     userInfo: {
                         user: info.info.user,
                         host: info.info.host
@@ -61,10 +59,6 @@ admin.userIsAdmin = function (info) {
             match = true;            
             break;            
         }
-    }
-    
-    if (!match) {
-        console.log(mask, 'has attempted to use an admin ability and FAILED');
     }
     
     return match;

@@ -15,7 +15,7 @@ var seen   = {};
 
 seen.init = function (client) {
     client.ame.on('actionableMessageAddressingBot', function (info) {        
-        var words    = parser.splitMessageIntoWords(info.message);
+        var words    = info.words;
         var command  = words[1];
         var nick     = words[2];
         

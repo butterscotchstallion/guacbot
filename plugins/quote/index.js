@@ -14,16 +14,13 @@ var quote  = {};
 
 quote.init = function (client) {
     client.ame.on('actionableMessageAddressingBot', function (info) {
-        var words    = parser.splitMessageIntoWords(info.message);
-        var command  = words[1];
-        
-        switch (command) {
+        switch (info.command) {
             case 'quote':
-                var targetNick = words[2] && words[2].length > 0 ? words[2].trim() : nick;
+                var targetNick = info.words[2] && info.words[2].length > 0 ? info.words[2].trim() : info.nick;
                 var searchQry  = false;
                 
-                if (words.length >= 3) {
-                    searchQry = words.slice(3).join(' ');
+                if (info.words.length >= 3) {
+                    searchQry = info.words.slice(3).join(' ');
                 } 
                 
                 quote.getRandomQuote(targetNick, searchQry, function (result, err) {
@@ -39,7 +36,7 @@ quote.init = function (client) {
             break;
             
             case 'first':
-                var targetNick = words[3] && words[3].length > 0 ? words[3].trim() : nick;
+                var targetNick = info.words[3] && info.words[3].length > 0 ? info.words[3].trim() : nick;
                 
                 logger.getFirstMessage(targetNick, function (result, err) {
                     if (err) {             
@@ -58,7 +55,7 @@ quote.init = function (client) {
             break;
             
             case 'last':
-                var targetNick = words[3] && words[3].length > 0 ? words[3].trim() : nick;
+                var targetNick = info.words[3] && info.words[3].length > 0 ? info.words[3].trim() : nick;
                 
                 logger.getLastMessage(targetNick, function (result, err) {
                     if (err) {                            

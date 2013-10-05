@@ -10,7 +10,7 @@ var ignore  = require('../../plugins/ignore/');
 
 arbiter.init = function (client) {
     client.ame.on('actionableMessageAddressingBot', function (info) {        
-        var words      = parser.splitMessageIntoWords(info.message);
+        var words      = info.words;
         var choiceTxt  = words.slice(1).join(' ');
         var isDecision = arbiter.isDecision(info.message);
         
