@@ -8,6 +8,7 @@ var parser     = require('../../lib/messageParser');
 var ignore     = require('../../plugins/ignore');
 var request    = require('request');
 var sleuth     = {};
+var hbs        = require('handlebars');
 
 sleuth.init = function (client) {
     client.addListener('message#', function (nick, channel, text, message) {
@@ -21,14 +22,24 @@ sleuth.init = function (client) {
                     
                     if (query) {
                         sleuth.getFirstSearchResult(query, function (video) {
-                            var msg = [video.title, video.link].join(' - ');
-
+                            var msg = sleuth.getTitleTemplate(video);
+                            
                             client.say(channel, msg);
                         });
                     }
                 }
             });
         }
+    });
+};
+
+sleuth.getTitleTemplate = function (video) {
+    var input = '\u0002{{{title}}}\u0002 :: {{{link}}}';
+    var tpl   = hbs.compile(input);
+    
+    return tpl({
+        title: video.title,
+        link: video.link
     });
 };
 
@@ -59,7 +70,8 @@ sleuth.getFirstSearchResult = function (query, callback) {
     sleuth.getYoutubeSearchResponse(query, function (video) {
         callback({
             title: video.title,
-            link: video.link
+            // This may or may not be a good idea
+            link: video.link.split('?')[0]
         });
     });
 };
