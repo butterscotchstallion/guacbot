@@ -19,7 +19,7 @@ logger.init = function (client) {
         
         logger.log(info, function (result, err) {
             if (err) {
-                console.log(err);
+                console.log('logger error: ', err);
             } else {
                 //console.log(result);
                 //console.log(info);
@@ -37,7 +37,7 @@ logger.log = function (info, callback) {
 };
 
 logger.getRandomQuote = function (nick, searchQuery, callback) {
-    var cols      = ['message'];
+    var cols      = ['ts', 'message'];
     var searchQry = searchQuery ? searchQuery.trim()  : '';
     var searchCls = searchQry   ? ' AND message LIKE ?' : '';
     var params    = [nick];

@@ -10,6 +10,8 @@ var moment = require('moment');
 var logger = require('../../plugins/logger');
 var parser = require('../../lib/messageParser');
 var ignore = require('../../plugins/ignore/');
+var hbs    = require('handlebars');
+var moment = require('moment');
 var quote  = {};
 
 quote.init = function (client) {
@@ -25,8 +27,11 @@ quote.init = function (client) {
                 
                 quote.getRandomQuote(targetNick, searchQry, function (result, err) {
                     if (!err && result) {
-                        var msg  = '<' + targetNick + '> ';
-                            msg += result.message;
+                        var msg  = quote.getQuoteTemplate({
+                            nick   : targetNick,
+                            message: result.message,
+                            date   : moment(result.ts).format('MMM DD YYYY hh:mm:ssA')
+                        });
                         
                         client.say(info.channel, msg);
                     } else {
@@ -44,8 +49,11 @@ quote.init = function (client) {
                     }
                     
                     if (result) {
-                        var msg  = '<' + targetNick + '> ';
-                            msg += result.message;
+                        var msg  = quote.getQuoteTemplate({
+                            nick   : targetNick,
+                            message: result.message,
+                            date   : moment(result.ts).format('MMM DD YYYY hh:mm:ssA')
+                        });
                         
                         client.say(info.channel, msg);
                     } else {
@@ -63,8 +71,11 @@ quote.init = function (client) {
                     }
                     
                     if (result) {
-                        var msg  = '<' + targetNick + '> ';
-                            msg += result.message;
+                        var msg  = quote.getQuoteTemplate({
+                            nick   : targetNick,
+                            message: result.message,
+                            date   : moment(result.ts).format('MMM DD YYYY hh:mm:ssA')
+                        });
                         
                         client.say(info.channel, msg);
                     } else {
@@ -74,6 +85,13 @@ quote.init = function (client) {
             break;
         }
     });
+};
+
+quote.getQuoteTemplate = function (info) {
+    var quoteTpl = '{{{date}}} <{{{nick}}}> {{{message}}}';
+    var tpl      = hbs.compile(quoteTpl);
+    
+    return tpl(info);
 };
 
 quote.getRandomQuote = function (targetNick, searchQry, callback) {
