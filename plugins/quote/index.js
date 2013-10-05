@@ -35,53 +35,101 @@ quote.init = function (client) {
                         
                         client.say(info.channel, msg);
                     } else {
-                        client.say(info.channel, 'no quotes found');
+                        client.say(info.channel, 'No quotes found');
                     }
                 });
             break;
             
             case 'first':
-                var targetNick = info.words[3] && info.words[3].length > 0 ? info.words[3].trim() : nick;
-                
-                logger.getFirstMessage(targetNick, function (result, err) {
-                    if (err) {             
-                        console.log(err);
+                if (info.words[2] === 'mention') {
+                    var query  = info.words.slice(3).join(' ');
+                    var minlen = 3;
+                    
+                    if (query.length >= minlen) {
+                        logger.getFirstMention(query, function (result) {
+                            if (result && result.message !== info.message) {
+                                var msg  = quote.getQuoteTemplate({
+                                    nick   : result.nick,
+                                    message: result.message,
+                                    date   : moment(result.ts).format('MMM DD YYYY hh:mm:ssA')
+                                });
+                                
+                                client.say(info.channel, msg);
+                            } else {
+                                client.say(info.channel, 'No quotes found');
+                            }
+                        });
+                    } else {
+                        client.say(info.channel, 'Search query must be at least ' + minlen + ' characters');
                     }
                     
-                    if (result) {
-                        var msg  = quote.getQuoteTemplate({
-                            nick   : targetNick,
-                            message: result.message,
-                            date   : moment(result.ts).format('MMM DD YYYY hh:mm:ssA')
-                        });
+                } else if (info.words[2] === 'quote') {
+                    var targetNick = info.words[3] && info.words[3].length > 0 ? info.words[3].trim() : nick;
+                    
+                    logger.getFirstMessage(targetNick, function (result, err) {
+                        if (err) {             
+                            console.log(err);
+                        }
                         
-                        client.say(info.channel, msg);
-                    } else {
-                        client.say(info.channel, 'no quotes found');
-                    }
-                });
+                        if (result) {
+                            var msg  = quote.getQuoteTemplate({
+                                nick   : targetNick,
+                                message: result.message,
+                                date   : moment(result.ts).format('MMM DD YYYY hh:mm:ssA')
+                            });
+                            
+                            client.say(info.channel, msg);
+                        } else {
+                            client.say(info.channel, 'No quotes found');
+                        }
+                    });
+                }
             break;
             
             case 'last':
-                var targetNick = info.words[3] && info.words[3].length > 0 ? info.words[3].trim() : nick;
-                
-                logger.getLastMessage(targetNick, function (result, err) {
-                    if (err) {                            
-                        console.log(err);
+                if (info.words[2] === 'mention') {
+                    var query  = info.words.slice(3).join(' ');
+                    var minlen = 3;
+                    
+                    if (query.length >= minlen) {
+                        logger.getLastMention(query, function (result) {
+                            if (result && result.message !== info.message) {
+                                var msg  = quote.getQuoteTemplate({
+                                    nick   : result.nick,
+                                    message: result.message,
+                                    date   : moment(result.ts).format('MMM DD YYYY hh:mm:ssA')
+                                });
+                                
+                                client.say(info.channel, msg);
+                            } else {
+                                client.say(info.channel, 'No quotes found');
+                            }
+                        });
+                    } else {
+                        client.say(info.channel, 'Search query must be at least ' + minlen + ' characters');
                     }
                     
-                    if (result) {
-                        var msg  = quote.getQuoteTemplate({
-                            nick   : targetNick,
-                            message: result.message,
-                            date   : moment(result.ts).format('MMM DD YYYY hh:mm:ssA')
-                        });
+                } else if (info.words[2] === 'quote') {                
+                    var targetNick = info.words[3] && info.words[3].length > 0 ? info.words[3].trim() : nick;
+                    
+                    logger.getLastMessage(targetNick, function (result, err) {
+                        if (err) {                            
+                            console.log(err);
+                        }
                         
-                        client.say(info.channel, msg);
-                    } else {
-                        client.say(info.channel, 'no quotes found');
-                    }
-                });
+                        if (result) {
+                            var msg  = quote.getQuoteTemplate({
+                                nick   : targetNick,
+                                message: result.message,
+                                date   : moment(result.ts).format('MMM DD YYYY hh:mm:ssA')
+                            });
+                            
+                            client.say(info.channel, msg);
+                        } else {
+                            client.say(info.channel, 'No quotes found');
+                        }
+                    });
+                }
             break;
         }
     });

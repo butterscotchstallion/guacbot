@@ -99,6 +99,38 @@ logger.getFirstMessage = function (nick, callback) {
     });
 };
 
+logger.getFirstMention = function (searchQuery, callback) {
+    var cols = ['nick', 'message', 'ts', 'channel'];
+    var q    = ' SELECT ';
+        q   += cols.join(',');
+        q   += ' FROM logs';
+        q   += ' WHERE message LIKE ?';
+        q   += ' ORDER BY ts ASC';
+        q   += ' LIMIT 1';
+    
+    var params = ['%' + searchQuery + '%'];
+    
+    db.connection.query(q, params, function (err, rows, fields) {
+        callback(rows[0], err);
+    });
+};
+
+logger.getLastMention = function (searchQuery, callback) {
+    var cols = ['nick', 'message', 'ts', 'channel'];
+    var q    = ' SELECT ';
+        q   += cols.join(',');
+        q   += ' FROM logs';
+        q   += ' WHERE message LIKE ?';
+        q   += ' ORDER BY ts DESC';
+        q   += ' LIMIT 1';
+    
+    var params = ['%' + searchQuery + '%'];
+    
+    db.connection.query(q, params, function (err, rows, fields) {
+        callback(rows[0], err);
+    });
+};
+
 logger.getLastMessage = function (nick, callback) {
     var cols = ['nick', 'host', 'message', 'ts', 'channel'];
     var q    = ' SELECT ';
