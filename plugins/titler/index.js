@@ -87,7 +87,7 @@ titler.isBoldEnabled = function () {
 titler.getBoldString = function (input, closingTag) {
     var boldString = "\u0002" + input;
     
-    if (typeof closingTag === 'undefined' || closingTag) {
+    if (closingTag === 'undefined' || closingTag) {
         boldString += "\u0002";
     }
     
@@ -105,26 +105,30 @@ titler.getYoutubeTitleFromTemplate = function (data, template) {
     var details         = titler.getYoutubeVideoTitleDetails(data);
     var defaultTemplate = '^ {{{title}}} :: {{{description}}}';
     var tpl             = typeof template === 'string' ? template : defaultTemplate;
+    var title           = '{{{title}}}';
     
     if (titler.isBoldEnabled()) {
-        tpl = '^ ' + titler.getBoldString('{{{title}}}', true) + ' :: {{{description}}}';
+        title = titler.getBoldString('{{{title}}}', true);
+        tpl   = '^ ' + title + ' :: {{{description}}}';
     }
     
     return titler.getCompiledTemplate(tpl, details);
 };
 
 titler.getTitleFromTemplate = function (title) {
-    var defaultTemplate = '^ {{title}}';
+    var defaultTemplate = '^ {{{title}}}';
     var compileMe       = titler.pluginConfig.titleTemplate || defaultTemplate;
     var tpl             = titler.getCompiledTemplate(compileMe, {
         title: title
     });
     
+    console.log('tpl before: ', tpl);
+    
     if (titler.isBoldEnabled()) {
         tpl = titler.getBoldString(tpl);
     }
     
-    tpl = ent.decode(tpl);
+    console.log('tpl after: ', tpl);
     
     return tpl;
 };
@@ -278,13 +282,14 @@ titler.getTitle = function (url, callback) {
         // Parse the URL and see if it's a youtube video    
         var u    = require('url');
         var info = u.parse(url);
+        var title;
         
         // If so, query the API and get extra info about the video
         if (info.host && titler.isYoutubeURL(info.host)) {        
             
             // Build title based on API data
             titler.getYoutubeVideoInfo(url, function (data) {              
-                var title = titler.getYoutubeTitleFromTemplate(data);
+                title = titler.getYoutubeTitleFromTemplate(data);
                 
                 callback(title);
             });
@@ -292,15 +297,13 @@ titler.getTitle = function (url, callback) {
         } else {
             var websiteCallback = function (html) {
                 titler.parseHTMLAndGetTitle(html, function (title) {
+                    title = titler.getTitleFromTemplate(title);
+                    
                     callback(title);
                 });
             };
             
             var imageCallback = function (err, img, stderr, length, filename) {
-                //console.log(length);
-                //console.log(err);
-                //console.log(stderr);
-                
                 var hrfs  = length ? filesize(length, 0) : 0;
                 var msg   = [img.type, 
                              img.width + 'x' + img.height];
@@ -338,20 +341,18 @@ titler.getYoutubeVideoTitleDetails = function (json) {
     var descMaxLen = 199;
     
     // Replace newlines with spaces
-    desc = desc.replace(/\n/g, ' ');
+    desc = desc.replace(/\r\n/g, ' ');
     
     if (desc.length > descMaxLen) {
-        desc = desc.substring(0, descMaxLen) + '...';
+        desc = desc.substring(0, descMaxLen).trim() + '...';
     }
     
-    //console.log(desc);
-    
     return {
-        title: ent.decode(data.title),
+        title      : ent.decode(data.title),
         description: desc,
-        viewCount: viewCount,
-        rating: rating.toFixed(2),
-        likeCount: likeCount
+        viewCount  : viewCount,
+        rating     : rating.toFixed(2),
+        likeCount  : likeCount
     };
 };
 
