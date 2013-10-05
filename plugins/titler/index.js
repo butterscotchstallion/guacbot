@@ -341,6 +341,7 @@ titler.getYoutubeVideoTitleDetails = function (json) {
     var descMaxLen = 199;
     
     // Replace newlines with spaces
+    desc = desc.replace(/\n/g, ' ');
     desc = desc.replace(/\r\n/g, ' ');
     
     if (desc.length > descMaxLen) {
