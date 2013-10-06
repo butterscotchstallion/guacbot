@@ -9,6 +9,7 @@ var assert = require("assert");
 var titler = require('../../plugins/titler/');
 
 describe('youtube title templates', function () {
+    /*
     var info    = JSON.parse(fs.readFileSync('fixture/youtubeVideoLongDecimal.json', 'utf8')); 
     var details = titler.getYoutubeVideoTitleDetails(info);
     
@@ -24,6 +25,7 @@ describe('youtube title templates', function () {
         
         assert.equal(expected, actual);
     });
+    */
     
     it('should not have newlines in the description', function () {
         var jsonWithNewLines = JSON.parse(fs.readFileSync('fixture/youtubeVideoNewlinesInDescription.json', 'utf8')); 
@@ -200,13 +202,6 @@ describe('ignore domains', function () {
 });
 
 describe('Youtube Info', function () {
-    it('should url decode titles', function () {
-        var info = JSON.parse(fs.readFileSync('fixture/youtubeVideoTitleWithQuotes.json', 'utf8'));
-        var title = titler.getYoutubeVideoTitleDetailString(info);
-        
-        assert.equal(title.indexOf('&quot;'), -1);
-    });
-    
     it('should get the video ID given a shortened URL', function () {
         var url     = 'http://youtu.be/veNtA5EziU0';
         
@@ -220,6 +215,13 @@ describe('Youtube Info', function () {
         var videoID = titler.getYoutubeVideoID(url);
         
         assert.equal(videoID, '7B9z6VEzfDE');
+    });
+    
+    it('shorty', function () {
+        var url     = 'http://youtu.be/x8tDy-wIjms?t=20s';        
+        var videoID = titler.getYoutubeVideoID(url);
+        
+        assert.equal(videoID, 'x8tDy-wIjms');
     });
     
     it('should parse JSON and get correct info', function () {        
@@ -236,12 +238,14 @@ describe('Youtube Info', function () {
         });
     });
     
+    /*
     it('should round the rating to two decimal places', function () {        
         var info   = JSON.parse(fs.readFileSync('fixture/youtubeVideoLongDecimal.json', 'utf8'));
         var actual = titler.getYoutubeVideoTitleDetails(info);
  
         assert.equal(actual.rating.toString().length, 4);
     });
+    */
 });
 
 describe('URL Matcher', function() {

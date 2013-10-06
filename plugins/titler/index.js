@@ -404,12 +404,23 @@ titler.getYoutubeVideoID = function (url) {
     var query   = info.query;
     var videoID = '';
     
+    console.log(info);
+    
+    var isShortenedURL      = info.hostname === 'youtu.be';
+    // No query string plz
+    var shortenedURLVideoID = info.path.substring(1).split('?')[0];
+    
     if (query) {
         var qsInfo = qs.parse(info.query);        
-        videoID    = qsInfo.v;        
+        videoID    = qsInfo.v;
+
+        if (typeof videoID === 'undefined' && isShortenedURL) {
+            videoID = shortenedURLVideoID
+        }
+        
     } else {
-        if (info.hostname === 'youtu.be') {
-            videoID = info.path.substring(1);
+        if (isShortenedURL) {
+            videoID = shortenedURLVideoID;
         }
     }
     
