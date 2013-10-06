@@ -20,7 +20,7 @@ seen.init = function (client) {
         var nick     = words[2];
         
         if (command === 'seen' && nick.length > 0) {
-            logger.getLastMessage(nick, function (result, err) {
+            logger.getLastMessage(nick, info.channel, function (result, err) {
                 if (!err && result) {
                     if (typeof(result.nick) !== 'undefined') {
                         var lastSeen = moment(result.ts).fromNow();
@@ -30,8 +30,7 @@ seen.init = function (client) {
                         client.say(info.channel, msg);
                     } else {
                         client.say(info.channel, 'nope');
-                    }
-                    
+                    }                    
                 } else {
                     console.log('seen error:', err);
                     client.say(info.channel, 'nope');
