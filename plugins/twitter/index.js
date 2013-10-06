@@ -1,5 +1,5 @@
 /**
- * twitter - get tweets
+ * twitter - supplementary plugin to get tweets
  *
  */
 "use strict";
