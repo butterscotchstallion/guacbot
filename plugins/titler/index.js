@@ -35,11 +35,13 @@ titler.init = function (client) {
     client.ame.on('actionableMessage', function (info) {
         var link = titler.getFirstLinkFromString(info.message);
         
-        titler.getTitle (link, function (title) {
-            if (title) {
-                client.say(info.channel, title);
-            }
-        });
+        if (link && link.length > 0) {
+            titler.getTitle (link, function (title) {
+                if (title) {
+                    client.say(info.channel, title);
+                }
+            });
+        }
     });
     
     // Look for topics that have URLs in them
