@@ -1,0 +1,40 @@
+/**
+ * twitter - get tweets
+ *
+ */
+"use strict";
+
+var cheerio    = require('cheerio');
+var hbs        = require('handlebars');
+var twitter    = {};
+
+twitter.init = function (client) {  
+    
+};
+
+twitter.getTweet = function (html, callback) {
+    var info     = twitter.getTweetInfoFromHTML(html);
+    var tweet    = twitter.getTweetTemplate(info);
+    
+    callback(tweet);
+};
+
+twitter.getTweetTemplate = function (info) {
+    var tweetTpl = '\u0002@{{{author}}}\u0002 :: {{{tweet}}}';
+    var tpl      = hbs.compile(tweetTpl);
+    
+    return tpl(info);
+};
+
+twitter.getTweetInfoFromHTML = function (html) {
+    var $      = cheerio.load(html);
+    var author = $('.content').find('span.js-action-profile-name > b').first().text();
+    var tweet  = $('.content').find('p.tweet-text').first().text();
+    
+    return {
+        author: author,
+        tweet : tweet
+    };
+};
+
+module.exports = twitter;

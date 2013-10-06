@@ -16,6 +16,7 @@ var filesize   = require('filesize');
 var repost     = require('../../plugins/repost');
 var Handlebars = require('handlebars');
 var ent        = require('ent');
+var twitter    = require('../../plugins/twitter');
 
 var titler  = {
     imageInfoEnabled: false,
@@ -282,50 +283,64 @@ titler.getTitle = function (url, callback) {
         var title;
         
         // If so, query the API and get extra info about the video
-        if (info.host && titler.isYoutubeURL(info.host)) {        
-            
-            // Build title based on API data
-            titler.getYoutubeVideoInfo(url, function (data) {              
-                title = titler.getYoutubeTitleFromTemplate(data);
-                
-                callback(title);
-            });
-            
-        } else {
-            var websiteCallback = function (html) {
-                titler.parseHTMLAndGetTitle(html, function (title) {
-                    title = titler.getTitleFromTemplate(title);
+        if (info.host) {
+            // Youtube link
+            if (titler.isYoutubeURL(info.host)) {
+                // Build title based on API data
+                titler.getYoutubeVideoInfo(url, function (data) {              
+                    title = titler.getYoutubeTitleFromTemplate(data);
                     
                     callback(title);
-                });
-            };
-            
-            var imageCallback = function (err, img, stderr, length, filename) {
-                var hrfs  = length ? filesize(length, 0) : 0;
-                var msg   = [img.type, 
-                             img.width + 'x' + img.height];
+                });                
+            } else {
+                var websiteCallback = function (html) {
+                    if (titler.isTwitterURL(info)) {
+                        twitter.getTweet(html, function (tweet) {
+                            callback(tweet);
+                        });
+                    } else {
+                        titler.parseHTMLAndGetTitle(html, function (title) {
+                            title = titler.getTitleFromTemplate(title);
+                            
+                            callback(title);
+                        });
+                    }
+                };
                 
-                if (length) {             
-                    msg.push(hrfs);
-                }
+                var imageCallback = function (err, img, stderr, length, filename) {
+                    var hrfs  = length ? filesize(length, 0) : 0;
+                    var msg   = [img.type, 
+                                 img.width + 'x' + img.height];
+                    
+                    if (length) {             
+                        msg.push(hrfs);
+                    }
+                    
+                    var title = msg.join(' ');
+                    
+                    if (err) {
+                        console.log('Image info error: ', err);
+                    } else {
+                        callback(title);
+                        fs.unlinkSync(filename);
+                        console.log('file deleted: ', filename);
+                    }
+                };
                 
-                var title = msg.join(' ');
-                
-                if (err) {
-                    console.log('Image info error: ', err);
-                } else {
-                    callback(title);
-                    fs.unlinkSync(filename);
-                    console.log('file deleted: ', filename);
-                }
-            };
-            
-            titler.requestWebsite(url, websiteCallback, imageCallback);
+                titler.requestWebsite(url, websiteCallback, imageCallback);
+            }
         }
         
     } else {
         callback('');
     }
+};
+
+titler.isTwitterURL = function (info) {
+    var isTwitterHost = info.host === 'twitter.com';
+    var isStatusURL   = info.pathname.length > 0 &&  info.pathname.indexOf('/status/') !== -1;
+    
+    return isTwitterHost && isStatusURL;
 };
 
 titler.getYoutubeVideoTitleDetails = function (json) {
