@@ -66,7 +66,7 @@ news.init = function (client) {
                     // TODO figure out why this even happens so I don't need
                     // this ugly thing here
                     if (titleType === 'string' && linkType === 'string') {
-                        client.say(info.channels[j], headline.title + ' - ' + headline.link);
+                        client.say(channels[j], headline.title + ' - ' + headline.link);
                     } else {
                         console.log('');
                         console.dir('objects!', headline);  
