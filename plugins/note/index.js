@@ -6,10 +6,8 @@
 
 var db       = require('../../plugins/db/');
 var moment   = require('moment');
-var parser   = require('../../lib/messageParser');
-var ignore   = require('../ignore/');
 var irc      = require('irc');
-
+var hbs      = require('handlebars');
 var note     = {};
 
 note.init = function (client) {
@@ -54,13 +52,25 @@ note.init = function (client) {
         note.get(info.nick, info.channel, function (newNote) {
             if (newNote) {
                 var timeAgo = moment(newNote.createdAt).fromNow();
-                var msg     = info.nick + ': ' + newNote.message;
-                    msg    += ' (from ' + newNote.originNick + ' ' + timeAgo + ')';
+                var msg     = note.getNoteDeliveredTemplate({
+                    nick      : info.nick,
+                    message   : newNote.message,
+                    originNick: newNote.originNick,
+                    timeAgo   : timeAgo
+                });
                 
                 client.say(info.channel, msg);
             }
         });
     });
+};
+
+note.getNoteDeliveredTemplate = function (info) {
+    var tpl       = '*ATTN* {{nick}}: \u0002{{message}}\u0002';
+        tpl      += ' (\u0002{{originNick}}\u0002 {{timeAgo}})';
+    var compileMe = hbs.compile(tpl);
+    
+    return compileMe(info);
 };
 
 note.removeByNickAndChannel = function (nick, channel, callback) {
@@ -80,9 +90,7 @@ note.removeByID = function (id, callback) {
         q     += ' WHERE 1=1';
         q     += ' AND id = ?';
     
-    var params = [id];
-    
-    db.connection.query(q, params, function (err, result) {
+    db.connection.query(q, [id], function (err, result) {
         if (err) {
             console.log(err);
         }
