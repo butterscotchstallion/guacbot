@@ -20,12 +20,12 @@ seen.init = function (client) {
         var nick     = words[2];
         
         if (command === 'seen' && nick.length > 0) {
-            logger.getLastMessage(nick, info.channel, function (result, err) {
+            var seenCB = function (result, err) {
                 if (!err && result) {
                     if (typeof(result.nick) !== 'undefined') {
                         var lastSeen = moment(result.ts).fromNow();
-                        var msg  = result.nick + ' was last seen ' + lastSeen;
-                            msg += ' saying "\u0002' + result.message + '\u0002"';
+                        var msg      = "\u0002" + result.nick + '\u0002 was last seen \u0002' + lastSeen;
+                            msg     += '\u0002 saying "\u0002' + result.message + '\u0002"';
                         
                         client.say(info.channel, msg);
                     } else {
@@ -35,7 +35,16 @@ seen.init = function (client) {
                     console.log('seen error:', err);
                     client.say(info.channel, 'nope');
                 }
-            });
+            };
+            
+            var seenInfo = {
+                nick    : nick,
+                channel : info.channel,
+                message : info.message,
+                callback: seenCB
+            };
+            
+            logger.getLastMessage(seenInfo);
         }
     });
 };
