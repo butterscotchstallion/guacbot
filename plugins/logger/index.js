@@ -173,8 +173,8 @@ logger.getLastMention = function (args) {
         q   += ' ORDER BY ts DESC';
         q   += ' LIMIT 1';
     
-    var params = ['%' + searchQuery + '%', 
-                  channel,
+    var params = ['%' + args.searchQuery + '%', 
+                  args.channel,
                   args.message];
     
     db.connection.query(q, params, function (err, rows, fields) {
