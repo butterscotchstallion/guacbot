@@ -239,7 +239,8 @@ quote.getQuoteTemplate = function (info) {
     var data     = info;
     // Bold search query
     var boldQry  = "\u0002" + data.searchQuery + "\u0002";
-    var msg      = data.message.replace(data.searchQuery, boldQry);
+    var re       = new RegExp(data.searchQuery, 'gi');
+    var msg      = data.message.replace(re, boldQry);
     data.message = msg;
     
     var quoteTpl = '{{{date}}} <\u0002{{{nick}}}\u0002> {{{message}}}';
