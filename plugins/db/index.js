@@ -7,15 +7,15 @@
 var mysql = require('mysql');
 var db    = {};
 
-db.init = function (client) {
+db.init = function (client, callback) {
     var cfg = client.config.plugins.db;
     
-    db.connect(cfg);
+    db.connect(cfg, callback);
     
     db.handleDisconnect(db.connection);
 };
 
-db.connect = function (config) {
+db.connect = function (config, callback) {
     if (typeof db.connection === 'undefined') {
         db.connection = mysql.createConnection(config);
         //db.connection.query('use ' + config.database);
@@ -23,6 +23,11 @@ db.connect = function (config) {
         db.connection.connect(function (err) {
             if (!err) {
                 console.log('db: connected to "' + config.database + '"');
+                
+                if (typeof callback === 'function') {
+                    callback();
+                }
+                
             } else {
                 console.log('db: ERROR connecting to "' + config.database + '": ', err);
             }
