@@ -29,25 +29,28 @@ reminder.init = function (client) {
         
         if (command === 'remind') {
             if (message.length > 1) {
-                var d           = timeParser.parseDuration(duration);
-                var remindAt    = moment().add(d.unit, d.length);
-                var fmtRemindAt = remindAt.format('YYYY-MM-DD HH:mm:ss');
-                var formatted   = remindAt.format('h:m:sA M-D-YYYY');
+                var d               = timeParser.parseDuration(duration);
                 
-                if (d.length > 0 && d.unit) {
-                    client.say(info.channel, 'reminding you around \u0002' + formatted);
+                if (typeof d === 'object') {
+                    var remindAt    = moment().add(d.unit, d.length);
+                    var fmtRemindAt = remindAt.format('YYYY-MM-DD HH:mm:ss');
+                    var formatted   = remindAt.format('h:m:sA M-D-YYYY');
+                    var msg         = 'reminding you \u0002' + moment(remindAt).from() + "\u0002";
+                    var callback    = function (result, err) {
+                        if (err) {
+                            console.log('reminder error:', err);
+                        } else {                           
+                            client.say(info.channel, msg);
+                        }
+                    };
                     
                     reminder.add({
                         'nick'      : info.nick,
                         'channel'   : info.channel,
                         'message'   : message,
-                        'host'      : info.info.user + '@' + info.info.host,
+                        'host'      : info.hostmask,
                         'remind_at' : fmtRemindAt
-                    }, function (result, err) {
-                        if (err) {
-                            console.log('reminder error:', err);
-                        }
-                    });
+                    }, callback);
                     
                 } else {
                     client.say(info.channel, 'does not compute');
@@ -131,9 +134,8 @@ reminder.processPendingReminders = function (client) {
  *
  */
 reminder.add = function (rmdr, callback) {
-    var query = " INSERT INTO reminders SET ?, created_at = NOW()";
-    
-    var qry = db.connection.query(query, rmdr, function (err, result) {
+    var query = " INSERT INTO reminders SET ?, created_at = NOW()";    
+    var qry   = db.connection.query(query, rmdr, function (err, result) {
         callback(result, err);
     });
     
