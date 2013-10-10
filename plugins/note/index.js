@@ -25,13 +25,13 @@ note.init = function (client) {
                             console.log(err);
                         }
                         
-                        client.say(info.channel, 'Message for ' + recipient + ' saved');
+                        client.say(info.channel, 'Message for \u0002' + recipient + '\u0002 saved!');
                     };
                     
                     note.add({
-                        dest_nick: recipient,
-                        channel: info.channel,
-                        message: nMessage,
+                        dest_nick  : recipient,
+                        channel    : info.channel,
+                        message    : nMessage,
                         origin_nick: info.nick
                     }, noteAddedCB);
                     
