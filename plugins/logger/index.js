@@ -36,11 +36,11 @@ logger.log = function (info, callback) {
     });
 };
 
-logger.getRandomQuote = function (nick, searchQuery, callback) {
+logger.getRandomQuote = function (args) {
     var cols      = ['ts', 'message'];
-    var searchQry = searchQuery ? searchQuery.trim()  : '';
-    var searchCls = searchQry   ? ' AND message LIKE ?' : '';
-    var params    = [nick];
+    var searchQry = args.searchQuery ? args.searchQuery.trim() : false;
+    var searchCls = searchQry        ? ' AND message LIKE ?'   : '';
+    var params    = [args.message, args.nick, args.channel];
     
     if (searchCls) {
         params.push('%' + searchQry + '%');
@@ -49,8 +49,12 @@ logger.getRandomQuote = function (nick, searchQuery, callback) {
     var q    = ' SELECT ';
         q   += cols.join(',');
         q   += ' FROM logs';
-        q   += ' WHERE 1=1';
-        q   += ' AND nick = ?';
+        q   += ' WHERE 1=1';        
+        // Don't show the message they just sent.
+        // Fixes #11 - https://github.com/prgmrbill/guacbot/issues/11
+        q   += ' AND message <> ?';
+        q   += ' AND nick    =  ?';
+        q   += ' AND channel =  ?';
         q   += searchCls;
         // Perhaps improve this in the future by selecting the ids and using JS
         // to select randomly from the set. finally, select a single quote using
@@ -62,13 +66,13 @@ logger.getRandomQuote = function (nick, searchQuery, callback) {
         if (err) {
             console.log('logger.getRandomQuote error: ' + err);
         } else {
-            callback(rows[0], err);
+            args.callback(rows[0], err);
         }
     });
 };
 
 logger.getMentions = function (args) {
-    var cols  = ['nick', 'ts', 'channel'];
+    var cols  = ['nick', 'ts', 'channel', 'message'];
     
     /**
      * The limit is user input, so let's make sure it's valid
@@ -78,21 +82,26 @@ logger.getMentions = function (args) {
      */
     var limit = /^[1-5]$/.test(args.limit) ? args.limit : 1;
     
-    var q     = ' SELECT DISTINCT message, ';
+    var q     = ' SELECT ';
         q    += cols.join(',');
         q    += ' FROM logs';
         q    += ' WHERE 1=1';
         q    += ' AND channel    = ?';
         q    += ' AND message LIKE ?';
-        // Should this be randomly ordered, or by timestamp asc/desc?
-        q    += ' ORDER BY RAND()';
+        // Don't show the message they just sent.
+        // Fixes #11 - https://github.com/prgmrbill/guacbot/issues/11
+        q    += ' AND message <>   ?';
+        q    +  ' GROUP BY message, ts'
+        q    += ' ORDER BY ts DESC';
         // Can't bind parameters in a limit clause :[
         q    += ' LIMIT ' + limit;
     
     var params    = [args.channel, 
-                     '%' + args.searchQuery + '%'];
+                     '%' + args.searchQuery + '%',
+                     args.message];
     
-    console.log('searching for ' + args.searchQuery + ' in channel ' + args.channel + ' limit ' + limit);
+    //console.log('searching for ' + args.searchQuery + ' in channel ' + args.channel + ' limit ' + limit);
+    //console.log('not equal to ' + args.message);
     
     // Perhaps implement a timeout here
     var parsedQry = db.connection.query(q, params, function (err, rows, fields) {
@@ -102,6 +111,8 @@ logger.getMentions = function (args) {
             args.callback(rows, err);
         }
     });
+    
+    console.log(parsedQry.sql);
 };
 
 logger.searchByMessage = function (nick, searchQuery, callback) {
@@ -125,23 +136,7 @@ logger.searchByMessage = function (nick, searchQuery, callback) {
     });
 };
 
-logger.getFirstMessage = function (nick, channel, callback) {
-    var cols = ['nick', 'host', 'message', 'ts', 'channel'];
-    var q    = ' SELECT ';
-        q   += cols.join(',');
-        q   += ' FROM logs';
-        q   += ' WHERE 1=1'
-        q   += ' AND nick    = ?';
-        q   += ' AND channel = ?';
-        q   += ' ORDER BY ts ASC';
-        q   += ' LIMIT 1';
-    
-    db.connection.query(q, [nick, channel], function (err, rows, fields) {
-        callback(rows[0], err);
-    });
-};
-
-logger.getFirstMention = function (searchQuery, channel, callback) {
+logger.getFirstMention = function (args) {
     var cols = ['nick', 'message', 'ts', 'channel'];
     var q    = ' SELECT ';
         q   += cols.join(',');
@@ -149,17 +144,22 @@ logger.getFirstMention = function (searchQuery, channel, callback) {
         q   += ' WHERE 1=1';
         q   += ' AND channel    = ?';
         q   += ' AND message LIKE ?';
-        q   += ' ORDER BY ts ASC';
+        // Don't show the message they just sent.
+        // Fixes #11 - https://github.com/prgmrbill/guacbot/issues/11
+        q   += ' AND message <>   ?';
+        q   += ' ORDER BY ts';
         q   += ' LIMIT 1';
     
-    var params = [channel, '%' + searchQuery + '%'];
+    var params = [args.channel, 
+                  '%' + args.searchQuery + '%',
+                  args.message];
     
     db.connection.query(q, params, function (err, rows, fields) {
-        callback(rows[0], err);
+        args.callback(rows[0], err);
     });
 };
 
-logger.getLastMention = function (searchQuery, channel, callback) {
+logger.getLastMention = function (args) {
     var cols = ['nick', 'message', 'ts', 'channel'];
     var q    = ' SELECT ';
         q   += cols.join(',');
@@ -167,17 +167,22 @@ logger.getLastMention = function (searchQuery, channel, callback) {
         q   += ' WHERE 1=1';
         q   += ' AND message LIKE ?';
         q   += ' AND channel    = ?';
+        // Don't show the message they just sent.
+        // Fixes #11 - https://github.com/prgmrbill/guacbot/issues/11
+        q   += ' AND message <>   ?';
         q   += ' ORDER BY ts DESC';
         q   += ' LIMIT 1';
     
-    var params = ['%' + searchQuery + '%', channel];
+    var params = ['%' + searchQuery + '%', 
+                  channel,
+                  args.message];
     
     db.connection.query(q, params, function (err, rows, fields) {
-        callback(rows[0], err);
+        args.callback(rows[0], err);
     });
 };
 
-logger.getLastMessage = function (nick, channel, callback) {
+logger.getLastMessage = function (args) {
     var cols = ['nick', 'host', 'message', 'ts', 'channel'];
     var q    = ' SELECT ';
         q   += cols.join(',');
@@ -185,11 +190,16 @@ logger.getLastMessage = function (nick, channel, callback) {
         q   += ' WHERE 1=1';
         q   += ' AND nick    = ?';
         q   += ' AND channel = ?';
+        // Don't show the message they just sent.
+        // Fixes #11 - https://github.com/prgmrbill/guacbot/issues/11
+        q   += ' AND message <>   ?';
         q   += ' ORDER BY ts DESC';
         q   += ' LIMIT 1';
     
-    db.connection.query(q, [nick, channel], function (err, rows, fields) {
-        callback(rows[0], err);
+    var params = [args.nick, args.channel, args.message];
+    
+    db.connection.query(q, params, function (err, rows, fields) {
+        args.callback(rows[0], err);
     });
 };
 
