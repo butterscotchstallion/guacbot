@@ -255,11 +255,11 @@ titler.generateFilename = function (uri) {
 };
 
 titler.isImage = function (contentType) {
-    return contentType.indexOf('image/')    !== -1;
+    return contentType && contentType.indexOf('image/')    !== -1;
 };
 
 titler.isHTML = function (contentType) {
-    return contentType.indexOf('text/html') !== -1;
+    return contentType && contentType.indexOf('text/html') !== -1;
 };
 
 titler.parseHTMLAndGetTitle = function (html, callback) {
@@ -403,8 +403,6 @@ titler.getYoutubeVideoID = function (url) {
     var info    = u.parse(url);
     var query   = info.query;
     var videoID = '';
-    
-    console.log(info);
     
     var isShortenedURL      = info.hostname === 'youtu.be';
     // No query string plz
