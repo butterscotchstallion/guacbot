@@ -17,8 +17,8 @@ co.init = function (client) {
 };
 
 co.getIsCrankOwnedMessage = function () {
-    var owned    = irc.colors.wrap('dark_red',   'Yes, crank is currently owned');
-    var notOwned = irc.colors.wrap('dark_green', 'No, crank is currently not owned');
+    var owned    = irc.colors.wrap('light_red',   'Yes, crank is currently owned');
+    var notOwned = irc.colors.wrap('light_green', 'No, crank is currently not owned');
     
     return Math.floor(Math.random() * 2) === 1 ? owned : notOwned;
 };
