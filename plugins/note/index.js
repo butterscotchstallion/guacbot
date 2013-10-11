@@ -66,7 +66,7 @@ note.init = function (client) {
 };
 
 note.getNoteDeliveredTemplate = function (info) {
-    var tpl       = '*ATTN* {{nick}}: \u0002{{message}}\u0002';
+    var tpl       = '*ATTN* \u0002{{nick}}\u0002: {{message}}';
         tpl      += ' (\u0002{{originNick}}\u0002 {{timeAgo}})';
     var compileMe = hbs.compile(tpl);
     
