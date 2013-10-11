@@ -28,10 +28,12 @@ quote.init = function (client) {
                 
                 var quoteCallback = function (result, err) {
                     if (!err && result) {
+                        console.log(result);
+                        
                         var msg  = quote.getQuoteTemplate({
                             nick       : targetNick,
                             message    : result.message,
-                            date       : quote.getFormattedDate(result[j].ts),
+                            date       : quote.getFormattedDate(result.ts),
                             searchQuery: searchQry,
                         });
                         
@@ -150,7 +152,7 @@ quote.init = function (client) {
                             console.log(err);
                         }
                         
-                        if (result) {
+                        if (!err && result) {
                             var msg  = quote.getQuoteTemplate({
                                 nick   : targetNick,
                                 message: result.message,
@@ -178,8 +180,8 @@ quote.init = function (client) {
                     var minlen = 3;
                     
                     if (query.length >= minlen) {
-                        var lastMentionCallback = function (result) {
-                            if (result && result.message !== info.message) {
+                        var lastMentionCallback = function (result, err) {
+                            if (!err && result) {
                                 var msg  = quote.getQuoteTemplate({
                                     nick       : result.nick,
                                     message    : result.message,
@@ -210,7 +212,9 @@ quote.init = function (client) {
                             console.log(err);
                         }
                         
-                        if (result) {
+                        console.log(result);
+                        
+                        if (!err && result) {
                             var msg  = quote.getQuoteTemplate({
                                 nick   : targetNick,
                                 message: result.message,
@@ -236,15 +240,18 @@ quote.init = function (client) {
 };
 
 quote.getQuoteTemplate = function (info) {
-    var data     = info;
-    // Bold search query
-    var boldQry  = "\u0002" + data.searchQuery + "\u0002";
-    var re       = new RegExp(data.searchQuery, 'gi');
-    var msg      = data.message.replace(re, boldQry);
-    data.message = msg;
+    var data         = info;
     
-    var quoteTpl = '{{{date}}} <\u0002{{{nick}}}\u0002> {{{message}}}';
-    var tpl      = hbs.compile(quoteTpl);
+    // Bold search query
+    if (typeof info.searchQuery !== 'undefined') {
+        var boldQry  = "\u0002" + data.searchQuery + "\u0002";
+        var re       = new RegExp(data.searchQuery, 'gi');
+        var msg      = data.message.replace(re, boldQry);
+        data.message = msg;
+    }
+    
+    var quoteTpl     = '{{{date}}} <\u0002{{{nick}}}\u0002> {{{message}}}';
+    var tpl          = hbs.compile(quoteTpl);
     
     return tpl(data);
 };
