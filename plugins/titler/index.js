@@ -172,10 +172,26 @@ titler.isIgnoredDomain = function (domain) {
     return domains && domains.indexOf(domain) !== -1;
 };
 
+titler.getUserAgent = function () {
+    var defaultAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.94 Safari/537.36';
+    var agents       = typeof titler.pluginConfig.userAgents !== 'undefined' ? titler.pluginConfig.userAgents : [];
+    var agent        = defaultAgent;
+    
+    if (agents.length > 0) {
+        agent = agents[Math.floor(Math.random() * agents.length)];
+    }
+    
+    return agent;
+};
+
+titler.getReferrer = function (urlInfo) {
+    return urlInfo.protocol + '//' + urlInfo.host;
+};
+
 titler.requestWebsite = function (url, websiteCallback, imageCallback) {
     var u               = require('url');
-    var host            = u.parse(url).host;
-    var isIgnoredDomain = titler.isIgnoredDomain(host);
+    var urlInfo         = u.parse(url);
+    var isIgnoredDomain = titler.isIgnoredDomain(urlInfo.host);
     
     if (!isIgnoredDomain) {
         //console.log('Retrieving page HTML for URL: ' + url);
@@ -183,9 +199,12 @@ titler.requestWebsite = function (url, websiteCallback, imageCallback) {
         var options = {
             uri: url,
             headers: {
-                'user-agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.94 Safari/537.36'
-            },
+                'user-agent': titler.getUserAgent(),
+                'referrer'  : titler.getReferrer(urlInfo)
+            }
         };
+        
+        console.log(options);
         
         request(options, function (error, response, body) {            
             if (!error) {
