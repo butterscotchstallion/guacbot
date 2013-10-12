@@ -22,24 +22,18 @@ announcer.init = function (client) {
             }
         };
         
-        //console.log(user);
-        
         if (admin.userIsAdmin(user)) {
-            if (info.words[1] === 'github') {
-                console.log('fetching notifications');
-                
+            if (info.words[1] === 'github') {                
                 announcer.getLatestNotification(function (n) {
                     if (typeof n === 'object' && n) {
                         var msg = announcer.getAnnouncementTemplate(n);
                         
                         client.say(info.channel, msg);
                     } else {
-                        client.say(info.channel, 'got nothin');
+                        client.say(info.channel, 'No unread notifications');
                     }
                 });
             }
-        } else {
-            console.log('not admin');
         }
     });
     
@@ -49,15 +43,11 @@ announcer.init = function (client) {
     if (channels.length > 0) {
         setInterval(function () {
             announcer.getLatestNotification(function (n) {
-                console.log('checking for notifications...');
-                
                 for (var j = 0; j < channels.length; j++) {
                     if (typeof n === 'object' && n) {
                         var msg = announcer.getAnnouncementTemplate(n);
                         
                         client.say(channels[j], msg);
-                    } else {
-                        console.log('no notifications!');
                     }
                 }
             });
