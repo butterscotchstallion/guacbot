@@ -81,24 +81,15 @@ announcer.tidyCommitMessage = function (msg) {
 };
 
 announcer.getAnnouncementTemplate = function (info) {
-    var compileMe     = '{{author}} pushed {{numberOfCommits}} commits {{timeAgo}} :: {{message}} :: {{url}}';
+    var compileMe     = '{{author}} pushed {{numberOfCommits}} {{commitsWord}} {{timeAgo}} :: {{message}} :: {{url}}';
     var payload       = JSON.parse(info.payload);       
     var commits       = payload.commits || [];
     var commit        = payload.head_commit;
-    var message       = commit.message;
+    var message       = announcer.tidyCommitMessage(commit.message);
     var messageMaxLen = 200;
     var timeAgo       = moment(commit.timestamp).fromNow();
     var url           = commit.url;
-    var author        = commit.author.username;
-    
-    // Remove newlines
-    message           = message.replace(/\n/g, ' ');
-    message           = message.replace(/\r\n/g, ' ');
-    
-    if (message.length > messageMaxLen) {
-        message = message.substring(0, messageMaxLen).trim() + '...';
-    }
-    
+    var author        = commit.author.username;    
     var tpl           = hbs.compile(compileMe);
     
     return tpl({
@@ -106,7 +97,8 @@ announcer.getAnnouncementTemplate = function (info) {
         numberOfCommits: commits.length,
         timeAgo        : timeAgo,
         url            : url,
-        message        : message
+        message        : message,
+        commitsWord    : commits.length === 1 ? 'commit' : 'commits'
     });
 };
 
@@ -141,7 +133,7 @@ announcer.getLatestNotification = function (callback) {
                 if (typeof rows[0] !== 'undefined' && rows[0].id) {
                     announcer.markNotificationRead(rows[0].id, function (result, err) {
                         if (!err) {
-                            console.log('OK: marked ' + rows[0].id + ' read');
+                            //console.log('OK: marked ' + rows[0].id + ' read');
                         } else {
                             console.log('ERROR: failed to mark ' + rows[0].id + ' read');
                         }
