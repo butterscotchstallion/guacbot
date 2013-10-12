@@ -62,12 +62,6 @@ ig.add = function (hostmask, callback) {
 };
 
 ig.isIgnored = function (hostmask, callback) {
-    // Temporary really ugly fix until refactor
-    if (hostmask === 'undefined@undefined') {
-        callback(false);
-        return false;
-    }
-    
     // Admins should never be ignored
     var parts    = hostmask.split('@');
     var maskInfo = {
@@ -78,6 +72,8 @@ ig.isIgnored = function (hostmask, callback) {
     };
     
     if (admin.userIsAdmin(maskInfo)) {
+        console.log(hostmask + ' bypassing ignore due to admin');
+        
         callback(false);
         return false;
     }
@@ -93,10 +89,6 @@ ig.isIgnored = function (hostmask, callback) {
         
         if (rows && typeof callback === 'function' ) {
             callback(!!rows[0].ignored, err);
-            
-            if (!!rows[0].ignored) {
-                console.log(hostmask + ' is ignored');
-            }
         }
     });
 };
