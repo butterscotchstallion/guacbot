@@ -8,6 +8,7 @@
 var db        = require('../../plugins/db');
 var hbs       = require('handlebars');
 var admin     = require('../../plugins/admin');
+var moment    = require('moment');
 var announcer = {};
 
 announcer.init = function (client) {
@@ -80,43 +81,33 @@ announcer.tidyCommitMessage = function (msg) {
 };
 
 announcer.getAnnouncementTemplate = function (info) {
-    var compileMe, tidyMessage, payload, commit;
-
-    var singleCommitTpl   = '\u0002{{author}}\u0002 :: {{message}} :: {{commitURL}}';
-    var multipleCommitTpl = '\u0002{{authors}}\u0002 pushed \u0002{{numberOfCommits}} commits\u0002 to {{repoURL}}';
+    var compileMe     = '{{author}} pushed {{numberOfCommits}} commits {{timeAgo}} :: {{message}} :: {{url}}';
+    var payload       = JSON.parse(info.payload);       
+    var commits       = payload.commits || [];
+    var commit        = payload.head_commit;
+    var message       = commit.message;
+    var messageMaxLen = 200;
+    var timeAgo       = moment(commit.timestamp).fromNow();
+    var url           = commit.url;
+    var author        = commit.author.username;
     
-    payload               = JSON.parse(info.payload);
+    // Remove newlines
+    message           = message.replace(/\n/g, ' ');
+    message           = message.replace(/\r\n/g, ' ');
     
-    if (info.numberOfCommits === 1) {
-        compileMe         = singleCommitTpl;
-        commit            = payload.commits[0];
-        tidyMessage       = announcer.tidyCommitMessage(commit.message);
-        info.message      = tidyMessage;
-        info.commitURL    = commit.url;
-        info.author       = commit.committer.username;
-    } else {
-        compileMe         = multipleCommitTpl;        
-        var commits       = payload.commits || [];
-        var authors       = [];
-        var author        = false;
-        var csAuthor      = '';
-        
-        for (var j = 0; j < commits.length; j++) {
-            author = commits[j].committer.username;
-            
-            if (author && authors.indexOf(author) === -1) {
-                authors.push(author);
-            }
-        }
-        
-        csAuthor          = authors.join(', ');
-        info.authors      = csAuthor;
-        info.repoURL      = payload.repository.url;
+    if (message.length > messageMaxLen) {
+        message = message.substring(0, messageMaxLen).trim() + '...';
     }
     
-    var tpl               = hbs.compile(compileMe);
+    var tpl           = hbs.compile(compileMe);
     
-    return tpl(info);
+    return tpl({
+        author         : author,
+        numberOfCommits: commits.length,
+        timeAgo        : timeAgo,
+        url            : url,
+        message        : message
+    });
 };
 
 announcer.markNotificationRead = function (notificationID, callback) {
