@@ -204,8 +204,6 @@ titler.requestWebsite = function (url, websiteCallback, imageCallback) {
             }
         };
         
-        console.log(options);
-        
         request(options, function (error, response, body) {            
             if (!error) {
                 var type      = response.headers['content-type'];
