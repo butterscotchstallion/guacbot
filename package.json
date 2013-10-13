@@ -18,7 +18,8 @@
     "handlebars": "~1.0.12",
     "ent": "~0.1.0",
     "line-reader": "~0.2.3",
-    "ddg": "0.0.3"
+    "ddg": "0.0.3",
+    "wolfram": "~0.2.6"
   },
   "devDependencies": {
     "forever": "~0.10.8",
