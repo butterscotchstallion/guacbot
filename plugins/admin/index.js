@@ -80,9 +80,9 @@ admin.executeCommand = function (info) {
     // [0] guacamole:
     // [1] join
     // [2] #test
-    var command       = info.words[1];
-    var commandArgOne = info.words[2];
-    var commandArgTwo = info.words[3];
+    var command       = info.words[1] || '';
+    var commandArgOne = info.words[2] || '';
+    var commandArgTwo = info.words[3] || '';
     
     switch (info.command) {
         /**
@@ -110,7 +110,7 @@ admin.executeCommand = function (info) {
         break;
         
         case 'kick':
-            var targetChannel = commandArgOne.indexOf('#') === 0 ? commandArgOne : info.channel;
+            var targetChannel = commandArgOne.indexOf('#') === 0  ? commandArgOne : info.channel;
             var targetNick    = commandArgOne.indexOf('#') === -1 ? commandArgOne : commandArgTwo;
             
             admin.kick(targetChannel, targetNick, info.words.slice(3).join(' '));
@@ -367,7 +367,7 @@ admin.getKickMsg = function (cfg) {
     var msg      = '';
     
     if (messages) {
-        msg = messages[Math.floor(Math.random() * messages.length)];
+        msg      = messages[Math.floor(Math.random() * messages.length)];
     }
     
     return msg;
