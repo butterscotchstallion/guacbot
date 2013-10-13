@@ -13,8 +13,8 @@ define.init = function (client) {
     
     client.ame.on('actionableMessageAddressingBot', function (info) {
         var cmd   = info.words[1];
-        var query = info.words.slice(2);
-        
+        var query = info.words.slice(2).join(' ');
+
         if (cmd === 'define' && query && query.length > 0) {
             define.getDefinition(query, function (err, result) {
                 if (!err && result && result.length > 0) {
