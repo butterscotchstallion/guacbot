@@ -33,6 +33,10 @@ titler.init = function (client) {
     
     // Listen to messages from any channel
     client.ame.on('actionableMessage', function (info) {
+        if (!client.pluginManager.isValidChannel(info.channel, 'titler')) {
+            return false;
+        }
+        
         var link = titler.getFirstLinkFromString(info.message);
         
         if (link && link.length > 0) {
