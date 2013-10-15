@@ -8,36 +8,14 @@ var fs     = require('fs');
 var assert = require("assert");
 var titler = require('../../plugins/titler/');
 
-describe('youtube title templates', function () {
-    /*
-    var info    = JSON.parse(fs.readFileSync('fixture/youtubeVideoLongDecimal.json', 'utf8')); 
-    var details = titler.getYoutubeVideoTitleDetails(info);
-    
-    it('should get template', function () {   
-        var info     = JSON.parse(fs.readFileSync('fixture/youtubeVideoLongDecimal.json', 'utf8')); 
-        var input    = '^ {{{title}}} :: {{{description}}}';
-        var expected = "^ A Prostitute Attacks Oklahoma's Own Video Vigilante & is Arrested :: 1/26/2010 - OKC, OK USA -- A business owner in South OKC calls Oklahoma\'s own Video Vigilante Brian Bates and asks for his assistance in running off street hookers working near his business. When Bat...";
-        var data     = {
-            title: details.title,
-            description: details.description
-        };
-        var actual   = titler.getYoutubeTitleFromTemplate(data, input);
-        
-        assert.equal(expected, actual);
-    });
-    */
-    
-    it('should not have newlines in the description', function () {
-        var jsonWithNewLines = JSON.parse(fs.readFileSync('fixture/youtubeVideoNewlinesInDescription.json', 'utf8')); 
-        var actual           = titler.getYoutubeVideoTitleDetails(jsonWithNewLines);
-        
-        assert.equal(actual.description.indexOf('\n'), -1);
-    });
-});
-
 describe('get title template', function () {
     beforeEach(function () {
         titler.init({
+            "ame": {
+                "on": function () {
+                
+                }
+            },
             "config": {
                 "plugins": {
                     "titler": {
@@ -297,6 +275,17 @@ describe('html part 2', function() {
         
         titler.parseHTMLAndGetTitle(html, function (title) {
             assert.equal(title, 'Capybara - Wikipedia, the free encyclopedia');
+            done();
+        });
+    });
+});
+
+describe('htmlz', function() {
+    it('should find the title tag in this html', function (done) {
+        var html = fs.readFileSync('fixture/vine.html', 'utf8');
+        
+        titler.parseHTMLAndGetTitle(html, function (title) {
+            assert.equal(title, "Bull Moose's post on Vine");
             done();
         });
     });
