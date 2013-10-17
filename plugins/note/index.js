@@ -8,7 +8,10 @@ var db       = require('../../plugins/db/');
 var moment   = require('moment');
 var irc      = require('irc');
 var hbs      = require('handlebars');
-var note     = {};
+var _        = require('underscore');
+var note     = {
+    delivered: []
+};
 
 note.init = function (client) {
     client.ame.on('actionableMessageAddressingBot', function (info) {
@@ -18,8 +21,9 @@ note.init = function (client) {
         var nMessage  = words.slice(3).join(' ');
         
         if (command === 'note') {
-            if (recipient && nMessage) {         
-                if (recipient !== info.nick) {
+            if (recipient && nMessage) {
+                // Fixes #36
+                if (recipient.toLowerCase() !== info.nick) {
                     var noteAddedCB = function (result, err) {
                         if (err) {
                             console.log(err);
@@ -50,7 +54,12 @@ note.init = function (client) {
     
     client.ame.on('actionableMessage', function (info) {
         note.get(info.nick, info.channel, function (newNote) {
-            if (newNote) {
+            // Make sure that we haven't already delivered this note in the 
+            // case of a bunch of messages arriving at once
+            // Fixes #35
+            var isDelivered = note.delivered.indexOf(newNote.id) !== -1;
+            
+            if (newNote && !isDelivered) {
                 var timeAgo = moment(newNote.createdAt).fromNow();
                 var msg     = note.getNoteDeliveredTemplate({
                     nick      : info.nick,
@@ -122,10 +131,15 @@ note.get = function (nick, channel, callback) {
             console.log('note error in get: ' + err);
         } else {
             if (rows.length > 0) {
-                callback(rows[0], err);
+                var newNote = rows[0];
                 
                 // after note is successfully retrieved, remove it
-                note.removeByID(rows[0].id);
+                note.removeByID(newNote.id);
+                
+                callback(newNote, err);
+                
+                // Add note to delivered - Fixes #35
+                note.delivered.push(newNote.id);
             }
         }
     });
