@@ -72,7 +72,7 @@ ig.isIgnored = function (hostmask, callback) {
     };
     
     if (admin.userIsAdmin(maskInfo)) {
-        console.log(hostmask + ' bypassing ignore due to admin');
+        //console.log(hostmask + ' bypassing ignore due to admin');
         
         callback(false);
         return false;

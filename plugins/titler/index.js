@@ -287,7 +287,7 @@ titler.parseHTMLAndGetTitle = function (html, callback) {
     var $     = cheerio.load(html);
     var title = $('title').text();
     
-    console.log('title: ', typeof title, title.length);
+    //console.log('title: ', typeof title, title.length);
     
     if (title && title.length > 0) {
         title = title.replace(/\t\t/g, '');
