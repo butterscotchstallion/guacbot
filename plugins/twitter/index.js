@@ -28,8 +28,10 @@ twitter.getTweetTemplate = function (info) {
 
 twitter.getTweetInfoFromHTML = function (html) {
     var $      = cheerio.load(html);
-    var author = $('.content').find('span.js-action-profile-name > b').first().text();
-    var tweet  = $('.content').find('p.tweet-text').first().text();
+    var root   = $('.permalink-tweet-container');
+    var author = root.find('span.js-action-profile-name > b').first().text();
+        author = author.replace('@', '');        
+    var tweet  = root.find('p.tweet-text').first().text();
     
     return {
         author: author,
