@@ -51,8 +51,6 @@ squire.performAction = function (info) {
     if (squire.isFriend(info.hostmask)) {
         console.log(info.hostmask + ' is friend');
         squire.client.send('MODE', info.channel, '+o', info.nick);
-    } else {
-        console.log(info.hostmask + ' is NOT friend');
     }
     
     if (squire.isFoe(info.hostmask)) {
@@ -62,7 +60,12 @@ squire.performAction = function (info) {
 };
 
 squire.isFriend = function (hostmask) { 
-    return squire.match(hostmask, squire.pluginCfg.friends);
+    var cfgFriend   = squire.match(hostmask, squire.pluginCfg.friends);
+    var isAdmin     = admin.hostmaskIsAdmin(hostmask);
+    
+    console.log(hostmask + ' is not admin');
+    
+    return cfgFriend || isAdmin;
 };
 
 squire.isFoe = function (hostmask) { 

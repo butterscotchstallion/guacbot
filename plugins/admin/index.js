@@ -64,6 +64,20 @@ admin.userIsAdmin = function (info) {
     return match;
 };
 
+admin.hostmaskIsAdmin = function (hostmask) {
+    var match  = false;
+    var admins = admin.pluginCfg.admins;
+    
+    for (var j = 0; j < admins.length; j++) {
+        if (minimatch(hostmask, admins[j])) {            
+            match = true;
+            break;            
+        }
+    }
+    
+    return match;
+};
+
 admin.executeCommand = function (info) {
     // Check if user is authorized to use commands
     if (!admin.userIsAdmin(info)) {    
@@ -101,7 +115,7 @@ admin.executeCommand = function (info) {
         
         case 'op':
             var target = commandArgOne ? commandArgOne : info.nick;
-            admin.grantChannelOperatusStatus(info, target);
+            admin.grantChannelOperatorStatus(info, target);
         break;
         
         case 'deop':
@@ -331,7 +345,7 @@ admin.getMuteMask = function (host) {
     return '~q:*!*@' + host;
 };
 
-admin.grantChannelOperatusStatus = function (info, target) {
+admin.grantChannelOperatorStatus = function (info, target) {
     if (info.pluginCfg.useChanserv) {
         info.client.say('CHANSERV', 'OP ' + info.channel + ' ' + target);
     } else {
