@@ -15,6 +15,7 @@ var aee        = require('../../lib/argusEventEmitter');
 var admin      = require('../../plugins/admin');
 var minimatch  = require('minimatch');
 var _          = require('underscore');
+var argus      = require('../../lib/argus');
 var squire     = {
     cfg: {
         adminsAreFriends: true,
@@ -27,22 +28,68 @@ var squire     = {
     }
 };
 
+squire.loadConfig = function (config) {
+    squire.pluginCfg = config.plugins.squire;
+    squire.adminCfg  = config.plugins.admin;
+};
+
 squire.init = function (client) {
     squire.client    = client;
-    squire.pluginCfg = client.config.plugins.squire;
-    squire.adminCfg  = client.config.plugins.admin;
-
+    squire.loadConfig(client.config);
+    
     client.ame.on('actionableMessage', function (info) {
         squire.performAction(info);
     });
     
     aee.on('hostmaskUpdated', function (info) {
         for (var j = 0; j < info.channels.length; j++) {
-            squire.performAction(_.extend(info, {
-                channel: info.channels[j]
-            }));
+            // Don't try to perform actions unless we're in that channels
+            var botInChannel = squire.isBotInChannel(info.channels[j]);
+            
+            if (botInChannel) {
+                squire.performAction(_.extend(info, {
+                    channel: info.channels[j]
+                }));
+            }
         }
     });
+    
+    var tenSeconds           = 10000;
+    
+    setInterval(function () {
+        var channels            = argus.channels;
+        var targetHasOpsAlready = false;
+        var hasMask             = false;
+        var botHasOps           = false;
+        var cur;
+        
+        for (var j = 0; j < channels.length; j++) {
+            cur = channels[j];
+            
+            // If they don't already have ops
+            targetHasOpsAlready = argus.hasMode(_.extend(cur, {
+                mode: '@'
+            }));
+            
+            // And this item has a hostmask
+            hasMask             = typeof cur.hostmask !== 'undefined';
+            
+            // And the bot has ops in that channel
+            botHasOps           = argus.botHasOpsInChannel(cur.channel);
+            
+            if (hasMask && !targetHasOpsAlready && botHasOps) {
+                console.log('setting modez: ', cur);
+                
+                squire.performAction(cur);
+            }
+        }
+    }, tenSeconds);
+};
+
+squire.isBotInChannel = function (channel) {
+    var botInChannel = squire.client.chans && Object.keys(squire.client.chans).indexOf(channel) !== -1;
+    
+    return botInChannel;
 };
 
 squire.performAction = function (info) {
