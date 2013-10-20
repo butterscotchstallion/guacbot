@@ -572,3 +572,63 @@ describe('argus.updateHostmask', function () {
         assert.deepEqual(argus.channels[0], expected);
     });
 });
+
+describe('argus.botHasOpsInChannel', function () {
+    beforeEach(function () {
+        argus.channels = [];
+    });
+    
+    it('should detect ops', function () {
+        var botWithoutOps = {
+            nick    : 'guacamole',
+            channel : '#guacamole',
+            modes   : []
+        };
+        
+        argus.addNick(botWithoutOps);
+        
+        var expected = false;
+        var actual   = argus.botHasOpsInChannel('#guacamole', 'guacamole');
+        
+        assert.equal(expected, actual);
+        
+        // Now add ops
+        argus.addMode({
+            nick   : 'guacamole',
+            channel: '#guacamole',
+            mode   : 'o'
+        });
+        
+        var expected = true;
+        var actual   = argus.botHasOpsInChannel('#guacamole', 'guacamole');
+        
+        assert.equal(expected, actual);
+    });
+    
+    it('should detect when bot does not have ops', function () {
+        var botWithoutOps = {
+            nick    : 'guacamole',
+            channel : '#guacamole',
+            modes   : ['@']
+        };
+        
+        argus.addNick(botWithoutOps);
+        
+        var expected = true;
+        var actual   = argus.botHasOpsInChannel('#guacamole', 'guacamole');
+        
+        assert.equal(expected, actual);
+        
+        // Now remove ops
+        argus.removeMode({
+            nick   : 'guacamole',
+            channel: '#guacamole',
+            mode   : 'o'
+        });
+        
+        var expected = false;
+        var actual   = argus.botHasOpsInChannel('#guacamole', 'guacamole');
+        
+        assert.equal(expected, actual);
+    });
+});

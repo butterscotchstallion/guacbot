@@ -38,15 +38,18 @@ squire.init = function (client) {
     squire.loadConfig(client.config);
     
     client.ame.on('actionableMessage', function (info) {
-        squire.performAction(info);
+        var targetUpgradeable = squire.isTargetUpgradeable(info);
+            
+        if (targetUpgradeable) {
+            squire.performAction(info);
+        }
     });
     
     aee.on('hostmaskUpdated', function (info) {
         for (var j = 0; j < info.channels.length; j++) {
-            // Don't try to perform actions unless we're in that channels
-            var botInChannel = squire.isBotInChannel(info.channels[j]);
+            var targetUpgradeable = squire.isTargetUpgradeable(info.channels[j]);
             
-            if (botInChannel) {
+            if (targetUpgradeable) {
                 squire.performAction(_.extend(info, {
                     channel: info.channels[j]
                 }));
@@ -54,36 +57,45 @@ squire.init = function (client) {
         }
     });
     
-    var tenSeconds           = 10000;
+    var tenSeconds = 10000;
     
     setInterval(function () {
-        var channels            = argus.channels;
-        var targetHasOpsAlready = false;
-        var hasMask             = false;
-        var botHasOps           = false;
+        var channels = argus.channels;
         var cur;
         
         for (var j = 0; j < channels.length; j++) {
             cur = channels[j];
             
-            // If they don't already have ops
-            targetHasOpsAlready = argus.hasMode(_.extend(cur, {
-                mode: '@'
-            }));
+            var targetUpgradeable = squire.isTargetUpgradeable(cur);
             
-            // And this item has a hostmask
-            hasMask             = typeof cur.hostmask !== 'undefined';
-            
-            // And the bot has ops in that channel
-            botHasOps           = argus.botHasOpsInChannel(cur.channel);
-            
-            if (hasMask && !targetHasOpsAlready && botHasOps) {
+            if (targetUpgradeable) {
                 console.log('setting modez: ', cur);
                 
                 squire.performAction(cur);
             }
         }
     }, tenSeconds);
+};
+
+squire.isTargetUpgradeable = function (info) {
+    var targetHasOpsAlready = false;
+    var hasMask             = false;
+    var botHasOps           = false;
+    
+    // If they don't already have ops
+    targetHasOpsAlready = argus.hasMode(_.extend(info, {
+        mode: '@'
+    }));
+    
+    // And this item has a hostmask
+    hasMask             = typeof info.hostmask !== 'undefined';
+    
+    // And the bot has ops in that channel
+    botHasOps           = argus.botHasOpsInChannel(info.channel, squire.client.config.nick);
+    
+    //console.log('chan: ' + info.channel + ' nick: ' + info.nick + ' ops: ' + botHasOps);
+    
+    return hasMask && !targetHasOpsAlready && botHasOps;
 };
 
 squire.isBotInChannel = function (channel) {
