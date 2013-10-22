@@ -16,38 +16,34 @@ var note     = {
 note.init = function (client) {
     client.ame.on('actionableMessageAddressingBot', function (info) {
         var words     = info.words;
-        var command   = words[1];
-        var recipient = words[2];
+        var command   = words[1] || '';
+        var recipient = words[2] || '';
         var nMessage  = words.slice(3).join(' ');
         
         if (command === 'note') {
-            if (recipient && nMessage) {
-                // Fixes #36
-                if (recipient.toLowerCase() !== info.nick) {
-                    var noteAddedCB = function (result, err) {
-                        if (err) {
-                            console.log(err);
-                        }
-                        
-                        client.say(info.channel, 'Message for \u0002' + recipient + '\u0002 saved!');
-                    };
+            var lowerRecipient           = recipient.toLowerCase();
+            var validRecipientAndMessage = recipient && nMessage;
+            var isMessageToSelf          = lowerRecipient === info.nick;
+            var isMessageToBot           = lowerRecipient === client.config.nick.toLowerCase();
+            
+            if (validRecipientAndMessage && !isMessageToSelf && !isMessageToBot) {
+                var noteAddedCB = function (result, err) {
+                    if (err) {
+                        console.log(err);
+                    }
                     
-                    note.add({
-                        dest_nick  : recipient,
-                        channel    : info.channel,
-                        message    : nMessage,
-                        origin_nick: info.nick
-                    }, noteAddedCB);
-                    
-                } else {
-                    var msg  = "can't send a note to yourself ";
-                        msg += irc.colors.wrap('magenta', 'friend');
-                    
-                    client.say(info.channel, msg);
-                }
+                    client.say(info.channel, 'Message for \u0002' + recipient + '\u0002 saved!');
+                };
+                
+                note.add({
+                    dest_nick  : recipient,
+                    channel    : info.channel,
+                    message    : nMessage,
+                    origin_nick: info.nick
+                }, noteAddedCB);
                 
             } else {
-                client.say(info.channel, 'does not compute');
+                client.say(info.channel, 'Invalid recipient');
             }
         }
     });
