@@ -9,6 +9,7 @@ var ignore     = require('../../plugins/ignore');
 var request    = require('request');
 var sleuth     = {};
 var hbs        = require('handlebars');
+var _          = require('underscore');
 
 sleuth.init = function (client) {
     client.ame.on('actionableMessageAddressingBot', function (info) {        
@@ -34,7 +35,7 @@ sleuth.getTitleTemplate = function (video) {
     
     return tpl({
         title: video.title,
-        link: video.link
+        link : video.link
     });
 };
 
@@ -65,8 +66,7 @@ sleuth.getFirstSearchResult = function (query, callback) {
     sleuth.getYoutubeSearchResponse(query, function (video) {
         callback({
             title: video.title,
-            // This may or may not be a good idea
-            link: video.link.split('?')[0]
+            link : 'https://youtube.com/watch?v=' + video.id
         });
     });
 };
@@ -93,10 +93,12 @@ sleuth.parseResponse = function (response) {
     var video   = entries[0];
     var title   = video.title['$t'];
     var link    = video.content.src;
+    var id      = _.last(video.id['$t'].split(':'));
     
     return {
         title: title,
-        link: link
+        link : link,
+        id   : id
     };
 };
 
