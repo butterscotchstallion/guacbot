@@ -20,10 +20,11 @@ weatherPlugin.init = function (client) {
             var storeLocationEnabled = weatherPlugin.weatherCfg.rememberLocation || false;
             
             if (storeLocationEnabled) {
+                // FIXME should only store location if there were results
                 if (query) {
                     weatherPlugin.storeLocation({
-                        nick: info.nick,
-                        host: info.info.host,
+                        nick    : info.nick,
+                        host    : info.info.host,
                         location: query,
                         callback: function (result, err) {
                             if (err) {
@@ -38,12 +39,12 @@ weatherPlugin.init = function (client) {
                     if (typeof stored !== 'undefined' && stored.location) {
                         weatherPlugin.query({
                             apiKey: client.config.plugins.weather.apiKey,
-                            query: stored.location,
+                            query: query || stored.location,
                             callback: function (data) {
                                 client.say(info.channel, data);
                             },
                             debug: false
-                        });                                    
+                        });
                     } else {
                         var messages = typeof weatherPlugin.weatherCfg.rememberLocationNotFoundMessages !== 'undefined' ? weatherPlugin.weatherCfg.rememberLocationNotFoundMessages : [];
                         var msg      = '';
@@ -63,8 +64,8 @@ weatherPlugin.init = function (client) {
                     weatherPlugin.query({
                         apiKey: client.config.plugins.weather.apiKey,
                         query: query,
-                        callback: function (data) {
-                            client.say(info.channel, data);
+                        callback: function (conditions) {
+                            client.say(info.channel, conditions);
                         },
                         debug: false
                     });
@@ -103,11 +104,11 @@ weatherPlugin.storeLocation = function (info) {
 weatherPlugin.parseResponse = function (response) {
     var res = JSON.parse(response);
     
-    // Unexpected response!!
     if (res.response.error) {
         return res.response.error.description;
     }
     
+    // Unexpected response!
     if (typeof(res.current_observation) === 'undefined') {
         return 'No cities match your search query!';
     }
@@ -141,6 +142,8 @@ weatherPlugin.query = function (cfg) {
     var URL              = require('url');
     var wunder           = new WunderNodeClient(cfg.apiKey,cfg.debug);
     var conditions       = '';
+    
+    console.log('fetching weather: ', cfg);
     
     wunder.conditions(cfg.query, function (err, response) {
         if (err) {
