@@ -20,7 +20,11 @@ sleuth.init = function (client) {
             
             if (query) {
                 sleuth.getFirstSearchResult(query, function (video) {
-                    var msg = sleuth.getTitleTemplate(video);
+                    var msg = 'No results';
+                    
+                    if (video) {
+                        msg = sleuth.getTitleTemplate(video);
+                    }
                     
                     client.say(info.channel, msg);
                 });
@@ -64,10 +68,14 @@ sleuth.parseInputIntoQuery = function (input) {
 
 sleuth.getFirstSearchResult = function (query, callback) {
     sleuth.getYoutubeSearchResponse(query, function (video) {
-        callback({
-            title: video.title,
-            link : 'https://youtube.com/watch?v=' + video.id
-        });
+        if (typeof video === 'object') {
+            callback({
+                title: video.title,
+                link : 'https://youtube.com/watch?v=' + video.id
+            });
+        } else {
+            callback(false);
+        }
     });
 };
 
@@ -89,17 +97,21 @@ sleuth.getYoutubeSearchResponse = function (query, callback) {
 };
 
 sleuth.parseResponse = function (response) {
-    var entries = response.feed.entry;
-    var video   = entries[0];
-    var title   = video.title['$t'];
-    var link    = video.content.src;
-    var id      = _.last(video.id['$t'].split(':'));
+    // there is definitely a better way to do this
+    var entries = typeof response.feed === 'object' && response.feed.entry || [];
     
-    return {
-        title: title,
-        link : link,
-        id   : id
-    };
+    if (entries && entries.length > 0) {
+        var video   = entries[0];
+        var title   = video.title['$t'];
+        var link    = video.content.src;
+        var id      = _.last(video.id['$t'].split(':'));
+        
+        return {
+            title: title,
+            link : link,
+            id   : id
+        };
+    }
 };
 
 module.exports = sleuth;

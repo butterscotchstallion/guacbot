@@ -8,6 +8,15 @@ var fs     = require('fs');
 var assert = require("assert");
 var sleuth = require('../../plugins/tube-sleuth/');
 
+describe('Bug #49 - failed to check response entries', function () {
+    it('should be not buggy', function () {
+        var expected = undefined;
+        var actual   = sleuth.parseResponse('butts');
+        
+        assert.equal(expected, actual);
+    });
+});
+
 describe('should read search API json and get stuff from it', function () {
     it('should be awesome', function () {  
         var data  = JSON.parse(fs.readFileSync('fixture/youtubeSearchResponse.json', 'utf8'));        
