@@ -143,7 +143,7 @@ weatherPlugin.query = function (cfg) {
     var wunder           = new WunderNodeClient(cfg.apiKey,cfg.debug);
     var conditions       = '';
     
-    console.log('fetching weather: ', cfg);
+    //console.log('fetching weather: ', cfg);
     
     wunder.conditions(cfg.query, function (err, response) {
         if (err) {

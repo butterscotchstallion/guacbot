@@ -43,7 +43,9 @@ note.init = function (client) {
                 }, noteAddedCB);
                 
             } else {
-                client.say(info.channel, 'Invalid recipient');
+                var err = nMessage ? 'Invalid recipient' : 'That note sucks.';
+                
+                client.say(info.channel, err);
             }
         }
     });
