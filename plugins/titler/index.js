@@ -295,6 +295,8 @@ titler.parseHTMLAndGetTitle = function (html, callback) {
         title = title.replace(/\r\n/g, '');
         title = title.replace(/\n/g, ' ');
         title = title.trim();
+    } else {
+        title = false;
     }
     
     callback(title);
@@ -325,9 +327,13 @@ titler.getTitle = function (url, callback) {
                         });
                     } else {
                         titler.parseHTMLAndGetTitle(html, function (title) {
-                            title = titler.getTitleFromTemplate(title);
-                            
-                            callback(title);
+                            if (title) {
+                                title = titler.getTitleFromTemplate(title);
+                                
+                                callback(title);
+                            } else {
+                                console.log('titler: error getting title for ', url);
+                            }
                         });
                     }
                 };
@@ -354,6 +360,8 @@ titler.getTitle = function (url, callback) {
                 
                 titler.requestWebsite(url, websiteCallback, imageCallback);
             }
+        } else {
+            console.log('titler: error parsing url: ', url);
         }
         
     } else {
@@ -362,8 +370,16 @@ titler.getTitle = function (url, callback) {
 };
 
 titler.isTwitterURL = function (info) {
-    var isTwitterHost = info.host === 'twitter.com';
-    var isStatusURL   = info.pathname.length > 0 &&  info.pathname.indexOf('/status/') !== -1;
+    var isTwitterHost = info.host.indexOf('twitter.com') !== -1;
+    var isStatusURL   = false;
+    
+    if (info.pathname.length > 0) {
+        // Accommodate both kinds of URLs
+        var isSingleStatus = info.pathname.indexOf('/status/')   !== -1;
+        var isMultiStatus  = info.pathname.indexOf('/statuses/') !== -1;
+        
+        isStatusURL        = isSingleStatus || isMultiStatus;
+    }
     
     return isTwitterHost && isStatusURL;
 };
