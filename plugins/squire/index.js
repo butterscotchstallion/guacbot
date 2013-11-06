@@ -57,6 +57,12 @@ squire.init = function (client) {
         }
     });
     
+    aee.on('adminHostmaskBanned', function (info) {
+        console.log(info);
+        
+        client.send('MODE', info.channel, '-b', info.hostmask);
+    });
+    
     var tenSeconds = 10000;
     
     setInterval(function () {
@@ -69,8 +75,6 @@ squire.init = function (client) {
             var targetUpgradeable = squire.isTargetUpgradeable(cur);
             
             if (targetUpgradeable) {
-                console.log('setting modez: ', cur);
-                
                 squire.performAction(cur);
             }
         }
@@ -108,12 +112,12 @@ squire.performAction = function (info) {
     var command, words;
     
     if (squire.isFriend(info.hostmask)) {
-        console.log(info.hostmask + ' is friend');
+        //console.log(info.hostmask + ' is friend');
         squire.client.send('MODE', info.channel, '+o', info.nick);
     }
     
     if (squire.isFoe(info.hostmask)) {
-        console.log(info.hostmask + ' is foe');
+        //console.log(info.hostmask + ' is foe');
         squire.client.send('MODE', info.channel, '-o', info.nick);
     }    
 };
@@ -122,7 +126,7 @@ squire.isFriend = function (hostmask) {
     var cfgFriend   = squire.match(hostmask, squire.pluginCfg.friends);
     var isAdmin     = admin.hostmaskIsAdmin(hostmask);
     
-    console.log(hostmask + ' is not admin');
+    //console.log(hostmask + ' is not admin');
     
     return cfgFriend || isAdmin;
 };
