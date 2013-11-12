@@ -32,11 +32,11 @@ admin.init = function (client) {
         for (var j = 0; j < triglen; j++) {
             if (triggers[j].trigger === info.command) {
                 admin.executeCommand({
-                    client: client,
-                    command: triggers[j].command,
-                    channel: info.channel,
-                    nick: info.nick,
-                    words: info.words,
+                    client  : client,
+                    command : triggers[j].command,
+                    channel : info.channel,
+                    nick    : info.nick,
+                    words   : info.words,
                     userInfo: {
                         user: info.info.user,
                         host: info.info.host
@@ -204,7 +204,7 @@ admin.parseKickBanCommand = function (input) {
     if (!targetChannel && words.length === 4) {
         var tmp       = timeParser.parseDuration(commandArgTwo);
         
-        if (tmp.unit != 0) {
+        if (tmp && tmp.unit != 0) {
             duration  = tmp.length + tmp.unit;
         } else {
             reason    = words.slice(3).join(' ');
@@ -216,7 +216,7 @@ admin.parseKickBanCommand = function (input) {
     if (!targetChannel && words.length >= 4) {
         var tmp = timeParser.parseDuration(commandArgTwo);
         
-        if (tmp.unit != 0) {
+        if (tmp && tmp.unit != 0) {
             duration = tmp.length + tmp.unit;
         }
         
@@ -229,7 +229,7 @@ admin.parseKickBanCommand = function (input) {
     if (targetChannel && words.length >= 5) {
         var tmp = timeParser.parseDuration(words[4]);
         
-        if (tmp.unit !== 0) {
+        if (tmp && tmp.unit !== 0) {
             duration = tmp.length + tmp.unit;
         }
         
@@ -331,9 +331,10 @@ admin.unban = function (channel, nick) {
 
 admin.timeToMilliseconds = function (input) {
     var duration = timeParser.parseDuration(input);
-    var msDiff   = duration.length * 60000;
+    var msDiff   = duration && duration.length * 60000;
+    var halfHr   = 1800000;
     
-    return msDiff;    
+    return msDiff || halfHr;    
 };
 
 admin.getBanMask = function (host) {
