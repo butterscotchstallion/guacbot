@@ -122,22 +122,21 @@ note.get = function (nick, channel, callback) {
         q     += ' WHERE dest_nick = ?';
         q     += ' AND channel     = ?';
         q     += ' ORDER BY created_at DESC';
-        q     += ' LIMIT 1';
     
     db.connection.query(q, params, function (err, rows, fields) {
         if (err) {
             console.log('note error in get: ' + err);
         } else {
             if (rows.length > 0) {
-                var newNote = rows[0];
-                
-                // after note is successfully retrieved, remove it
-                note.removeByID(newNote.id);
-                
-                callback(newNote, err);
-                
-                // Add note to delivered - Fixes #35
-                note.delivered.push(newNote.id);
+                for (var j = 0; j < rows.length; j++) {
+                    // after note is successfully retrieved, remove it
+                    note.removeByID(rows[j].id);
+                    
+                    callback(rows[j], err);
+                    
+                    // Add note to delivered - Fixes #35
+                    note.delivered.push(rows[j].id);
+                }
             }
         }
     });
