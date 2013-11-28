@@ -233,7 +233,8 @@ describe('URL Matcher', function() {
             'http://youtu.be/j2fmevbZi40',
             'https://www.youtube.com/watch?v=mqFLXayD6e8',
             'http://www.youtube.com/watch?v=7B9z6VEzfDE',
-            'https://www.youtube.com/watch?v=MJ17szvj1gk&feature=player_detailpage'
+            'https://www.youtube.com/watch?v=MJ17szvj1gk&feature=player_detailpage',
+            'www.google.com'
         ];
         
         var validURLsLen = validURLs.length;
@@ -286,6 +287,17 @@ describe('htmlz', function() {
         
         titler.parseHTMLAndGetTitle(html, function (title) {
             assert.equal(title, "Bull Moose's post on Vine");
+            done();
+        });
+    });
+});
+
+describe('html3', function() {
+    it('should find the title tag in this html', function (done) {
+        var html = fs.readFileSync('fixture/okc.html', 'utf8');
+        
+        titler.parseHTMLAndGetTitle(html, function (title) {
+            assert.equal(title, "OkCupid |  Free Online Dating");
             done();
         });
     });

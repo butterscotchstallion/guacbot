@@ -161,7 +161,7 @@ titler.getFirstLinkFromString = function (input) {
 };
 
 titler.matchURL = function (url) {
-    var urlPattern = /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/;
+    var urlPattern = /(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/;
     
     return urlPattern.test(url);
 };
