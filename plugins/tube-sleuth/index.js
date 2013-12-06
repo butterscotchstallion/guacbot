@@ -14,20 +14,31 @@ var _          = require('underscore');
 sleuth.init = function (client) {
     client.ame.on('actionableMessageAddressingBot', function (info) {        
         var isQuestion = sleuth.isQuestion(info.message);
+        var videoCallback = function (video) {
+            var msg = 'No results';
+            
+            if (video) {
+                msg = sleuth.getTitleTemplate(video);
+            }
+            
+            client.say(info.channel, msg);
+        };
         
+        // Basic YT search
         if (isQuestion) {
             var query  = sleuth.parseInputIntoQuery(info.message);
             
             if (query) {
-                sleuth.getFirstSearchResult(query, function (video) {
-                    var msg = 'No results';
-                    
-                    if (video) {
-                        msg = sleuth.getTitleTemplate(video);
-                    }
-                    
-                    client.say(info.channel, msg);
-                });
+                sleuth.getFirstSearchResult(query, videoCallback);
+            }
+        } else {
+            // some other command
+            if (info.command === 'ytrand') {
+                var query = info.words.slice(2).join(' ');
+                
+                if (query) {
+                    sleuth.getRandomSearchResult(query, videoCallback);
+                }          
             }
         }
     });
@@ -66,6 +77,19 @@ sleuth.parseInputIntoQuery = function (input) {
     return query;
 };
 
+sleuth.getRandomSearchResult = function (query, callback) {
+    sleuth.getYoutubeSearchResults(query, function (video) {
+        if (typeof video === 'object') {
+            callback({
+                title: video.title,
+                link : 'https://youtube.com/watch?v=' + video.id
+            });
+        } else {
+            callback(false);
+        }
+    });
+};
+
 sleuth.getFirstSearchResult = function (query, callback) {
     sleuth.getYoutubeSearchResponse(query, function (video) {
         if (typeof video === 'object') {
@@ -79,9 +103,40 @@ sleuth.getFirstSearchResult = function (query, callback) {
     });
 };
 
-sleuth.getYoutubeSearchResponse = function (query, callback) {
+/**
+ * Get 10 results, ultimately returning one at random
+ *
+ */
+sleuth.getYoutubeSearchResults = function (query, callback) {
+    var limit  = 10;
+    var apiURL = sleuth.getYoutubeSearchAPIURL(query, limit);
+    
+    request(apiURL, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            var rawResponse  = JSON.parse(body);
+            var videoInfo    = sleuth.parseResultSet(rawResponse);
+            
+            callback(videoInfo);
+        } else {
+            console.log('sleuth error: ', error, 'status code', response.statusCode);
+            console.log(body);
+        }
+    });
+};
+
+sleuth.getYoutubeSearchAPIURL = function (query, limit) {
     var apiURL  = 'https://gdata.youtube.com/feeds/api/videos?q=';
-        apiURL += encodeURIComponent(query) + '&max-results=1&v=2&alt=json';
+        apiURL += encodeURIComponent(query) + '&max-results=' + limit + '&v=2&alt=json';
+    
+    return apiURL;
+};
+
+/**
+ * Find a single video
+ *
+ */
+sleuth.getYoutubeSearchResponse = function (query, callback) {
+    var apiURL  = sleuth.getYoutubeSearchAPIURL(query, 1);
     
     request(apiURL, function (error, response, body) {
         if (!error && response.statusCode == 200) {
@@ -94,6 +149,26 @@ sleuth.getYoutubeSearchResponse = function (query, callback) {
             console.log(body);
         }
     });
+};
+
+// TODO this is almost identical to parseResponse. There has to be a way to refactor
+// these two methods to be less redundant
+sleuth.parseResultSet = function (results) {
+    // there is definitely a better way to do this
+    var entries = typeof results.feed === 'object' && results.feed.entry || [];
+    
+    if (entries && entries.length > 0) {
+        var video   = entries[Math.floor(Math.random() * entries.length)];
+        var title   = video.title['$t'];
+        var link    = video.content.src;
+        var id      = _.last(video.id['$t'].split(':'));
+        
+        return {
+            title: title,
+            link : link,
+            id   : id
+        };
+    }
 };
 
 sleuth.parseResponse = function (response) {
