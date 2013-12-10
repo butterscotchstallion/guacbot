@@ -31,7 +31,10 @@ twitter.getTweetInfoFromHTML = function (html) {
     var root   = $('.permalink-tweet-container');
     var author = root.find('span.js-action-profile-name > b').first().text();
         author = author.replace('@', '');        
-    var tweet  = root.find('p.tweet-text').first().text();
+    var tweet  = root.find('.tweet-text').first().text();
+        // Bug #65 - newlines in tweets
+        tweet  = tweet.replace(/\n/g, " ").trim();
+        tweet  = tweet.replace("  ", "").trim();
     
     return {
         author: author,
