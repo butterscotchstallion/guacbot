@@ -18,19 +18,24 @@ seen.init = function (client) {
         var words    = info.words;
         var command  = words[1];
         var nick     = words[2];
+        var limit    = words[3];
         
         if (command === 'seen' && nick.length > 0) {
             var seenCB = function (result, err) {
-                if (!err && result) {
-                    if (typeof(result.nick) !== 'undefined') {
-                        var lastSeen = moment(result.ts).fromNow();
-                        var msg      = "\u0002" + result.nick + '\u0002 was last seen \u0002' + lastSeen;
-                            msg     += '\u0002 saying "\u0002' + result.message + '\u0002"';
-                        
-                        client.say(info.channel, msg);
-                    } else {
-                        client.say(info.channel, 'nope');
-                    }                    
+                if (!err && result.length > 0) {
+                    var lastSeen, msg;
+                    
+                    for (var j = 0; j < result.length; j++) {
+                        if (typeof(result[j].nick) !== 'undefined') {
+                            lastSeen = moment(result[j].ts).fromNow();                            
+                            msg      = "\u0002" + result[j].nick + '\u0002 was last seen \u0002' + lastSeen;
+                            msg     += '\u0002 saying "\u0002' + result[j].message + '\u0002"';
+                            
+                            client.say(info.channel, msg);
+                        } else {
+                            client.say(info.channel, 'nope');
+                        }
+                    }
                 } else {
                     console.log('seen error:', err);
                     client.say(info.channel, 'nope');
@@ -41,7 +46,8 @@ seen.init = function (client) {
                 nick    : nick,
                 channel : info.channel,
                 message : info.message,
-                callback: seenCB
+                callback: seenCB,
+                limit   : limit
             };
             
             logger.getLastMessage(seenInfo);

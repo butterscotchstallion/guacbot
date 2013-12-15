@@ -184,6 +184,15 @@ logger.getLastMention = function (args) {
 
 logger.getLastMessage = function (args) {
     var cols = ['nick', 'host', 'message', 'ts', 'channel'];
+    
+    /**
+     * The limit is user input, so let's make sure it's valid
+     * 1. Check that it is an integer
+     * 2. Between 1 and 5
+     *
+     */
+    var limit = /^[1-5]$/.test(args.limit) ? args.limit : 1;
+    
     var q    = ' SELECT ';
         q   += cols.join(',');
         q   += ' FROM logs';
@@ -194,12 +203,12 @@ logger.getLastMessage = function (args) {
         // Fixes #11 - https://github.com/prgmrbill/guacbot/issues/11
         q   += ' AND message <>   ?';
         q   += ' ORDER BY ts DESC';
-        q   += ' LIMIT 1';
+        q   += ' LIMIT ' + limit;
     
     var params = [args.nick, args.channel, args.message];
     
     db.connection.query(q, params, function (err, rows, fields) {
-        args.callback(rows[0], err);
+        args.callback(rows, err);
     });
 };
 
