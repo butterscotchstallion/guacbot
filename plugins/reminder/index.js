@@ -12,9 +12,14 @@ var db         = require('../../plugins/db/');
 var moment     = require('moment');
 var parser     = require('../../lib/messageParser');
 var timeParser = require('../../lib/timeUnitParser');
-var reminder   = {};
+var pm         = require('../../lib/pluginManager');
+var _          = require('underscore');
+var reminder   = {
+    defaultMaxReminders: 3
+};
 
 reminder.init = function (client) {
+    reminder.config       = pm.getPluginConfig('reminder');
     var thirtySecondsInMS = 30000;
     
     setInterval(function () {
@@ -23,43 +28,81 @@ reminder.init = function (client) {
     
     client.ame.on('actionableMessageAddressingBot', function (info) {   
         var words           = info.words;
-        var command         = words[1];
-        var duration        = words[2] ? words[2] : '1m';
+        var duration        = words[2] ? words[2] : '5m';
         var message         = words.slice(3).join(' ');
+        var error           = false;
         
-        if (command === 'remind') {
-            if (message.length > 1) {
+        // specifically identifying by index here because 
+        // info.command is not actually the command in this case
+        if (info.words[1] === 'remind') {
+            if (info.words.length < 3 && message.length < 1) {
+                error = reminder.getUsageMessage();             
+            } 
+            
+            if (!error) {
                 var d               = timeParser.parseDuration(duration);
+                //var hasMaxReminders = reminder.hasMaxReminders(info);
                 
-                if (typeof d === 'object') {
-                    var remindAt    = moment().add(d.unit, d.length);
-                    var fmtRemindAt = remindAt.format('YYYY-MM-DD HH:mm:ss');
-                    var formatted   = remindAt.format('h:m:sA M-D-YYYY');
-                    var msg         = 'reminding you \u0002' + moment(remindAt).from() + "\u0002";
-                    var callback    = function (result, err) {
+                if (typeof d !== 'object') {
+                    error = reminder.getUsageMessage();
+                }
+            }
+            
+            if (!error) {
+                var remindAt    = moment().add(d.unit, d.length);
+                var fmtRemindAt = remindAt.format('YYYY-MM-DD HH:mm:ss');
+                var formatted   = remindAt.format('h:m:sA M-D-YYYY');
+                //var msg         = 'reminding you around \u0002' + moment(remindAt).from() + "\u0002";
+                var msg         = 'reminder saved!';
+                
+                reminder.add({
+                    nick      : info.nick,
+                    channel   : info.channel,
+                    message   : message,
+                    host      : info.hostmask,
+                    remind_at : fmtRemindAt,
+                    callback  : function (result, err) {
                         if (err) {
                             console.log('reminder error:', err);
                         } else {                           
                             client.say(info.channel, msg);
                         }
-                    };
-                    
-                    reminder.add({
-                        'nick'      : info.nick,
-                        'channel'   : info.channel,
-                        'message'   : message,
-                        'host'      : info.hostmask,
-                        'remind_at' : fmtRemindAt
-                    }, callback);
-                    
-                } else {
-                    client.say(info.channel, 'does not compute');
-                }
+                    }
+                });
                 
-            } else {
-                client.say(info.channel, 'that reminder sucks');
+            } else {              
+                client.say(info.channel, error);
             }
         }
+    });
+};
+
+reminder.getUsageMessage = function () {
+    return 'Usage: remind 30[m|h|d|w|y] pizza';
+};
+
+reminder.hasMaxReminders = function (info) {
+    var count = reminder.getReminderCountByNickAndHost(_.extend(info, {
+        callback: function () {
+        
+        }
+    }));
+    var max   = reminder.config.maxReminders || reminder.defaultMaxReminders;
+    
+    return count >= max;
+};
+
+reminder.getReminderCountByNickAndHost = function (info) {
+    var q = ['SELECT COUNT(*) as reminderCount',
+             'FROM reminders',
+             'WHERE 1=1',
+             'AND nick = ?',
+             'AND host = ?'].join(' ');
+    
+    var params = [info.nick, info.host];
+    
+    db.connection.query(q, params, function (err, rows, fields) {
+        info.callback(rows, err);
     });
 };
 
@@ -133,13 +176,12 @@ reminder.processPendingReminders = function (client) {
  * };
  *
  */
-reminder.add = function (rmdr, callback) {
+reminder.add = function (rmdr) {
     var query = " INSERT INTO reminders SET ?, created_at = NOW()";    
-    var qry   = db.connection.query(query, rmdr, function (err, result) {
-        callback(result, err);
-    });
     
-    //console.log(qry.sql);
+    db.connection.query(query, rmdr, function (err, result) {
+        rmdr.callback(result, err);
+    });
 };
 
 module.exports = reminder;
