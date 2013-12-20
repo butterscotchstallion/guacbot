@@ -23,19 +23,19 @@ m.init = function (client) {
                 }
                 
             } catch (e) {
-                m.handleErrorParsingInput(e);
+                m.handleErrorParsingInput(e, info);
             }
         }
     });
 };
 
-m.handleErrorParsingInput = function (e) {
+m.handleErrorParsingInput = function (e, info) {
     var msg = 'error, lol';
     
     if (typeof e !== 'undefined') {
         console.log(e);
         
-        msg += ' ' + e;
+        //msg += ' ' + e;
     }
     
     m.client.say(info.channel, msg);
