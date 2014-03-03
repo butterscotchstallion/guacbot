@@ -6,26 +6,82 @@
 
 var ignore        = require('../ignore/');
 var db            = require('../db/');
-var parser        = require('../../lib/messageParser');
-var weatherPlugin = { };
+var hmp           = require('../../lib/helpMessageParser');
+var _             = require('underscore');
+var weatherPlugin = {};
 
 weatherPlugin.init = function (client) {
+    weatherPlugin.client     = client;
     weatherPlugin.weatherCfg = client.config.plugins.weather;
     
-    client.ame.on('actionableMessageAddressingBot', function (info) {    
-        var words = parser.splitMessageIntoWords(info.message);
+    client.ame.on('actionableMessageAddressingBot', function (info) {
+        var query                = info.words.slice(2, info.words.length).join(' ').trim();
+        var templateData         = _.extend(info, {
+            botNick: client.currentNick
+        });
+        var templateMessages = [
+            'noResults', 
+            'usage',
+            'weatherSpyUsage'
+        ];
         
-        if (words[1] === 'weather') {
-            var query                = words.slice(2, words.length).join(' ').trim();                        
-            var storeLocationEnabled = weatherPlugin.weatherCfg.rememberLocation || false;
-            
-            if (storeLocationEnabled) {
-                // FIXME should only store location if there were results
+        var messages = hmp.getMessages({
+            messages: templateMessages,
+            data    : templateData,
+            plugin  : 'weather',
+            config  : client.config
+        });
+        
+        var storedCB = function (stored, err) {
+            if (!err && stored && stored.location) {
+                weatherPlugin.sendResponse(_.extend({
+                    query : stored.location,
+                    err   : err
+                }, info));
+            } else {
+                client.say(info.channel, messages.usage);
+            }
+        };
+        
+        switch (info.command) {
+            case 'weatherspy':
                 if (query) {
+                    weatherPlugin.getStoredLocationByNick(query, storedCB);
+                } else {
+                    client.say(info.channel, messages.weatherSpyUsage);
+                }
+            break;
+            
+            case 'weather':
+                if (query) {
+                    weatherPlugin.sendResponse(_.extend({
+                        query: query
+                    }, info));
+                } else {
+                    weatherPlugin.getStoredLocation(info.info.host,
+                                                    storedCB);
+                }
+            break;
+        }
+    });
+};
+
+weatherPlugin.sendResponse = function (info) {
+    // Location successfully queried, store it
+    if (!info.err) {        
+        console.log('querying: ', info.query);
+        
+        weatherPlugin.query({
+            apiKey  : weatherPlugin.client.config.plugins.weather.apiKey,
+            query   : info.query,
+            callback: function (response, err) {
+                var noResults = response.indexOf('No cities match') !== -1;
+                
+                if (!err && !noResults) {
                     weatherPlugin.storeLocation({
                         nick    : info.nick,
                         host    : info.info.host,
-                        location: query,
+                        location: info.query,
                         callback: function (result, err) {
                             if (err) {
                                 console.log('weather store location err: ', err);
@@ -34,47 +90,22 @@ weatherPlugin.init = function (client) {
                     });
                 }
                 
-                // get location from db
-                weatherPlugin.getStoredLocation(info.info.host, function (stored) {
-                    if (typeof stored !== 'undefined' && stored.location) {
-                        weatherPlugin.query({
-                            apiKey: client.config.plugins.weather.apiKey,
-                            query: query || stored.location,
-                            callback: function (data) {
-                                client.say(info.channel, data);
-                            },
-                            debug: false
-                        });
-                    } else {
-                        var messages = typeof weatherPlugin.weatherCfg.rememberLocationNotFoundMessages !== 'undefined' ? weatherPlugin.weatherCfg.rememberLocationNotFoundMessages : [];
-                        var msg      = '';
-                        
-                        if (messages.length > 0) {
-                            msg = messages[Math.floor(Math.random() * messages.length)];
-                        } else {
-                            msg = "I don't remember your zip code. Perhaps you could be kind of enough to remind me.";
-                        }
-                        
-                        client.say(info.channel, msg);
-                    }
-                });
-                
-            } else {
-                if (query) {
-                    weatherPlugin.query({
-                        apiKey: client.config.plugins.weather.apiKey,
-                        query: query,
-                        callback: function (conditions) {
-                            client.say(info.channel, conditions);
-                        },
-                        debug: false
+                if (noResults) {
+                    response = hmp.getMessage({
+                        plugin : 'weather',
+                        message: 'noResults',
+                        config : weatherPlugin.client.config
                     });
-                } else {
-                    client.say(info.channel, 'No results for that query');
                 }
-            }
-        }
-    });
+                
+                weatherPlugin.client.say(info.channel, response);
+            },
+            debug   : false
+        });
+        
+    } else {
+        weatherPlugin.client.say(info.channel, info.err);
+    }
 };
 
 weatherPlugin.getStoredLocation = function (host, callback) {
@@ -84,6 +115,19 @@ weatherPlugin.getStoredLocation = function (host, callback) {
         query += ' AND host = ?';
     
     db.connection.query(query, [host], function (err, rows, fields) {
+        callback(rows[0], err);
+    });
+};
+
+weatherPlugin.getStoredLocationByNick = function (nick, callback) {
+    var query  = ' SELECT location';
+        query += ' FROM weather';
+        query += ' WHERE 1=1';
+        query += ' AND nick = ?';
+        query += ' ORDER BY last_query DESC';
+        query += ' LIMIT 1';
+    
+    db.connection.query(query, [nick], function (err, rows, fields) {
         callback(rows[0], err);
     });
 };
@@ -110,40 +154,33 @@ weatherPlugin.parseResponse = function (response) {
     
     // Unexpected response!
     if (typeof(res.current_observation) === 'undefined') {
-        return 'No cities match your search query!';
+        return hmp.getMessage({
+            plugin : 'weather',
+            message: 'noResults',
+            config : weatherPlugin.client.config            
+        });
     }
     
     var resp         = res.current_observation;
-    var conditions   = [];
     var location     = resp.display_location;
-    var cityAndState = location.city + ', ' + location.state;
+    var conditions   = hmp.getMessage({
+        plugin   : 'weather',
+        message  : 'conditions',
+        config   : weatherPlugin.client.config,
+        data     : _.extend({
+            city : location.city,
+            state: location.state
+        }, resp)
+    });
     
-    /*
-     * Example:
-     *  The current temperature in River Road, Highland Park, New Jersey 
-     *  is 63.3°F (11:38 PM EDT on April 19, 2013). Conditions: Drizzle. 
-     *  Humidity: 95%. Dew Point: 62.6°F. Pressure: 29.67 in 1005
-     *  hPa (Falling).
-     *
-     */
-    conditions.push(cityAndState);
-    conditions.push('- ' + resp.temperature_string);
-    conditions.push('Conditions: ' + resp.weather + '.');
-    conditions.push('Humidity: ' + resp.relative_humidity);
-    conditions.push('Dew Point: ' + resp.dewpoint_string);
-    conditions.push('Feels like: ' + resp.feelslike_string); 
-    conditions.push('Wind: ' + resp.wind_string);
-    
-    return conditions.join(' ');
+    return conditions;
 };
 
 weatherPlugin.query = function (cfg) {
     var WunderNodeClient = require("wundernode", true);
     var URL              = require('url');
-    var wunder           = new WunderNodeClient(cfg.apiKey,cfg.debug);
+    var wunder           = new WunderNodeClient(cfg.apiKey, cfg.debug);
     var conditions       = '';
-    
-    //console.log('fetching weather: ', cfg);
     
     wunder.conditions(cfg.query, function (err, response) {
         if (err) {
@@ -152,7 +189,7 @@ weatherPlugin.query = function (cfg) {
             conditions = weatherPlugin.parseResponse(response);
         }
         
-        cfg.callback(conditions);
+        cfg.callback(conditions, err);
     });
 };
 
