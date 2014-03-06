@@ -36,7 +36,8 @@ weatherPlugin.init = function (client) {
             if (!err && stored && stored.location) {
                 weatherPlugin.sendResponse(_.extend({
                     query : stored.location,
-                    err   : err
+                    err   : err,
+                    stored: stored
                 }, info));
             } else {
                 client.say(info.channel, messages.usage);
@@ -66,18 +67,16 @@ weatherPlugin.init = function (client) {
     });
 };
 
-weatherPlugin.sendResponse = function (info) {
-    // Location successfully queried, store it
-    if (!info.err) {        
-        console.log('querying: ', info.query);
-        
+weatherPlugin.sendResponse = function (info) {    
+    if (!info.err) {
         weatherPlugin.query({
             apiKey  : weatherPlugin.client.config.plugins.weather.apiKey,
             query   : info.query,
             callback: function (response, err) {
                 var noResults = response.indexOf('No cities match') !== -1;
                 
-                if (!err && !noResults) {
+                // Location successfully queried, store it
+                if (!err && !noResults && info.stored.rememberMe) {
                     weatherPlugin.storeLocation({
                         nick    : info.nick,
                         host    : info.info.host,
@@ -109,7 +108,8 @@ weatherPlugin.sendResponse = function (info) {
 };
 
 weatherPlugin.getStoredLocation = function (host, callback) {
-    var query  = ' SELECT location';
+    var query  = ' SELECT location,';
+        query += ' 1 AS rememberMe';
         query += ' FROM weather';
         query += ' WHERE 1=1';
         query += ' AND host = ?';
@@ -120,7 +120,8 @@ weatherPlugin.getStoredLocation = function (host, callback) {
 };
 
 weatherPlugin.getStoredLocationByNick = function (nick, callback) {
-    var query  = ' SELECT location';
+    var query  = ' SELECT location,';
+        query += ' 0 AS rememberMe';
         query += ' FROM weather';
         query += ' WHERE 1=1';
         query += ' AND nick = ?';
