@@ -76,12 +76,8 @@ weatherPlugin.sendResponse = function (info) {
             callback: function (response, err) {
                 var noResults = response.indexOf('No cities match') !== -1;
                 
-                console.log(info);
-                
                 // Location successfully queried, store it
                 if (!err && !noResults && info.stored.rememberMe) {
-                    console.log('storing loc: ', info.query, ' : ', info.info.host);
-                    
                     weatherPlugin.storeLocation({
                         nick    : info.nick,
                         host    : info.info.host,
@@ -92,8 +88,6 @@ weatherPlugin.sendResponse = function (info) {
                             }
                         }
                     });
-                } else {
-                    console.log('NOT storing loc');
                 }
                 
                 if (noResults) {
