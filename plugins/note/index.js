@@ -9,16 +9,39 @@ var moment   = require('moment');
 var irc      = require('irc');
 var hbs      = require('handlebars');
 var _        = require('underscore');
+var hmp      = require('../../lib/helpMessageParser');
 var note     = {
     delivered: []
 };
 
 note.init = function (client) {
+    note.client = client;
+    
     client.ame.on('actionableMessageAddressingBot', function (info) {
-        var words     = info.words;
-        var command   = words[1] || '';
-        var recipient = words[2] || '';
-        var nMessage  = words.slice(3).join(' ');
+        var words        = info.words;
+        var command      = words[1] || '';
+        var recipient    = words[2] || '';
+        var nMessage     = words.slice(3).join(' ');
+        var nickCollection = client.argus.getChannelNicks(info.channel);
+        var nicks          = client.argus.getNicksFromCollection(nickCollection);
+        
+        var nicksWithoutRecipientOrBot = _.filter(nicks, function (n) {
+            return [info.nick, client.currentNick].indexOf(n) === -1;
+        });
+        var rndNick = nicksWithoutRecipientOrBot[~~(Math.random() * nicksWithoutRecipientOrBot.length)];
+        
+        var templateData = _.extend(info, {
+            botNick     : client.currentNick,
+            recipient   : recipient,
+            rndRecipient: rndNick
+        });
+        
+        var messages  = hmp.getMessages({
+            messages: ['usage', 'saved', 'invalidRecipient'],
+            data    : templateData,
+            plugin  : 'note',
+            config  : client.config
+        });
         
         if (command === 'note') {
             var lowerRecipient           = recipient.toLowerCase();
@@ -29,10 +52,10 @@ note.init = function (client) {
             if (validRecipientAndMessage && !isMessageToSelf && !isMessageToBot) {
                 var noteAddedCB = function (result, err) {
                     if (err) {
-                        console.log(err);
+                        console.log('Error adding note:', err);
                     }
                     
-                    client.say(info.channel, 'Message for \u0002' + recipient + '\u0002 saved!');
+                    client.say(info.channel, messages.saved);
                 };
                 
                 note.add({
@@ -43,7 +66,7 @@ note.init = function (client) {
                 }, noteAddedCB);
                 
             } else {
-                var err = nMessage ? 'Invalid recipient' : 'That note sucks.';
+                var err = nMessage ? messages.invalidRecipient : messages.usage;
                 
                 client.say(info.channel, err);
             }
@@ -73,11 +96,14 @@ note.init = function (client) {
 };
 
 note.getNoteDeliveredTemplate = function (info) {
-    var tpl       = '*ATTN* \u0002{{{nick}}}\u0002: {{{message}}}';
-        tpl      += ' (\u0002{{{originNick}}}\u0002 {{timeAgo}})';
-    var compileMe = hbs.compile(tpl);
+    var msg       = hmp.getMessage({
+        plugin : 'note',
+        config : note.client.config,
+        data   : info,
+        message: 'delivered'
+    });
     
-    return compileMe(info);
+    return msg;
 };
 
 note.removeByNickAndChannel = function (nick, channel, callback) {
