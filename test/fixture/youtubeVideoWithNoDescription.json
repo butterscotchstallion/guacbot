@@ -1,0 +1,43 @@
+{
+    "apiVersion": "2.1",
+    "data": {
+        "id": "6w5YF6MWc_w",
+        "uploaded": "2012-11-19T12:18:09.000Z",
+        "updated": "2013-09-08T23:11:36.000Z",
+        "uploader": "oooooopppss",
+        "category": "Animals",
+        "title": "Goat yells (коза поет)",
+        "description": "",
+        "thumbnail": {
+            "sqDefault": "https://i1.ytimg.com/vi/6w5YF6MWc_w/default.jpg",
+            "hqDefault": "https://i1.ytimg.com/vi/6w5YF6MWc_w/hqdefault.jpg"
+        },
+        "player": {
+            "default": "https://www.youtube.com/watch?v=6w5YF6MWc_w&feature=youtube_gdata_player",
+            "mobile": "https://m.youtube.com/details?v=6w5YF6MWc_w"
+        },
+        "content": {
+            "1": "rtsp://r4---sn-p5qlsu7e.c.youtube.com/CiILENy73wIaGQn8cxajF1gO6xMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp",
+            "5": "https://www.youtube.com/v/6w5YF6MWc_w?version=3&f=videos&app=youtube_gdata",
+            "6": "rtsp://r4---sn-p5qlsu7e.c.youtube.com/CiILENy73wIaGQn8cxajF1gO6xMYESARFEgGUgZ2aWRlb3MM/0/0/0/video.3gp"
+        },
+        "duration": 7,
+        "aspectRatio": "widescreen",
+        "rating": 4.9384613,
+        "likeCount": "128",
+        "ratingCount": 130,
+        "viewCount": 37851,
+        "favoriteCount": 0,
+        "commentCount": 16,
+        "accessControl": {
+            "comment": "allowed",
+            "commentVote": "allowed",
+            "videoRespond": "moderated",
+            "rate": "allowed",
+            "embed": "allowed",
+            "list": "allowed",
+            "autoPlay": "allowed",
+            "syndicate": "allowed"
+        }
+    }
+}

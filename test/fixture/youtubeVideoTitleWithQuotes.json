@@ -1,0 +1,39 @@
+{
+    "apiVersion": "2.1",
+    "data": {
+        "id": "3C4wKP2tpzE",
+        "uploaded": "2013-09-27T05:03:25.000Z",
+        "updated": "2013-09-27T05:05:18.000Z",
+        "uploader": "11111111111111111l",
+        "category": "Music",
+        "title": "\"fsuhcikt\" - the power of positive thinking - side a",
+        "description": "it is what it is.",
+        "thumbnail": {
+            "sqDefault": "https://i1.ytimg.com/vi/3C4wKP2tpzE/default.jpg",
+            "hqDefault": "https://i1.ytimg.com/vi/3C4wKP2tpzE/hqdefault.jpg"
+        },
+        "player": {
+            "default": "https://www.youtube.com/watch?v=3C4wKP2tpzE&feature=youtube_gdata_player",
+            "mobile": "https://m.youtube.com/details?v=3C4wKP2tpzE"
+        },
+        "content": {
+            "1": "rtsp://r7---sn-jc47eu7s.c.youtube.com/CiILENy73wIaGQkxp639KDAu3BMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp",
+            "5": "https://www.youtube.com/v/3C4wKP2tpzE?version=3&f=videos&app=youtube_gdata",
+            "6": "rtsp://r7---sn-jc47eu7s.c.youtube.com/CiILENy73wIaGQkxp639KDAu3BMYESARFEgGUgZ2aWRlb3MM/0/0/0/video.3gp"
+        },
+        "duration": 2748,
+        "viewCount": 12,
+        "favoriteCount": 0,
+        "commentCount": 0,
+        "accessControl": {
+            "comment": "allowed",
+            "commentVote": "allowed",
+            "videoRespond": "moderated",
+            "rate": "allowed",
+            "embed": "allowed",
+            "list": "allowed",
+            "autoPlay": "allowed",
+            "syndicate": "allowed"
+        }
+    }
+}
