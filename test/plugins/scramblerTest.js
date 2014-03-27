@@ -8,18 +8,26 @@ var fs        = require('fs');
 var assert    = require("assert");
 var scrambler = require('../../plugins/scrambler');
 var cfg       = JSON.parse(fs.readFileSync('../bot-config.json', 'utf8'));
+var moment    = require('moment');
 
-/*
-describe('scrambler.descramble', function (done) {
+describe('scrambler.startGame', function (done) {
     beforeEach(function () {
         scrambler.pluginPath = '../plugins/scrambler/';
         scrambler.loadConfig(cfg);
     });
     
-    it('should should descramble word', function () {
-        var descrambled = scrambler.descramble();
+    it('should detect a win if given correct answers', function () {
+        var answer    = scrambler.getWord();
+        var scrambled = scrambler.getScrambledWord(answer);
         
-        assert.notEqual(scrambler.words.indexOf(descrambled), -1);
+        scrambler.setGameData({
+            answer       : answer,
+            scrambledWord: scrambled
+        });
+        
+        assert.equal(scrambler.isCorrectAnswer(answer), true);
+        assert.equal(scrambler.isCorrectAnswer(answer + ' '), true);
+        assert.equal(scrambler.isCorrectAnswer('hellooooo nurse!'), false);
     });
 });
 
@@ -36,7 +44,6 @@ describe('scrambler.getUnscrambledWord', function (done) {
         assert.notEqual(words.indexOf(word), -1);
     });
 });
-*/
 
 describe('scrambler.getWords', function (done) {
     beforeEach(function () {
@@ -48,6 +55,8 @@ describe('scrambler.getWords', function (done) {
         var words = scrambler.getWords();
         assert.equal(typeof words, 'object');
         assert.notEqual(words.length, 0);
+        
+        done();
     });
     
     it('should only contain letters', function (done) {
@@ -58,10 +67,10 @@ describe('scrambler.getWords', function (done) {
         for (var j = 0; j < wlen; j++) {
             word = words[j];
             
-            console.log(word);
-            
             assert.equal(/^[a-zA-Z]+$/.test(word), true);
-        }            
+        }  
+        
+        done();
     });
 });
 

@@ -7,33 +7,74 @@
 var request    = require('request');
 var ignore     = require('../ignore/');
 var parser     = require('../../lib/messageParser');
+var db         = require('../../lib/db');
 var moment     = require('moment');
 var cheerio    = require('cheerio');
 var easyimg    = require('easyimage');
 var path       = require('path');
 var fs         = require('fs');
 var filesize   = require('filesize');
-var repost     = require('../../plugins/repost');
-var Handlebars = require('handlebars');
+//var repost     = require('../../plugins/repost');
 var ent        = require('ent');
 var twitter    = require('../../plugins/twitter');
+var sa         = require('../../plugins/somethingawful');
+var pm         = require('../../lib/pluginManager');
+var when       = require('when');
+var hmp        = require('../../lib/helpMessageParser');
+var _          = require('underscore');
 
 var titler  = {
     imageInfoEnabled: false,
     lastTopicChange: null
 };
 
-titler.loadConfig = function (cfg) {
-    titler.cfg = cfg.plugins.titler;
+titler.reload = function () {
+    titler.loadConfig(titler.wholeConfig);
 };
 
-titler.init = function (client) {
-    titler.pluginConfig = client.config.plugins.titler;
-    titler.loadConfig(client.config);
+titler.loadConfig = function (cfg) {
+    titler.cfg         = cfg.plugins.titler;
+    titler.wholeConfig = cfg;
     
-    // Listen to messages from any channel
-    client.ame.on('actionableMessage', function (info) {
-        if (!client.pluginManager.isValidChannel(info.channel, 'titler')) {
+    titler.getUserAgents()
+          .then(function (agents) {
+            var a = [];
+            
+            if (agents) {
+                a = _.pluck(agents, 'agent');
+            }
+            
+            titler.pluginConfig.userAgents = a;
+          })
+          .catch(function (e) {
+            console.log(e.stack);
+          });
+   
+    titler.getIgnoredDomains()
+          .then(function (domains) {
+            var d = [];
+            
+            if (domains) {
+                d = _.pluck(domains, 'domain');
+            }
+            
+            titler.pluginConfig.ignoredDomains = d;
+          })
+          .catch(function (e) {
+            console.log(e.stack);
+          });
+};
+
+titler.init = function (options) {
+    var client = options.client;
+    
+    titler.client       = client;
+    titler.wholeConfig  = options.config;
+    titler.pluginConfig = options.config.plugins.titler;
+    titler.loadConfig(options.config);
+    
+    options.ame.on('actionableMessage', function (info) {
+        if (!options.pluginManager.isValidChannel(info.channel, 'titler')) {
             return false;
         }
         
@@ -77,64 +118,27 @@ titler.init = function (client) {
     });
 };
 
-titler.isBoldEnabled = function () {
-    var enabled = true;
-    
-    if (typeof titler.pluginConfig.boldTitles !== 'undefined') {
-        enabled = titler.pluginConfig.boldTitles;
-    }
-    
-    return enabled;
-};
-
-titler.getBoldString = function (input, closingTag) {
-    var boldString = "\u0002" + input;
-    
-    if (closingTag === 'undefined' || closingTag) {
-        boldString += "\u0002";
-    }
-    
-    return boldString;
-};
-
-titler.getCompiledTemplate = function (compileMe, data) {
-    var titleTemplate   = Handlebars.compile(compileMe);
-    var tpl             = titleTemplate(data);
-    
-    return tpl;
-};
-
-titler.getYoutubeTitleFromTemplate = function (data, template) {
+titler.getYoutubeTitleFromTemplate = function (data) {
     var title           = '{{{title}}}';
     var details         = titler.getYoutubeVideoTitleDetails(data);
     
-    if (titler.isBoldEnabled()) {
-        title = titler.getBoldString('{{{title}}}', true);
-    }
-    
-    var defaultTemplate = '^ ' + title + ' :: {{{rating}}} :: {{{viewCount}}} views';
-    var tpl             = typeof template === 'string' ? template : defaultTemplate;
-    
-    return titler.getCompiledTemplate(tpl, details);
+    return hmp.getMessage({
+        plugin : 'titler',
+        config : titler.wholeConfig,
+        data   : details,
+        message: 'youtube'
+    });
 };
 
 titler.getTitleFromTemplate = function (title) {
-    var defaultTemplate = '^ {{{title}}}';
-    
-    if (titler.isBoldEnabled()) {
-        defaultTemplate = titler.getBoldString('^ {{{title}}}');
-        
-        if (typeof titler.pluginConfig.titleTemplate !== 'undefined') {
-            titler.pluginConfig.titleTemplate = titler.getBoldString(titler.pluginConfig.titleTemplate);
-        }
-    }
-    
-    var compileMe       = titler.pluginConfig.titleTemplate || defaultTemplate;
-    var tpl             = titler.getCompiledTemplate(compileMe, {
-        title: title
+    var message = hmp.getMessage({
+        plugin : 'titler',
+        config : titler.wholeConfig,
+        data   : { title: title },
+        message: 'ok'
     });
     
-    return tpl;
+    return message;
 };
 
 titler.getFirstLinkFromString = function (input) {
@@ -167,13 +171,8 @@ titler.matchURL = function (url) {
 };
 
 titler.isIgnoredDomain = function (domain) {
-    var domains = [];
-    
-    if (typeof titler.cfg !== 'undefined') {
-        domains = typeof(titler.cfg.ignoreDomains) !== 'undefined' ? titler.cfg.ignoreDomains : [];
-    }
-    
-    return domains && domains.indexOf(domain) !== -1;
+    return titler.pluginConfig.ignoredDomains.length && 
+           titler.pluginConfig.ignoredDomains.indexOf(domain) !== -1;
 };
 
 titler.getUserAgent = function () {
@@ -208,49 +207,97 @@ titler.requestWebsite = function (url, websiteCallback, imageCallback) {
             }
         };
         
-        request(options, function (error, response, body) {            
-            if (!error) {
-                var type      = response.headers['content-type'];
-                var isWebsite = titler.isHTML(type);
+        /**
+         * Issue #72 - More descriptive SA titles
+         *
+         */
+        var isSAURL     = sa.isSAURL(urlInfo);
+        var isSAEnabled = false;
+        
+        // Don't even bother checking anything else unless this is a SA URL
+        if (isSAEnabled && isSAURL) {
+            //console.log('is sa url');
+            
+            var isSAPluginLoaded  = pm.getLoadedPlugins().indexOf('somethingawful') !== -1;
+            
+            if (isSAPluginLoaded) {
+                var saCfg       = pm.getPluginConfig('somethingawful');
+                var hasUser     = typeof saCfg.sa_user     === 'string' && saCfg.sa_user.length     > 0;
+                var hasPassword = typeof saCfg.sa_password === 'string' && saCfg.sa_password.length > 0;
                 
-                if (isWebsite) {
-                    if (response.statusCode == 200) {
+                // If SA plugin is loaded and we have valid login details, add cookie
+                if (saCfg && hasUser && hasPassword) {
+                    console.log('SA loaded with plugin details');
+                    
+                    options['Cookie'] = sa.getLoginCookie({
+                        'bbuserid'  : saCfg.sa_user,
+                        'bbpassword': saCfg.sa_password
+                    });
+                    
+                    //console.log(options);
+                    
+                } else {
+                    console.log('sa cfg sux');
+                }
+            } else {
+                console.log('sa plugin not loaded');
+            }
+        } else {
+            //console.log('not sa url');
+            titler.sendHTTPRequest(options, websiteCallback, imageCallback);
+        }
+    }
+};
+
+titler.sendHTTPRequest = function (options, websiteCallback, imageCallback) {
+    request(options, function (error, response, body) {            
+        if (!error) {
+            var type      = response.headers['content-type'];
+            var isWebsite = titler.isHTML(type);
+            
+            if (isWebsite) {
+                switch (response.statusCode) {
+                    case 200:
                         websiteCallback(body);
-                    } else {
-                        console.log('titler error: ', 
-                                    error, 
-                                    ' response code:', 
-                                    response.statusCode,
-                                    " URL: ", url);
+                    break;
+                    
+                    default:
+                    case 400:
+                        console.log('titler error: ',
+                            error,
+                            ' response code:',
+                            response.statusCode,
+                            " URL: ", url);
+                    break;
+                }
+                
+            } else {
+                if (titler.imageInfoEnabled) {
+                    var isImage = titler.isImage(type);
+                    
+                    if (isImage) {
+                        //repost.isRepost(null, url, function (rpst) {
+                        //    if (rpst === false) {
+                                titler.downloadFile(options.uri, function (filename, length) {
+                                    console.log('file downloaded:', filename);
+                                    
+                                    titler.getImageInfo(filename, function (err, img, stderr) {
+                                        if (err || stderr) {
+                                            console.log('Error getting image info: ', err, stderr);
+                                        } else {
+                                            imageCallback(err, img, stderr, length, filename);
+                                        }
+                                    });
+                                });
+                            //}
+                        //});
                     }
                 } else {
-                    if (titler.imageInfoEnabled) {
-                        var isImage = titler.isImage(type);
-                        
-                        if (isImage) {
-                            repost.isRepost(null, url, function (rpst) {
-                                if (rpst === false) {
-                                    titler.downloadFile(options.uri, function (filename, length) {
-                                        console.log('file downloaded:', filename);
-                                        
-                                        titler.getImageInfo(filename, function (err, img, stderr) {
-                                            if (err || stderr) {
-                                                console.log('Error getting image info: ', err, stderr);
-                                            } else {
-                                                imageCallback(err, img, stderr, length, filename);
-                                            }
-                                        });
-                                    });
-                                }
-                            });
-                        }
-                    } else {
-                        //console.log('not an image:', type);
-                    }
+                    //console.log('not an image:', type);
                 }
             }
-        });
-    }
+        }
+    });
 };
 
 titler.downloadFile = function (uri, callback) {
@@ -287,7 +334,7 @@ titler.parseHTMLAndGetTitle = function (html, callback) {
     var $     = cheerio.load(html);
     var title = $('title').text();
     
-    //console.log('title: ', typeof title, title.length);
+    //console.log('titler.parseHTMLAndGetTitle :: title: ', typeof title, title.length);
     
     if (title && title.length > 0) {
         title = title.replace(/\t\t/g, '');
@@ -309,23 +356,29 @@ titler.getTitle = function (url, callback) {
         var info = u.parse(url);
         var title;
         
-        // If so, query the API and get extra info about the video
-        if (info.host) {
-            // Youtube link
+        if (info.host) {            
+            // If youtube link, query the API and get extra info about the video
             if (titler.isYoutubeURL(info.host)) {
                 // Build title based on API data
                 titler.getYoutubeVideoInfo(url, function (data) {              
                     title = titler.getYoutubeTitleFromTemplate(data);
                     
                     callback(title);
-                });                
+                });
             } else {
                 var websiteCallback = function (html) {
-                    if (titler.isTwitterURL(info)) {
+                    var isTwitterURL = titler.isTwitterURL(info);
+                    var isSAURL      = sa.isSAURL(info);
+                    
+                    if (isTwitterURL) {
                         twitter.getTweet(html, function (tweet) {
                             callback(tweet);
                         });
-                    } else {
+                    } /*else if (isSAURL) {
+                        twitter.getSATitle(html, function (post) {
+                            
+                        });
+                    }*/ else {
                         titler.parseHTMLAndGetTitle(html, function (title) {
                             if (title) {
                                 title = titler.getTitleFromTemplate(title);
@@ -385,7 +438,6 @@ titler.isTwitterURL = function (info) {
 };
 
 titler.getYoutubeVideoTitleDetails = function (json) {
-    //var data       = json.data;
     var data       = json;
     var viewCount  = typeof data.viewCount   !== 'undefined' ? data.viewCount   : 0;
     var rating     = typeof data.rating      !== 'undefined' ? data.rating      : 0;
@@ -473,6 +525,46 @@ titler.isYoutubeURL = function (host) {
 
 titler.getImageInfo = function (path, callback) {
     easyimg.info(path, callback);
+};
+
+titler.getUserAgents = function () {
+    var def = when.defer();
+    var q = [
+        'SELECT agent',
+        'FROM titler_user_agents',
+        'WHERE 1=1',
+        'AND enabled = 1'
+    ].join("\n");
+    
+    db.connection.query(q, function (err, result) {
+        if (err) {
+            def.reject(err);
+        } else {
+            def.resolve(result);
+        }
+    });
+    
+    return def.promise;
+};
+
+titler.getIgnoredDomains = function () {
+    var def = when.defer();
+    var q = [
+        'SELECT domain',
+        'FROM titler_ignored_domains',
+        'WHERE 1=1',
+        'AND enabled = 1'
+    ].join("\n");
+    
+    db.connection.query(q, function (err, result) {
+        if (err) {
+            def.reject(err);
+        } else {
+            def.resolve(result);
+        }
+    });
+    
+    return def.promise;
 };
 
 module.exports = titler;

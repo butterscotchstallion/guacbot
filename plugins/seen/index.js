@@ -8,13 +8,22 @@
 "use strict";
 
 var moment = require('moment');
-var parser = require('../../lib/messageParser');
 var logger = require('../../plugins/logger');
-var ignore = require('../../plugins/ignore');
+var hmp    = require('../../lib/helpMessageParser');
 var seen   = {};
 
-seen.init = function (client) {
-    client.ame.on('actionableMessageAddressingBot', function (info) {        
+seen.init = function (options) {
+    var client = options.client;    
+    seen.cfg   = options.config.plugins.seen;
+    
+    var notSeenMsg = hmp.getMessage({
+        config  : options.config,
+        plugin  : 'seen',
+        message : ['error'],
+        data    : {}
+    });
+    
+    options.ame.on('actionableMessageAddressingBot', function (info) {        
         var words    = info.words;
         var command  = words[1];
         var nick     = words[2];
@@ -23,22 +32,29 @@ seen.init = function (client) {
         if (command === 'seen' && nick.length > 0) {
             var seenCB = function (result, err) {
                 if (!err && result.length > 0) {
-                    var lastSeen, msg;
+                    var lastSeen, message;
                     
                     for (var j = 0; j < result.length; j++) {
                         if (typeof(result[j].nick) !== 'undefined') {
-                            lastSeen = moment(result[j].ts).fromNow();                            
-                            msg      = "\u0002" + result[j].nick + '\u0002 was last seen \u0002' + lastSeen;
-                            msg     += '\u0002 saying "\u0002' + result[j].message + '\u0002"';
+                            lastSeen = moment(result[j].ts).fromNow();
+                            message  = hmp.getMessage({
+                                config  : options.config,
+                                plugin  : 'seen',
+                                message : ['ok'],
+                                data    : {
+                                    lastSeen: lastSeen,
+                                    nick    : result[j].nick,
+                                    message : result[j].message
+                                }
+                            });
                             
-                            client.say(info.channel, msg);
+                            client.say(info.channel, message);
                         } else {
-                            client.say(info.channel, 'nope');
+                            client.say(info.channel, notSeenMsg);
                         }
                     }
                 } else {
-                    console.log('seen error:', err);
-                    client.say(info.channel, 'nope');
+                    client.say(info.channel, notSeenMsg);
                 }
             };
             

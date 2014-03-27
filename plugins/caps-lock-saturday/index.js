@@ -8,7 +8,9 @@
 var cls    = { loaded: false };
 var moment = require('moment');
 
-cls.init = function (client) {
+cls.init = function (options) {
+    var client = options.client;
+    
     // Check once on load before waiting a minute
     if (!cls.loaded) {
         cls.changeNickIfNecessary(client);
@@ -22,6 +24,14 @@ cls.init = function (client) {
     setInterval(function () {
         cls.changeNickIfNecessary(client);
     }, oneMinuteInMS);
+    
+    // Track nick changes
+    client.addListener('nick', function (oldNick, newNick, channels, message) {
+        // But only the bot's nick
+        if (oldNick.toLowerCase() === client.currentNick.toLowerCase()) {
+            client.config.nick = newNick;
+        }
+    });
 };
 
 cls.changeNickIfNecessary = function (client) {

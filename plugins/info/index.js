@@ -10,8 +10,10 @@ var moment = require('moment');
 var ignore = require('../ignore/');
 var info   = { };
 
-info.init  = function (client) {
-    client.ame.on('actionableMessageAddressingBot', function (msgInfo) {
+info.init  = function (options) {
+    var client = options.client;
+    
+    options.ame.on('actionableMessageAddressingBot', function (msgInfo) {
         var words    = parser.splitMessageIntoWords(msgInfo.message);
         var command  = words[1];
         
@@ -24,7 +26,7 @@ info.init  = function (client) {
             
             case 'plugins':
                 info.getLoadedPlugins(function (plugins) {                            
-                    var enabledPlugins = pm.getEnabledPlugins();                                
+                    var enabledPlugins = pm.getLoadedPlugins();                                
                     var msg  = 'Loaded plugins (' + plugins.length + '): ';
                         msg += enabledPlugins.join(', ');
                     

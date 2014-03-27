@@ -5,13 +5,29 @@
 "use strict";
 
 var wa     = require('wolfram');
+var when   = require('when');
+var db     = require('../../lib/db');
 var define = {};
 
-define.init = function (client) {
-    var pluginCfg   = client.config.plugins.define;    
-    define.waClient = wa.createClient(pluginCfg.appID);
+define.loadConfig = function () {
+    define.getConfig()
+          .then(function (cfg) {
+            define.pluginCfg = cfg;
+            define.waClient  = wa.createClient(cfg.appID);
+          })
+          .catch(function (e) {
+            console.log(e.stack);
+          });
+};
+
+define.init = function (options) {
+    var client = options.client;
     
-    client.ame.on('actionableMessageAddressingBot', function (info) {
+    define.loadConfig();
+    
+    var pluginCfg = define.pluginCfg;
+    
+    options.ame.on('actionableMessageAddressingBot', function (info) {
         var cmd   = info.words[1];
         var query = info.words.slice(2).join(' ');
 
@@ -29,6 +45,20 @@ define.init = function (client) {
                     console.log('define error:', err);
                 }
             });
+        }
+    });
+};
+
+define.getDefinitionAndProcessResult = function (query, callback) {
+    define.getDefinition(query, function (err, result) {
+        if (!err && result && result.length > 0) {
+            var msg = define.processWaResult(result);
+            
+            callback(msg);
+        } else {
+            callback(false);
+            console.log('"' + query + '"');
+            console.log('error with query: ', query, ' :: ', err, ' :: result: ', result);
         }
     });
 };
@@ -78,6 +108,25 @@ define.processWaDefinition = function (input) {
 
 define.getWaDefinition = function (query, callback) {
     define.waClient.query('define ' + query, callback);
+};
+
+define.getConfig = function () {
+    var def  = when.defer();
+    var cols = ['api_key AS appID'].join(',');
+    var q = [
+        'SELECT ' + cols,
+        'FROM wa_config'
+    ].join("\n");
+    
+    var qry = db.connection.query(q, function (err, result) {
+        if (err) {
+            def.reject(err);
+        } else {
+            def.resolve(result[0]);
+        }
+    });
+    
+    return def.promise;
 };
 
 module.exports = define;

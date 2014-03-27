@@ -10,6 +10,27 @@ var assert = require("assert");
 var admin  = require('../../plugins/admin');
 var config = JSON.parse(fs.readFileSync('../bot-config.json', 'utf8'));
 
+describe('admin.hostmaskIsAdmin', function () {
+    beforeEach(function () {
+        admin.init({
+            config: config,
+            ame: {
+                on: function () {
+                
+                }
+            }
+        });
+    });
+    
+    it('mask', function () {
+        var input    = 'Mibbit@cloak-DED807F2.dyn.optonline.net';
+        var expected = true;
+        var actual   = admin.hostmaskIsAdmin(input);
+        
+        assert.equal(expected, actual);
+    });
+});
+
 describe('admin.parseKickBanCommand', function () {
     beforeEach(function () {
         admin.init({

@@ -6,24 +6,19 @@
 var api        = require('imdb-api');
 var Handlebars = require('handlebars');
 var pm         = require('../../lib/pluginManager');
-var im         = {
-    messages: {
-        defaultError: "No results for that query",
-        defaultOK   : "{{{title}}} ({{{_year_data}}}) - {{{imdburl}}}",
-        defaultUsage: "Usage: imdb superbad"
-    }
-};
+var hmp        = require('../../lib/helpMessageParser');
+var im         = {};
 
-im.init = function (client) {
-    im.cfg = pm.getPluginConfig('imdb');
+im.init = function (options) {
+    var client     = options.client;    
+    im.cfg         = options.config.plugins.imdb;
+    im.wholeConfig = options.config;
     
-    client.ame.on('actionableMessageAddressingBot', function (info) {
+    options.ame.on('actionableMessageAddressingBot', function (info) {
         if (info.command === 'imdb') {
             var query = info.words.slice(2).join(' ');
             
             if (query && query.length >= 2) {
-                console.log('querying for "' + query + '"');
-                
                 api.getReq({
                     name: query
                 }, function (err, result) {
@@ -37,21 +32,24 @@ im.init = function (client) {
                     }
                 });
             } else {
-                client.say(info.channel, im.messages.usage || im.messages.defaultUsage);
+                client.say(info.channel, im.messages.usage);
             }
         }
     });
 };
 
 im.processRequest = function (info) {
-    var tpl     = Handlebars.compile(im.cfg.messages.error || im.messages.defaultError);
-    var message = tpl(info.result);
+    var messages = hmp.getMessages({
+        messages: ['ok', 'error'],
+        data    : info.result,
+        plugin  : 'imdb',
+        config  : im.wholeConfig
+    });
     
-    //console.log(info.result);
+    var message = messages.error;
     
     if (!info.err && info.result) {
-        tpl     = Handlebars.compile(im.cfg.messages.ok || im.messages.defaultOK);
-        message = tpl(info.result);
+        message = messages.ok;
     }
     
     return message;

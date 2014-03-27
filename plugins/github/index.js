@@ -23,8 +23,9 @@ announcer.init = function (client) {
         };
         
         if (admin.userIsAdmin(user)) {
-            if (info.words[1] === 'github') {                
-                announcer.getLatestNotification(function (n) {
+            if (info.words[1] === 'github') {
+                var command        = info.words[2];
+                var notificationCB = function (n) {
                     if (typeof n === 'object' && n) {
                         var msg = announcer.getAnnouncementTemplate(n);
                         
@@ -32,7 +33,13 @@ announcer.init = function (client) {
                     } else {
                         client.say(info.channel, 'No unread notifications');
                     }
-                });
+                };
+                
+                //if (command === 'last') {
+                    //announcer.getLatestNotification(notificationCB);
+                //} else {
+                    announcer.getLatestUnreadNotification(notificationCB);
+                //}
             }
         }
     });
@@ -42,7 +49,7 @@ announcer.init = function (client) {
     
     if (channels.length > 0) {
         setInterval(function () {
-            announcer.getLatestNotification(function (n) {
+            announcer.getLatestUnreadNotification(function (n) {
                 for (var j = 0; j < channels.length; j++) {
                     if (typeof n === 'object' && n) {
                         var msg = announcer.getAnnouncementTemplate(n);
@@ -102,7 +109,7 @@ announcer.markNotificationRead = function (notificationID, callback) {
     });
 };
 
-announcer.getLatestNotification = function (callback) {
+announcer.getLatestUnreadNotification = function (callback) {
     var q  = ' SELECT id, payload, '
         q += ' number_of_commits AS numberOfCommits,';
         q += ' created_at AS createdAt';

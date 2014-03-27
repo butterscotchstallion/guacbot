@@ -15,8 +15,10 @@ var moment = require('moment');
 var _      = require('underscore');
 var quote  = {};
 
-quote.init = function (client) {
-    client.ame.on('actionableMessageAddressingBot', function (info) {
+quote.init = function (options) {
+    var client = options.client;
+    
+    options.ame.on('actionableMessageAddressingBot', function (info) {
         switch (info.command) {
             case 'quote':
                 var targetNick = info.words[2] && info.words[2].length > 0 ? info.words[2].trim() : info.nick;

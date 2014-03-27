@@ -8,7 +8,7 @@
  */
 "use strict";
 
-var db         = require('../../plugins/db/');
+var db         = require('../../lib/db');
 var moment     = require('moment');
 var parser     = require('../../lib/messageParser');
 var timeParser = require('../../lib/timeUnitParser');
@@ -18,15 +18,19 @@ var reminder   = {
     defaultMaxReminders: 3
 };
 
-reminder.init = function (client) {
-    reminder.config       = pm.getPluginConfig('reminder');
+reminder.init = function (options) {
+    var client = options.client;
+    
+    db.init();
+    
+    reminder.config       = options.config.plugins.reminder;
     var thirtySecondsInMS = 30000;
     
     setInterval(function () {
         reminder.processPendingReminders(client);
     }, thirtySecondsInMS);
     
-    client.ame.on('actionableMessageAddressingBot', function (info) {   
+    options.ame.on('actionableMessageAddressingBot', function (info) {   
         var words           = info.words;
         var duration        = words[2] ? words[2] : '5m';
         var message         = words.slice(3).join(' ');

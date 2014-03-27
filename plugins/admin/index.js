@@ -10,29 +10,58 @@ var minimatch  = require('minimatch');
 var timeParser = require("../../lib/timeUnitParser");
 var parser     = require('../../lib/messageParser');
 var pluginMgr  = require('../../lib/pluginManager');
+var db         = require('../../lib/db');
+var when       = require('when');
+var _          = require('underscore');
 var admin      = {
-    muted: []
+    muted    : [],
+    pluginCfg: {
+        admins: []
+    }
 };
 
-admin.loadConfig = function (cfg) { 
-    var pluginCfg   = cfg.plugins.admin;
-    admin.pluginCfg = pluginCfg;
+admin.reload = function () {
+    admin.loadConfig();
 };
 
-admin.init = function (client) {    
-    admin.client    = client;
-    admin.pluginCfg = client.config.plugins.admin;
+admin.loadConfig = function () { 
+    admin.getConfig()
+         .then(function (cfg) {
+            admin.pluginCfg = cfg;
+         });
+         
+    admin.getAdmins()
+         .then(function (admins) {
+            admin.pluginCfg.admins = admins;
+         })
+         .then(function () {
+            
+         });
     
-    admin.loadConfig(client.config);
+    admin.getCommandTriggers()
+         .then(function (triggers) {
+            admin.pluginCfg.triggers = triggers;
+         })
+         .catch(function (e) {
+            console.log(e.stack);
+         });
+};
+
+admin.init = function (options) {    
+    admin.client    = options.client;
+    //admin.pluginCfg = client.config.plugins.admin;
+    admin.pluginManager = options.pluginManager;
     
-    client.ame.on('actionableMessageAddressingBot', function (info) {        
+    admin.loadConfig();
+    
+    options.ame.on('actionableMessageAddressingBot', function (info) {
         var triggers = admin.getTriggersFromConfig(admin.pluginCfg);
         var triglen  = triggers.length;
         
         for (var j = 0; j < triglen; j++) {
             if (triggers[j].trigger === info.command) {
                 admin.executeCommand({
-                    client  : client,
+                    client  : admin.client,
                     command : triggers[j].command,
                     channel : info.channel,
                     nick    : info.nick,
@@ -159,11 +188,9 @@ admin.executeCommand = function (info) {
         break;
         
         case 'reload':
-            info.client.say(info.channel, 'reloading...');
-            
-            pluginMgr.loadPlugins(info.client, function (reloadedPlugins) {
+            admin.pluginManager.reload(info.client, function (reloadedPlugins) {
                 info.client.say(info.channel, reloadedPlugins + ' plugins reloaded.');
-            }, true);
+            });
         break;
         
         case 'identify':
@@ -181,6 +208,17 @@ admin.executeCommand = function (info) {
             
             admin.kick(kb.targetChannel, kb.targetNick, kb.reason);
             admin.ban(kb.targetChannel, kb.targetNick, kb.duration);            
+        break;
+        
+        case 'unban':
+            var channel  = info.words[2];
+            var hostmask = info.words[3] || false;
+            
+            if (hostmask === false) {
+                channel = info.channel;
+            }
+            
+            admin.unbanByHost(channel, hostmask);
         break;
         
         // Unknown command - this should probably never happen
@@ -321,6 +359,10 @@ admin.ban = function (channel, nick, duration) {
     });
 };
 
+admin.unbanByHost = function (channel, hostmask) {
+    admin.client.send('MODE', channel, '-b', hostmask);
+};
+
 admin.unban = function (channel, nick) {
     admin.whois(nick, function (data) {
         var mask = admin.getBanMask(data.host);
@@ -394,6 +436,71 @@ admin.getKickMessages = function (cfg) {
 
 admin.getTriggersFromConfig = function (cfg) {
     return cfg.triggers;
+};
+
+admin.getConfig = function () {
+    var def  = when.defer();
+    var cols = ['use_chanserv AS useChanserv',
+                'ban_duration AS banDuration',
+                'mute_duration AS muteDuration'].join(',');
+    var q = [
+        'SELECT ' + cols,
+        'FROM admin_config ac'                
+    ].join("\n");
+    
+    db.connection.query(q, function (err, result) {
+        if (err) {
+            def.reject(err);
+        } else {
+            def.resolve(result[0]);
+        }
+    });
+    
+    return def.promise;
+};
+
+admin.getAdmins = function () {
+    var def  = when.defer();
+    var cols = ['hostmask'].join(',');
+    var q = [
+        'SELECT ' + cols,
+        'FROM admin_hostmasks ah',
+        'WHERE 1=1',
+        'AND ah.enabled = 1'
+    ].join("\n");
+    
+    db.connection.query(q, function (err, result) {
+        if (err) {
+            def.reject(err);
+        } else {
+            var admins = result ? _.pluck(result, 'hostmask') : [];
+            
+            def.resolve(admins);
+        }
+    });
+    
+    return def.promise;
+};
+
+admin.getCommandTriggers = function () {
+    var def   = when.defer();
+    var cols  = ['`trigger`', 'command'].join(',');
+    var q     = [
+        'SELECT ' + cols,
+        'FROM admin_triggers at',
+        'WHERE 1=1',
+        'AND at.enabled = 1'
+    ].join("\n");
+    
+    var qry = db.connection.query(q, function (err, result) {
+        if (err) {
+            def.reject(err);
+        } else {
+            def.resolve(result);
+        }
+    });
+    
+    return def.promise;
 };
 
 module.exports = admin;

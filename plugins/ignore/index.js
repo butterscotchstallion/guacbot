@@ -6,12 +6,15 @@
 "use strict";
 
 var parser      = require('../../lib/messageParser');
-var db          = require('../../plugins/db');
+var argus       = require('../../lib/argus');
+var db          = require('../../lib/db');
 var admin       = require('../../plugins/admin');
 var ig          = {};
 
-ig.init = function (client) {
-    client.ame.on('actionableMessageAddressingBot', function (info) {
+ig.init = function (options) {
+    var client = options.client;
+    
+    options.ame.on('actionableMessageAddressingBot', function (info) {
         var words           = info.words;
         var command         = words[1];
         var nick            = words[2];
@@ -77,6 +80,8 @@ ig.isIgnored = function (hostmask, callback) {
         callback(false);
         return false;
     }
+    
+    var cachedNick = argus.getNick();
     
     var q  = ' SELECT COUNT(*) AS ignored';
         q += ' FROM ignored';

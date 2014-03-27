@@ -5,16 +5,27 @@
 "use strict";
 
 var ignore        = require('../ignore/');
-var db            = require('../db/');
+var db            = require('../../lib/db');
 var hmp           = require('../../lib/helpMessageParser');
 var _             = require('underscore');
 var weatherPlugin = {};
+var when          = require('when');
 
-weatherPlugin.init = function (client) {
-    weatherPlugin.client     = client;
-    weatherPlugin.weatherCfg = client.config.plugins.weather;
+weatherPlugin.loadConfig = function (config) {
+    weatherPlugin.getConfig(function (wConfig, err) {
+        weatherPlugin.config = _.extend(weatherPlugin.config, wConfig);
+    });
+};
+
+weatherPlugin.init = function (options) {
+    weatherPlugin.wholeConfig = options.config;
+    weatherPlugin.config     = options.config.plugins.weather;
+    weatherPlugin.loadConfig(options.config);
     
-    client.ame.on('actionableMessageAddressingBot', function (info) {
+    var client               = options.client;
+    weatherPlugin.client     = client;
+    
+    options.ame.on('actionableMessageAddressingBot', function (info) {
         var query                = info.words.slice(2, info.words.length).join(' ').trim();
         var templateData         = _.extend(info, {
             botNick: client.currentNick
@@ -29,7 +40,7 @@ weatherPlugin.init = function (client) {
             messages: templateMessages,
             data    : templateData,
             plugin  : 'weather',
-            config  : client.config
+            config  : options.config
         });
         
         var storedCB = function (stored, err) {
@@ -71,7 +82,7 @@ weatherPlugin.init = function (client) {
 weatherPlugin.sendResponse = function (info) {    
     if (!info.err) {
         weatherPlugin.query({
-            apiKey  : weatherPlugin.client.config.plugins.weather.apiKey,
+            apiKey  : weatherPlugin.config.apiKey,
             query   : info.query,
             callback: function (response, err) {
                 var noResults = response.indexOf('No cities match') !== -1;
@@ -94,7 +105,7 @@ weatherPlugin.sendResponse = function (info) {
                     response = hmp.getMessage({
                         plugin : 'weather',
                         message: 'noResults',
-                        config : weatherPlugin.client.config
+                        config : weatherPlugin.weatherPlugin.weatherCfg
                     });
                 }
                 
@@ -147,6 +158,17 @@ weatherPlugin.storeLocation = function (info) {
     });
 };
 
+weatherPlugin.getConfig = function (callback) {
+    var query  = [
+        'SELECT api_key AS apiKey',
+        'FROM weather_config'
+    ].join("\n");
+    
+    db.connection.query(query, function (err, result) {
+        callback(result[0], err);
+    });
+};
+
 weatherPlugin.parseResponse = function (response) {
     var res = JSON.parse(response);
     
@@ -159,7 +181,7 @@ weatherPlugin.parseResponse = function (response) {
         return hmp.getMessage({
             plugin : 'weather',
             message: 'noResults',
-            config : weatherPlugin.client.config            
+            config : weatherPlugin.wholeConfig            
         });
     }
     
@@ -168,7 +190,7 @@ weatherPlugin.parseResponse = function (response) {
     var conditions   = hmp.getMessage({
         plugin   : 'weather',
         message  : 'conditions',
-        config   : weatherPlugin.client.config,
+        config   : weatherPlugin.wholeConfig,
         data     : _.extend({
             city : location.city,
             state: location.state

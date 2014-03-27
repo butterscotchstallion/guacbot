@@ -7,6 +7,7 @@
 var fs     = require('fs');
 var assert = require("assert");
 var titler = require('../../plugins/titler/');
+var u      = require('url');
 
 describe('get title template', function () {
     beforeEach(function () {
@@ -37,6 +38,28 @@ describe('get title template', function () {
     it('given a title', function () {
         var expected = '^ the only thing hotter than my flow is da block';
         var actual   = titler.getTitleFromTemplate('the only thing hotter than my flow is da block');  
+        
+        assert.equal(expected, actual);
+    });
+});
+
+describe('titler.isTwitterURL', function () {
+    it('should detect twitter urls', function () {   
+        var expected = true;
+        var actual   = titler.isTwitterURL({
+            host: 'mobile.twitter.com',
+            pathname: '/AmKrisBosh/status/409387103085002753'
+        });  
+        
+        assert.equal(expected, actual);
+    });
+    
+    it('should not detect non-twitter urls', function () {   
+        var expected = false;
+        var actual   = titler.isTwitterURL({
+            host: 'google.com',
+            pathname: '/lolomg'
+        });
         
         assert.equal(expected, actual);
     });

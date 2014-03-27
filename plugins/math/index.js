@@ -6,10 +6,11 @@
 var math = require('mathjs')();
 var m    = {};
 
-m.init = function (client) {
-    m.client = client;
+m.init = function (options) {
+    m.client   = options.client;
+    var client = options.client;
     
-    client.ame.on('actionableMessageAddressingBot', function (info) {
+    options.ame.on('actionableMessageAddressingBot', function (info) {
         if (info.command === 'calc') {
             try {
                 var input = info.words.slice(2).join(' ').trim();
@@ -32,10 +33,8 @@ m.init = function (client) {
 m.handleErrorParsingInput = function (e, info) {
     var msg = 'error, lol';
     
-    if (typeof e !== 'undefined') {
+    if (e) {
         console.log(e);
-        
-        //msg += ' ' + e;
     }
     
     m.client.say(info.channel, msg);

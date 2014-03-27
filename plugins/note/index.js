@@ -4,7 +4,7 @@
  */
 "use strict";
 
-var db       = require('../../plugins/db/');
+var db       = require('../../lib/db');
 var moment   = require('moment');
 var irc      = require('irc');
 var hbs      = require('handlebars');
@@ -14,40 +14,41 @@ var note     = {
     delivered: []
 };
 
-note.init = function (client) {
-    note.client = client;
+note.reload = function (options) {
+    note.loadConfig(options);
+};
+
+note.loadConfig = function (options) {
+    note.config          = options.config.plugins.note;
+    note.config.messages = options.plugins.note.messages;
+};
+
+note.init            = function (options) {
+    note.client      = options.client;
+    note.config      = options.config;
+    note.wholeConfig = { config: { plugins: { note : note.config } } };
+    note.argus       = options.argus;
+    var client       = options.client;
     
-    client.ame.on('actionableMessageAddressingBot', function (info) {
-        var words        = info.words;
-        var command      = words[1] || '';
-        var recipient    = words[2] || '';
-        var nMessage     = words.slice(3).join(' ');
-        var nickCollection = client.argus.getChannelNicks(info.channel);
-        var nicks          = client.argus.getNicksFromCollection(nickCollection);
-        
-        var nicksWithoutRecipientOrBot = _.filter(nicks, function (n) {
-            return [info.nick, client.currentNick].indexOf(n) === -1;
-        });
-        var rndNick = nicksWithoutRecipientOrBot[~~(Math.random() * nicksWithoutRecipientOrBot.length)];
-        
-        var templateData = _.extend(info, {
-            botNick     : client.currentNick,
-            recipient   : recipient,
-            rndRecipient: rndNick
-        });
-        
-        var messages  = hmp.getMessages({
-            messages: ['usage', 'saved', 'invalidRecipient'],
-            data    : templateData,
-            plugin  : 'note',
-            config  : client.config
-        });
+    note.loadConfig(options);
+    
+    options.ame.on('actionableMessageAddressingBot', function (info) {
+        var words     = info.words;
+        var command   = words[1] || '';
+        var recipient = words[2] || '';
+        var nMessage  = words.slice(3).join(' ');
         
         if (command === 'note') {
             var lowerRecipient           = recipient.toLowerCase();
             var validRecipientAndMessage = recipient && nMessage;
             var isMessageToSelf          = lowerRecipient === info.nick;
-            var isMessageToBot           = lowerRecipient === client.config.nick.toLowerCase();
+            var isMessageToBot           = lowerRecipient === options.config.nick.toLowerCase();
+            
+            var templateData = _.extend(info, {
+                botNick     : options.config.nick,
+                recipient   : recipient,
+                rndRecipient: note.getRandomNick(info)
+            });
             
             if (validRecipientAndMessage && !isMessageToSelf && !isMessageToBot) {
                 var noteAddedCB = function (result, err) {
@@ -55,7 +56,14 @@ note.init = function (client) {
                         console.log('Error adding note:', err);
                     }
                     
-                    client.say(info.channel, messages.saved);
+                    var saved  = hmp.getMessage({
+                        message : 'saved',
+                        data    : templateData,
+                        plugin  : 'note',
+                        config  : note.wholeConfig
+                    });
+                    
+                    client.say(info.channel, saved);
                 };
                 
                 note.add({
@@ -66,14 +74,30 @@ note.init = function (client) {
                 }, noteAddedCB);
                 
             } else {
-                var err = nMessage ? messages.invalidRecipient : messages.usage;
+                console.log(note.config);
+                
+                var ir  = hmp.getMessage({
+                    message : 'invalidRecipient',
+                    data    : templateData,
+                    plugin  : 'note',
+                    config  : note.wholeConfig
+                });
+                
+                var usage  = hmp.getMessage({
+                    message : 'usage',
+                    data    : templateData,
+                    plugin  : 'note',
+                    config  : note.wholeConfig
+                });
+                
+                var err = nMessage ? ir : usage;
                 
                 client.say(info.channel, err);
             }
         }
     });
     
-    client.ame.on('actionableMessage', function (info) {
+    options.ame.on('actionableMessage', function (info) {
         note.get(info.nick, info.channel, function (newNote) {
             // Make sure that we haven't already delivered this note in the 
             // case of a bunch of messages arriving at once
@@ -95,10 +119,24 @@ note.init = function (client) {
     });
 };
 
+note.getRandomNick = function (info) {
+    var nickCollection = note.argus.getChannelNicks(info.channel);
+    var nicks          = note.argus.getNicksFromCollection(nickCollection);
+    
+    var nicksWithoutRecipientOrBot = _.filter(nicks, function (n) {
+        return [info.nick, note.client.currentNick].indexOf(n) === -1;
+    });
+    
+    var rndIdx  = ~~(Math.random() * nicksWithoutRecipientOrBot.length);
+    var rndNick = nicksWithoutRecipientOrBot[rndIdx];
+    
+    return rndNick;
+};
+
 note.getNoteDeliveredTemplate = function (info) {
     var msg       = hmp.getMessage({
         plugin : 'note',
-        config : note.client.config,
+        config : note.config,
         data   : info,
         message: 'delivered'
     });

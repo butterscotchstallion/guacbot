@@ -4,10 +4,12 @@
  */
 "use strict";
 
-var db     = require('../db/');
+var db     = require('../../lib/db');
 var logger = {};
 
-logger.init = function (client) {
+logger.init = function (options) {
+    var client = options.client;
+    
     // Log channel messages
     client.addListener('message#', function (nick, channel, text, message) {
         var info = {
@@ -111,8 +113,6 @@ logger.getMentions = function (args) {
             args.callback(rows, err);
         }
     });
-    
-    console.log(parsedQry.sql);
 };
 
 logger.searchByMessage = function (nick, searchQuery, callback) {

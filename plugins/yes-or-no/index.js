@@ -8,10 +8,12 @@ var yn = {
     trigger: 'y/n'
 };
 
-yn.init = function (client) {
-    yn.pluginConfig = client.config.plugins['yes-or-no'];
+yn.init = function (options) {
+    var client = options.client;
     
-    client.ame.on('actionableMessageAddressingBot', function (info) {
+    yn.pluginConfig = options.config.plugins['yes-or-no'];
+    
+    options.ame.on('actionableMessageAddressingBot', function (info) {
         var isYesOrNoQuestion = yn.isYesOrNoQuestion(info.message);
         
         if (isYesOrNoQuestion) {

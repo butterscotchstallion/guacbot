@@ -16,6 +16,8 @@ var admin      = require('../../plugins/admin');
 var minimatch  = require('minimatch');
 var _          = require('underscore');
 var argus      = require('../../lib/argus');
+var db         = require('../../lib/db');
+var when       = require('when');
 var squire     = {
     cfg: {
         adminsAreFriends: true,
@@ -28,18 +30,39 @@ var squire     = {
     }
 };
 
-squire.loadConfig = function (config) {
-    squire.pluginCfg = config.plugins.squire;
-    squire.adminCfg  = config.plugins.admin;
+squire.reload = function (options) {
+    squire.loadConfig(options.config);
+    squire.scan();
 };
 
-squire.init = function (client) {
-    squire.client    = client;
-    squire.loadConfig(client.config);
-    
-    client.ame.on('actionableMessage', function (info) {
-        var targetUpgradeable = squire.isTargetUpgradeable(info);
+squire.loadConfig = function (config) {
+    squire.getHostmasks()
+          .then(function (hostmasks) {
+            squire.cfg.friends = _.pluck(_.filter(hostmasks, function (s) {
+                return s.isFriend === 1;
+            }), 'hostmask');
             
+            squire.cfg.foes = _.pluck(_.filter(hostmasks, function (s) {
+                return s.isFriend === 0;
+            }), 'hostmask');
+            
+            squire.cfg       = _.extend(squire.cfg, config.plugins.squire);
+            squire.adminCfg  = config.plugins.admin;
+          })
+          .catch(function (e) {
+            //console.log(e.stack);
+          });
+};
+
+squire.init = function (options) {
+    var client       = options.client;
+    squire.client    = client;
+    squire.argus     = options.argus;
+    squire.loadConfig(options.config);
+    
+    options.ame.on('actionableMessage', function (info) {
+        var targetUpgradeable = squire.isTargetUpgradeable(info);
+        
         if (targetUpgradeable) {
             squire.performAction(info);
         }
@@ -66,19 +89,26 @@ squire.init = function (client) {
     var tenSeconds = 10000;
     
     setInterval(function () {
-        var channels = argus.channels;
-        var cur;
-        
-        for (var j = 0; j < channels.length; j++) {
-            cur = channels[j];
-            
-            var targetUpgradeable = squire.isTargetUpgradeable(cur);
-            
-            if (targetUpgradeable) {
-                squire.performAction(cur);
-            }
-        }
+        squire.scan();
     }, tenSeconds);
+};
+
+squire.scan = function () {
+    var channels = squire.argus.channels;
+    var cur;
+    
+    for (var j = 0; j < channels.length; j++) {
+        cur = channels[j];
+        
+        var targetUpgradeable = squire.isTargetUpgradeable(cur);
+        
+        if (targetUpgradeable) {
+            console.log('upgrading ' + cur.nick);
+            squire.performAction(cur);
+        } else {
+            console.log(cur.nick, ' not upgradeable');
+        }
+    }
 };
 
 squire.isTargetUpgradeable = function (info) {
@@ -99,7 +129,7 @@ squire.isTargetUpgradeable = function (info) {
     
     //console.log('chan: ' + info.channel + ' nick: ' + info.nick + ' ops: ' + botHasOps);
     
-    return hasMask && !targetHasOpsAlready && botHasOps;
+    return hasMask && botHasOps && !targetHasOpsAlready;
 };
 
 squire.isBotInChannel = function (channel) {
@@ -123,29 +153,51 @@ squire.performAction = function (info) {
 };
 
 squire.isFriend = function (hostmask) { 
-    var cfgFriend   = squire.match(hostmask, squire.pluginCfg.friends);
+    var cfgFriend   = squire.match(hostmask, squire.cfg.friends);
     var isAdmin     = admin.hostmaskIsAdmin(hostmask);
-    
-    //console.log(hostmask + ' is not admin');
     
     return cfgFriend || isAdmin;
 };
 
 squire.isFoe = function (hostmask) { 
-    return squire.match(hostmask, squire.pluginCfg.foes);
+    return squire.match(hostmask, squire.cfg.foes);
 };
 
 squire.match = function (needle, haystack) {
     var match = false;
     
-    for (var j = 0; j < haystack.length; j++) {
-        if (minimatch(needle, haystack[j])) {            
-            match = true;            
-            break;
+    if (haystack) {
+        for (var j = 0; j < haystack.length; j++) {
+            if (minimatch(needle, haystack[j])) {            
+                match = true;            
+                break;
+            }
         }
     }
     
     return match;
+};
+
+squire.getHostmasks = function () {
+    var cols  = ['hostmask', 
+                 'upgrade_type AS upgradeType', 
+                 'is_friend AS isFriend'];
+    var def   = when.defer();
+    var query = [
+        'SELECT ',
+        cols.join(','),
+        'FROM squire_hostmasks'
+    ].join("\n");
+    
+    var qry = db.connection.query(query, function (err, result) {
+        if (err && result) {
+            def.reject(err);
+        } else {
+            def.resolve(result);
+        }
+    });
+    
+    return def.promise;
 };
 
 module.exports = squire;

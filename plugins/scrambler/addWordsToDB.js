@@ -20,7 +20,7 @@ p.readWordsFile = function (file, callback) {
 
 p.addWordsToDB = function (words, callback) {
     var wlen   = words.length;
-    var query  = 'INSERT INTO scrambler_words (word) VALUES ';
+    var query  = 'INSERT IGNORE INTO scrambler_words (word) VALUES ';
     var params = [];
     var pairs  = [];
     
@@ -42,7 +42,7 @@ db.init({
     config: cfg
 });
 
-p.readWordsFile('./plugins/scrambler/long-with-consonants.txt', function (words) {
+p.readWordsFile('./plugins/scrambler/words.txt', function (words) {
     p.addWordsToDB(words, function (result, err) {
         console.log(err);
         console.log(result);

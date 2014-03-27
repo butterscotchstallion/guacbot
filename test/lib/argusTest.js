@@ -49,6 +49,13 @@ describe('argus.getNick', function () {
         
         assert.deepEqual(expected, actual);
     });
+    
+    it('should return false if it doesnt have nick', function () {   
+        var actual   = argus.getNick('lol');
+        var expected = undefined;
+        
+        assert.deepEqual(expected, actual);
+    });
 });
 
 describe('argus.getChannelNicks', function () {

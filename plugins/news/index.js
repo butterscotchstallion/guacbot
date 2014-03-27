@@ -284,7 +284,11 @@ news.getHeadlines = function (xml, site, callback) {
                 if (typeof result.rss !== 'undefined') {
                     items = result.rss.channel[0].item;
                 } else {
-                    items = result.feed.entry;
+                    items = typeof result.feed !== 'undefined' ? result.feed.entry : false;
+                    
+                    if (items === false) {
+                        console.log('feed anomaly: ', result, site);
+                    }
                 }
                 
                 if (items) {

@@ -8,9 +8,11 @@ var co  = {
     trigger: '!crankowned'
 };
 
-co.init = function (client) {
-    client.ame.on('actionableMessage', function (info) {
-        if (co.messageStartsWithTrigger(info.message)) {
+co.init = function (options) {
+    var client = options.client;
+    
+    options.ame.on('actionableMessage', function (info) {
+        if (co.isTrigger(info.message)) {
             client.say(info.channel, co.getIsCrankOwnedMessage());
         }
     });
@@ -23,8 +25,8 @@ co.getIsCrankOwnedMessage = function () {
     return Math.floor(Math.random() * 2) === 1 ? owned : notOwned;
 };
 
-co.messageStartsWithTrigger = function (input) {
-    return input.indexOf(co.trigger) === 0;
+co.isTrigger = function (input) {
+    return input === co.trigger;
 };
 
 module.exports = co;

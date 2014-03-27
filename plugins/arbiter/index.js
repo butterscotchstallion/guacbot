@@ -4,15 +4,37 @@
  */
 "use strict";
 
-var arbiter = {};
 var parser  = require('../../lib/messageParser');
 var ignore  = require('../../plugins/ignore/');
+var when    = require('when');
+var db      = require('../../lib/db');
+var _       = require('underscore');
+var arbiter = {};
 
-arbiter.init = function (client) {
-    client.ame.on('actionableMessageAddressingBot', function (info) {        
-        var words      = info.words;
-        var choiceTxt  = words.slice(1).join(' ');
-        var isDecision = arbiter.isDecision(info.message);
+arbiter.loadConfig = function (config) {
+    arbiter.getAnswers()
+           .then(function (answers) {
+                var a = _.pluck(answers, 'answer');
+                
+                arbiter.config = _.extend(config, {
+                    answers: a
+                });
+           })
+           .catch(function (e) {
+            console.log(e.stack);
+           });
+};
+
+arbiter.init = function (options) {
+    var client = options.client;
+    
+    arbiter.loadConfig(options.config.plugins.arbiter);
+    
+    options.ame.on('actionableMessageAddressingBot', function (info) {        
+        var words             = info.words;
+        var choiceTxt         = words.slice(1).join(' ');
+        var isDecision        = arbiter.isDecision(info.message);
+        var isYesOrNoQuestion = arbiter.isYesOrNoQuestion(info.message);
         
         if (isDecision) {
             var output = arbiter.decide(choiceTxt);
@@ -21,6 +43,12 @@ arbiter.init = function (client) {
                 client.say(info.channel, output);
             } else {
                 client.say(info.channel, 'idk lol');
+            }
+        } else if (isYesOrNoQuestion) {
+            var answer = arbiter.getAnswer();
+            
+            if (answer) {
+                client.say(info.channel, answer);
             }
         }
     });
@@ -135,6 +163,39 @@ arbiter.parse = function (input) {
     }
     
     return choices;
+};
+
+arbiter.getAnswers = function () {
+    var cols  = ['answer'];
+    var def   = when.defer();
+    var query = [
+        'SELECT ',
+        cols.join(','),
+        'FROM arbiter_answers',
+        'WHERE enabled = 1'
+    ].join("\n");
+    
+    db.connection.query(query, function (err, result) {
+        if (err && result) {
+            def.reject(err);
+        } else {
+            def.resolve(result);
+        }
+    });
+    
+    return def.promise;
+};
+
+arbiter.getAnswer = function () {
+    var a = arbiter.config.answers || [];
+
+    if (a.length > 0) {
+        return a[~~(Math.random() * a.length)];
+    }
+};
+
+arbiter.isYesOrNoQuestion = function (input) {
+    return input.indexOf('y/n') !== -1;
 };
 
 module.exports = arbiter;

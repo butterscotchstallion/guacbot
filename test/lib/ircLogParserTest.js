@@ -8,6 +8,25 @@ var assert = require("assert");
 var titler = require('../../plugins/titler/');
 var parser = require('../../lib/ircLogParser');
 
+describe('parser.getInsertQuery', function () {
+    it('should generate query', function () {
+        var input = {
+            nick     : 'chillulum',
+            channel  : '#idiots-club',
+            ts: '2013-09-30 17:53:00',
+            message  : 'did you see/agree w/ this?',
+            ic_log_indicator: 1
+        };
+        
+        var expected  = "INSERT INTO ic_logs (nick, channel, ts, message, ic_log_indicator) ";
+            expected += "VALUES('chillulum', '#idiots-club', '2013-09-30 17:53:00', 1);\n";
+            
+        var actual    = parser.getInsertQuery(input);
+        
+        assert.equal(expected, actual);
+    });
+});
+
 describe('parser.parseLine', function () {
     it('should get info about a line', function () {
         var input    = '09/30/13 17:53 <@chillulum> did you see/agree w/ this?';
@@ -90,8 +109,7 @@ describe('parser.parseLine', function () {
         var actual   = parser.parseLine(input);
         
         assert.equal(expected, actual);
-    });
-    
+    });    
 });
 
 

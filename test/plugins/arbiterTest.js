@@ -7,6 +7,12 @@
 var arbiter = require('../../plugins/arbiter');
 var assert  = require("assert");
 
+describe('aribiter.isDecision should detect decisions', function () {    
+    it('should detect when someone is asking to make a decision', function () {
+    
+    });
+});
+
 describe('aribiter.isDecision should detect decisions', function () {
     
     it('should detect when someone is asking to make a decision', function () {
