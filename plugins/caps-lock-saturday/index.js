@@ -11,26 +11,27 @@ var moment = require('moment');
 cls.init = function (options) {
     var client = options.client;
     
-    // Check once on load before waiting a minute
-    if (!cls.loaded) {
-        cls.changeNickIfNecessary(client);
-        cls.loaded = true;
-    }
-    
-    // Each time there is a ping, check if it's saturday
-    // and if so, change nick
-    var oneMinuteInMS = 60000;
-    
-    setInterval(function () {
-        cls.changeNickIfNecessary(client);
-    }, oneMinuteInMS);
-    
     // Track nick changes
     client.addListener('nick', function (oldNick, newNick, channels, message) {
         // But only the bot's nick
         if (oldNick.toLowerCase() === client.currentNick.toLowerCase()) {
             client.config.nick = newNick;
         }
+    });
+    
+    client.addListener('registered', function (message) {
+        // Each time there is a ping, check if it's saturday
+        // and if so, change nick
+        var oneMinuteInMS = 60000;
+        setInterval(function () {
+            cls.changeNickIfNecessary(client);
+        }, oneMinuteInMS);
+        
+        // Check once on load before waiting a minute
+        if (!cls.loaded) {
+            cls.changeNickIfNecessary(client);
+            cls.loaded = true;
+        }            
     });
 };
 
