@@ -8,14 +8,33 @@ var parser     = require('../../lib/messageParser');
 var ignore     = require('../../plugins/ignore');
 var request    = require('request');
 var sleuth     = {};
-var hbs        = require('handlebars');
 var _          = require('underscore');
+var hmp        = require('../../lib/helpMessageParser');
+var ent        = require('ent');
 
-sleuth.init = function (client) {
-    client.ame.on('actionableMessageAddressingBot', function (info) {        
+sleuth.loadConfig = function (options) {
+    sleuth.client      = options.client;
+    sleuth.wholeConfig = options.config;
+};
+
+sleuth.reload = function (options) {
+    sleuth.loadConfig(options);
+};
+
+sleuth.init = function (options) {
+    var client = options.client;
+    
+    sleuth.loadConfig(options);
+    
+    options.ame.on('actionableMessageAddressingBot', function (info) {        
         var isQuestion = sleuth.isQuestion(info.message);
         var videoCallback = function (video) {
-            var msg = 'No results';
+            var msg = hmp.getMessage({
+                plugin : 'tube-sleuth',
+                data   : video,
+                config : sleuth.wholeConfig,
+                message: 'noResults'
+            });
             
             if (video) {
                 msg = sleuth.getTitleTemplate(video);
@@ -45,12 +64,13 @@ sleuth.init = function (client) {
 };
 
 sleuth.getTitleTemplate = function (video) {
-    var input = '\u0002{{{title}}}\u0002 :: {{{link}}}';
-    var tpl   = hbs.compile(input);
+    console.log(video);
     
-    return tpl({
-        title: video.title,
-        link : video.link
+    return hmp.getMessage({
+        plugin : 'tube-sleuth',
+        data   : video,
+        config : sleuth.wholeConfig,
+        message: 'ok'
     });
 };
 
@@ -93,10 +113,10 @@ sleuth.getRandomSearchResult = function (query, callback) {
 sleuth.getFirstSearchResult = function (query, callback) {
     sleuth.getYoutubeSearchResponse(query, function (video) {
         if (typeof video === 'object') {
-            callback({
+            callback(_.extend({
                 title: video.title,
                 link : 'https://youtube.com/watch?v=' + video.id
-            });
+            }, video));
         } else {
             callback(false);
         }
@@ -172,19 +192,28 @@ sleuth.parseResultSet = function (results) {
 };
 
 sleuth.parseResponse = function (response) {
-    // there is definitely a better way to do this
     var entries = typeof response.feed === 'object' && response.feed.entry || [];
     
     if (entries && entries.length > 0) {
         var video   = entries[0];
-        var title   = video.title['$t'];
+        var title   = video.title['$t'] ? ent.decode(video.title['$t']) : '';
         var link    = video.content.src;
         var id      = _.last(video.id['$t'].split(':'));
+        var rating  = video['gd$rating'].average.toFixed(2);
+        var views   = video['yt$statistics'].viewCount;
+        var likes   = video['yt$rating'].numLikes;
+
+        var commafy = function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        };
         
         return {
-            title: title,
-            link : link,
-            id   : id
+            title      : title,
+            viewCount  : views > 0 ? commafy(views) : 0,
+            rating     : rating,
+            likeCount  : likes > 0 ? commafy(likes) : 0,
+            id         : id,
+            link       : link
         };
     }
 };
