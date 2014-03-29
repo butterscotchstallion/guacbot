@@ -20,11 +20,15 @@ var admin      = {
     }
 };
 
-admin.reload = function () {
-    admin.loadConfig();
+admin.reload = function (options) {
+    admin.loadConfig(options);
 };
 
-admin.loadConfig = function () { 
+admin.loadConfig = function (options) {
+    admin.wholeConfig   = options.config;
+    admin.client        = options.client;
+    admin.pluginManager = options.pluginManager;
+    
     admin.getConfig()
          .then(function (cfg) {
             admin.pluginCfg = cfg;
@@ -48,11 +52,7 @@ admin.loadConfig = function () {
 };
 
 admin.init = function (options) {    
-    admin.client    = options.client;
-    //admin.pluginCfg = client.config.plugins.admin;
-    admin.pluginManager = options.pluginManager;
-    
-    admin.loadConfig();
+    admin.loadConfig(options);
     
     options.ame.on('actionableMessageAddressingBot', function (info) {
         var triggers = admin.getTriggersFromConfig(admin.pluginCfg);
@@ -187,9 +187,13 @@ admin.executeCommand = function (info) {
             admin.unmute(info.channel, commandArgOne);
         break;
         
-        case 'reload':
-            admin.pluginManager.reload(info.client, function (reloadedPlugins) {
-                info.client.say(info.channel, reloadedPlugins + ' plugins reloaded.');
+        case 'reload':            
+            admin.pluginManager.reload({
+                client           : info.client,
+                onPluginsReloaded: admin.onPluginsReloaded,
+                onErrorReloading : admin.onErrorReloading,
+                onPluginsLoaded  : admin.onPluginsLoaded,
+                channel          : info.channel
             });
         break;
         
@@ -226,6 +230,29 @@ admin.executeCommand = function (info) {
             console.log('unknown command: ' + info.command);
         break;
     }
+};
+
+admin.onPluginsReloaded = function (channel, reloaded) {
+    var def  = when.defer();
+    var msg  = reloaded.length > 0 ? 'Reloaded: ' + reloaded.join(', ') : '0 plugins reloaded';
+    
+    admin.client.say(channel, msg);
+    
+    def.resolve(admin.wholeConfig);
+};
+
+admin.onErrorReloading = function (channel, error) {
+    admin.client.say(channel, 'Error lol! ' + error);
+};
+
+admin.onPluginsLoaded = function (channel, loaded) {
+    var def  = when.defer();
+    var msg  = loaded.length > 0 ? 'Loaded: ' + loaded.join(', ') : '0 plugins loaded';
+    
+    console.log(loaded);
+    
+    admin.client.say(channel, msg);
+    def.resolve(admin.wholeConfig);
 };
 
 admin.parseKickBanCommand = function (input) {
