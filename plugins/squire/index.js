@@ -103,10 +103,7 @@ squire.scan = function () {
         var targetUpgradeable = squire.isTargetUpgradeable(cur);
         
         if (targetUpgradeable) {
-            console.log('upgrading ' + cur.nick);
             squire.performAction(cur);
-        } else {
-            console.log(cur.nick, ' not upgradeable');
         }
     }
 };
@@ -149,7 +146,7 @@ squire.performAction = function (info) {
     if (squire.isFoe(info.hostmask)) {
         //console.log(info.hostmask + ' is foe');
         squire.client.send('MODE', info.channel, '-o', info.nick);
-    }    
+    }
 };
 
 squire.isFriend = function (hostmask) { 

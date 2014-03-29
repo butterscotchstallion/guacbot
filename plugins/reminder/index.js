@@ -20,9 +20,7 @@ var reminder   = {
 
 reminder.init = function (options) {
     var client = options.client;
-    
-    db.init();
-    
+
     reminder.config       = options.config.plugins.reminder;
     var thirtySecondsInMS = 30000;
     
@@ -147,7 +145,7 @@ reminder.processPendingReminders = function (client) {
             console.log(err);
         }
         
-        var rlen = rmdrs.length;
+        var rlen = rmdrs ? rmdrs.length : 0;
         var msg  = '';
         var ids  = [];
         

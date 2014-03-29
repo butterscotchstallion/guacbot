@@ -21,12 +21,15 @@ note.reload = function (options) {
 note.loadConfig = function (options) {
     note.config          = options.config.plugins.note;
     note.config.messages = options.plugins.note.messages;
+    
+    // This has to be here in order for messages to be
+    // included
+    note.wholeConfig     = { plugins: { note : note.config } };
 };
 
 note.init            = function (options) {
     note.client      = options.client;
     note.config      = options.config;
-    note.wholeConfig = { config: { plugins: { note : note.config } } };
     note.argus       = options.argus;
     var client       = options.client;
     
@@ -53,17 +56,26 @@ note.init            = function (options) {
             if (validRecipientAndMessage && !isMessageToSelf && !isMessageToBot) {
                 var noteAddedCB = function (result, err) {
                     if (err) {
+                        var error  = hmp.getMessage({
+                            message : 'error',
+                            data    : templateData,
+                            plugin  : 'note',
+                            config  : note.wholeConfig
+                        });
+                        
                         console.log('Error adding note:', err);
+                        
+                        client.say (info.channel, error);
+                    } else {             
+                        var saved  = hmp.getMessage({
+                            message : 'saved',
+                            data    : templateData,
+                            plugin  : 'note',
+                            config  : note.wholeConfig
+                        });
+                        
+                        client.say(info.channel, saved);
                     }
-                    
-                    var saved  = hmp.getMessage({
-                        message : 'saved',
-                        data    : templateData,
-                        plugin  : 'note',
-                        config  : note.wholeConfig
-                    });
-                    
-                    client.say(info.channel, saved);
                 };
                 
                 note.add({
@@ -74,8 +86,6 @@ note.init            = function (options) {
                 }, noteAddedCB);
                 
             } else {
-                console.log(note.config);
-                
                 var ir  = hmp.getMessage({
                     message : 'invalidRecipient',
                     data    : templateData,
@@ -136,7 +146,7 @@ note.getRandomNick = function (info) {
 note.getNoteDeliveredTemplate = function (info) {
     var msg       = hmp.getMessage({
         plugin : 'note',
-        config : note.config,
+        config : note.wholeConfig,
         data   : info,
         message: 'delivered'
     });
