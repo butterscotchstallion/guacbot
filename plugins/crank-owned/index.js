@@ -3,26 +3,40 @@
  *
  */
 "use strict";
-var irc = require('irc');
+var hmp = require('../../lib/helpMessageParser');
 var co  = {
     trigger: '!crankowned'
+};
+
+co.reload = function (options) {
+    co.loadConfig(options);
+};
+
+co.loadConfig = function (options) {
+    co.wholeConfig = options.config;
 };
 
 co.init = function (options) {
     var client = options.client;
     
+    co.loadConfig(options);
+    
     options.ame.on('actionableMessage', function (info) {
         if (co.isTrigger(info.message)) {
-            client.say(info.channel, co.getIsCrankOwnedMessage());
+            client.say(info.channel, co.getIsCrankOwnedMessage(info));
         }
     });
 };
 
-co.getIsCrankOwnedMessage = function () {
-    var owned    = irc.colors.wrap('light_red',   'Yes, crank is currently owned!');
-    var notOwned = irc.colors.wrap('light_green', 'No, crank is currently not owned.');
+co.getIsCrankOwnedMessage = function (info) {
+    var messages = hmp.getMessages({
+        plugin  : 'crank-owned',
+        config  : co.wholeConfig,
+        messages: ['yes', 'no'],
+        data    : info
+    });
     
-    return Math.floor(Math.random() * 2) === 1 ? owned : notOwned;
+    return ~~(Math.random() * 2) === 1 ? messages.yes : messages.no;
 };
 
 co.isTrigger = function (input) {
