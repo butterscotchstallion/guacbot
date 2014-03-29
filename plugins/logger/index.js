@@ -39,7 +39,7 @@ logger.log = function (info, callback) {
 };
 
 logger.getRandomQuote = function (args) {
-    var cols      = ['ts', 'message'];
+    var cols      = ['id', 'ts', 'message'];
     var searchQry = args.searchQuery ? args.searchQuery.trim() : false;
     var searchCls = searchQry        ? ' AND message LIKE ?'   : '';
     var params    = [args.message, args.nick, args.channel];
@@ -74,7 +74,7 @@ logger.getRandomQuote = function (args) {
 };
 
 logger.getMentions = function (args) {
-    var cols  = ['nick', 'ts', 'channel', 'message'];
+    var cols  = ['id', 'nick', 'ts', 'channel', 'message'];
     
     /**
      * The limit is user input, so let's make sure it's valid
@@ -87,30 +87,77 @@ logger.getMentions = function (args) {
     var q     = ' SELECT ';
         q    += cols.join(',');
         q    += ' FROM logs';
-        q    += ' WHERE 1=1';
-        q    += ' AND channel    = ?';
+        q    += ' WHERE 1=1';        
         q    += ' AND message LIKE ?';
         // Don't show the message they just sent.
         // Fixes #11 - https://github.com/prgmrbill/guacbot/issues/11
         q    += ' AND message <>   ?';
+        
+        // any channel if channel not specified
+        if (args.channel) {
+            q    += ' AND channel    = ?';
+        }
+        
         q    +  ' GROUP BY message, ts'
         q    += ' ORDER BY ts DESC';
         // Can't bind parameters in a limit clause :[
         q    += ' LIMIT ' + limit;
     
-    var params    = [args.channel, 
-                     '%' + args.searchQuery + '%',
+    var params    = ['%' + args.searchQuery + '%',
                      args.message];
+    
+    if (args.channel) {
+        params.push(args.channel);
+    }
     
     //console.log('searching for ' + args.searchQuery + ' in channel ' + args.channel + ' limit ' + limit);
     //console.log('not equal to ' + args.message);
     
     // Perhaps implement a timeout here
-    var parsedQry = db.connection.query(q, params, function (err, rows, fields) {
+    var qry = db.connection.query(q, params);
+    
+    qry.on('result', function (row) {
+        args.callback(row);
+    })
+    .on('error', function (err) {
+        console.log('logger.getMentions error: ' + err);
+    });
+    
+    console.log(qry.sql);
+};
+
+logger.getContext = function (info) {
+    var limit = 3;
+    var cols  = ['id', 'nick', 'ts', 'channel', 'message'];
+    var query = [
+        '(SELECT ' + cols + ' FROM logs ',
+        'WHERE ID < ?',
+        'AND channel = ?',
+        'ORDER BY id DESC LIMIT ' + limit + ')',
+        'UNION ALL',
+        '(SELECT ' + cols + ' FROM logs ',
+        'WHERE ID = ?',
+        'AND channel = ?',
+        'ORDER BY id DESC LIMIT ' + limit + ')',
+        'UNION ALL',
+        '(SELECT ' + cols + ' FROM logs ',
+        'WHERE ID > ?',
+        'AND channel = ?',
+        'ORDER BY id ASC  LIMIT ' + limit + ')'
+    ].join("\n");
+    
+    var params    = [info.id, 
+                     info.channel, 
+                     info.id, 
+                     info.channel,
+                     info.id,
+                     info.channel];
+    
+    var parsedQry = db.connection.query(query, params, function (err, rows, fields) {
         if (err) {
-            console.log('logger.getMentions error: ' + err);
+            console.log('logger error: ' + err);
         } else {
-            args.callback(rows, err);
+            info.callback(rows, err);
         }
     });
 };
@@ -137,7 +184,7 @@ logger.searchByMessage = function (nick, searchQuery, callback) {
 };
 
 logger.getFirstMention = function (args) {
-    var cols = ['nick', 'message', 'ts', 'channel'];
+    var cols = ['id', 'nick', 'message', 'ts', 'channel'];
     var q    = ' SELECT ';
         q   += cols.join(',');
         q   += ' FROM logs';
@@ -160,7 +207,7 @@ logger.getFirstMention = function (args) {
 };
 
 logger.getLastMention = function (args) {
-    var cols = ['nick', 'message', 'ts', 'channel'];
+    var cols = ['id', 'nick', 'message', 'ts', 'channel'];
     var q    = ' SELECT ';
         q   += cols.join(',');
         q   += ' FROM logs';
@@ -183,7 +230,7 @@ logger.getLastMention = function (args) {
 };
 
 logger.getLastMessage = function (args) {
-    var cols = ['nick', 'host', 'message', 'ts', 'channel'];
+    var cols = ['id', 'nick', 'host', 'message', 'ts', 'channel'];
     
     /**
      * The limit is user input, so let's make sure it's valid

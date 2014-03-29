@@ -13,7 +13,10 @@ var ignore = require('../../plugins/ignore/');
 var hbs    = require('handlebars');
 var moment = require('moment');
 var _      = require('underscore');
-var quote  = {};
+var quote  = {
+    line  : 1,
+    quotes: {}
+};
 
 quote.init = function (options) {
     var client = options.client;
@@ -37,9 +40,14 @@ quote.init = function (options) {
                             message    : result.message,
                             date       : quote.getFormattedDate(result.ts),
                             searchQuery: searchQry,
+                            line       : quote.line
                         });
                         
                         client.say(info.channel, msg);
+                        
+                        quote.quotes[quote.line] = result.id;                            
+                        quote.line++;
+                        
                     } else {
                         client.say(info.channel, 'No quotes found');
                     }
@@ -55,15 +63,70 @@ quote.init = function (options) {
                 
             break;
             
+            case 'explain':
+                var context = info.words.slice(2);
+                var query   = parseInt(context[0], 10) || 1;
+                
+                console.log('ctx: ', context);
+                console.log('query: ', query);
+                
+                if (typeof quote.quotes[query] !== 'undefined') {
+                    var contextID = quote.quotes[query];
+                    
+                    var callback = function (rows) {
+                        _.each(rows, function (k, j) {
+                            msg = quote.getQuoteTemplate({
+                                nick       : rows[j].nick,
+                                message    : rows[j].message,
+                                date       : quote.getFormattedDate(rows[j].ts),
+                                line       : quote.line,
+                                contextID  : contextID,
+                                id         : rows[j].id
+                            });
+                            
+                            client.say(info.channel, msg);
+                            
+                            quote.quotes[quote.line] = rows[j].id;                            
+                            quote.line++;
+                        });
+                    };
+                    
+                    logger.getContext({
+                        id      : contextID,
+                        callback: callback,
+                        channel : info.channel
+                    });
+                    
+                } else {
+                    client.say(info.channel, 'Error, lol');
+                }
+            break;
+            
             /**
              * Finds all mentions of a specific phrase with an optional
              * limit on results
              *
              */
             case 'mention':
+            case 'mentionall':
                 // Search query is everything after the first two words, which are the bot's nick
                 // and the 'mention' command
-                var query         = info.words.slice(2);
+                // n (0) mention (1) query (2)
+                var query    = info.words.slice(2);
+                var channel  = info.channel;
+                quote.line   = 1;
+                // Use this to build a map of number -> log id
+                quote.quotes = {};
+                
+                if (info.words[2].charAt(0) === '#') {
+                    channel = info.words[2];
+                    query   = info.words.slice(3);
+                    
+                    console.log(query);
+                } else {
+                    console.log(info.words[2].charAt(0));
+                }
+                
                 var minlen        = 3;
                 
                 // The limit should be the last integer in the array of words
@@ -84,26 +147,33 @@ quote.init = function (options) {
                 if (query.length >= minlen) {
                     var msg, fmtDate;
                     
-                    var cb = function (results, err) {
-                        if (!err && results.length > 0) {
-                            for (var j = 0; j < results.length; j++) {
-                                msg     = quote.getQuoteTemplate({
-                                    nick       : results[j].nick,
-                                    message    : results[j].message,
-                                    date       : quote.getFormattedDate(results[j].ts),
-                                    searchQuery: query,
-                                });
-                                
-                                client.say(info.channel, msg);
-                            }
+                    var cb = function (row) {
+                        if (row) {
+                            msg = quote.getQuoteTemplate({
+                                nick       : row.nick,
+                                message    : row.message,
+                                date       : quote.getFormattedDate(row.ts),
+                                searchQuery: query,
+                                line       : quote.line
+                            });
+                            
+                            client.say(info.channel, msg);
+                            
+                            quote.quotes[quote.line] = row.id;                            
+                            quote.line++;
+                            
                         } else {
                             client.say(info.channel, 'No quotes found');
                         }
                     };
                     
+                    if (info.command === 'mentionall') {
+                        channel = null;
+                    }
+                    
                     logger.getMentions({
                         nick       : info.nick,
-                        channel    : info.channel,
+                        channel    : channel,
                         searchQuery: query,
                         limit      : limit,
                         callback   : cb,
@@ -128,9 +198,13 @@ quote.init = function (options) {
                                     message    : result.message,
                                     date       : quote.getFormattedDate(result.ts),
                                     searchQuery: query,
+                                    line       : quote.line
                                 });
                                 
                                 client.say(info.channel, msg);
+                                
+                                quote.quotes[quote.line] = result.id;                            
+                                quote.line++;
                             } else {
                                 client.say(info.channel, 'No quotes found');
                             }
@@ -140,7 +214,8 @@ quote.init = function (options) {
                             searchQuery: query,
                             channel    : info.channel,
                             message    : info.message,
-                            callback   : firstMentionCallback
+                            callback   : firstMentionCallback,
+                            line       : quote.line
                         });
                         
                     } else {
@@ -158,10 +233,14 @@ quote.init = function (options) {
                             var msg  = quote.getQuoteTemplate({
                                 nick   : targetNick,
                                 message: result.message,
-                                date   : quote.getFormattedDate(result.ts)
+                                date   : quote.getFormattedDate(result.ts),
+                                line   : quote.line
                             });
                             
                             client.say(info.channel, msg);
+                            
+                            quote.quotes[quote.line] = result.id;
+                            quote.line++;
                         } else {
                             client.say(info.channel, 'No quotes found');
                         }
@@ -189,9 +268,13 @@ quote.init = function (options) {
                                     message    : result.message,
                                     date       : quote.getFormattedDate(result.ts),
                                     searchQuery: query,
+                                    line       : quote.line
                                 });
                                 
                                 client.say(info.channel, msg);
+                                
+                                quote.quotes[quote.line] = result.id;                         
+                                quote.line++;
                             } else {
                                 client.say(info.channel, 'No quotes found');
                             }
@@ -201,7 +284,8 @@ quote.init = function (options) {
                             searchQuery: query,
                             channel    : info.channel,
                             callback   : lastMentionCallback,
-                            message    : info.message
+                            message    : info.message,
+                            line       : quote.line
                         });
                     } else {
                         client.say(info.channel, 'Search query must be at least ' + minlen + ' characters');
@@ -214,16 +298,19 @@ quote.init = function (options) {
                             console.log(err);
                         }
                         
-                        console.log(result);
-                        
                         if (!err && result) {
                             var msg  = quote.getQuoteTemplate({
                                 nick   : targetNick,
                                 message: result.message,
-                                date   : quote.getFormattedDate(result.ts)
+                                date   : quote.getFormattedDate(result.ts),
+                                line   : quote.line
                             });
                             
                             client.say(info.channel, msg);
+                            
+                            quote.quotes[quote.line] = result.id;                         
+                            quote.line++;
+                                
                         } else {
                             client.say(info.channel, 'No quotes found');
                         }
@@ -233,7 +320,8 @@ quote.init = function (options) {
                         nick    : targetNick,
                         channel : info.channel,
                         message : info.message,
-                        callback: lastMessageCallback
+                        callback: lastMessageCallback,
+                        line    : quote.line
                     });
                 }
             break;
@@ -242,7 +330,8 @@ quote.init = function (options) {
 };
 
 quote.getQuoteTemplate = function (info) {
-    var data         = info;
+    var data       = info;
+    var lineNumber = '[{{{line}}}] ';
     
     // Bold search query
     if (typeof info.searchQuery !== 'undefined') {
@@ -253,13 +342,24 @@ quote.getQuoteTemplate = function (info) {
     }
     
     var quoteTpl     = '{{{date}}} <\u0002{{{nick}}}\u0002> {{{message}}}';
-    var tpl          = hbs.compile(quoteTpl);
+    
+    // If we're doing explain, mark the line for which we were looking
+    if (typeof info.contextID !== 'undefined') {
+        if (info.contextID === info.id) {
+            quoteTpl     = "-> "   + quoteTpl;
+        }
+    } else {
+        // only line numbers for non-explain
+        quoteTpl   = lineNumber + quoteTpl
+    }
+    
+    var tpl        = hbs.compile(quoteTpl);
     
     return tpl(data);
 };
 
 quote.getFormattedDate = function (timestamp) {
-    return moment(timestamp).format('MMM DD YYYY hh:mm:ssA')
+    return moment(timestamp).format("MM/DD/YY hh:mmA");
 };
 
 quote.getRandomQuote = function (targetNick, searchQry, callback) {
