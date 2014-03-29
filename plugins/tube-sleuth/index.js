@@ -64,8 +64,6 @@ sleuth.init = function (options) {
 };
 
 sleuth.getTitleTemplate = function (video) {
-    console.log(video);
-    
     return hmp.getMessage({
         plugin : 'tube-sleuth',
         data   : video,
@@ -113,10 +111,10 @@ sleuth.getRandomSearchResult = function (query, callback) {
 sleuth.getFirstSearchResult = function (query, callback) {
     sleuth.getYoutubeSearchResponse(query, function (video) {
         if (typeof video === 'object') {
-            callback(_.extend({
+            callback(_.extend(video, {
                 title: video.title,
                 link : 'https://youtube.com/watch?v=' + video.id
-            }, video));
+            }));
         } else {
             callback(false);
         }
