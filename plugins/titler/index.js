@@ -462,7 +462,7 @@ titler.getYoutubeVideoTitleDetails = function (json) {
         description: desc,
         viewCount  : viewCount > 0 ? commafy(viewCount) : 0,
         rating     : rating.toFixed(2),
-        likeCount  : likeCount
+        likeCount  : likeCount > 0 ? commafy(likeCount) : 0
     };
 };
 
