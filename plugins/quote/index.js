@@ -9,21 +9,35 @@
 var moment = require('moment');
 var logger = require('../../plugins/logger');
 var parser = require('../../lib/messageParser');
+var hmp    = require('../../lib/helpMessageParser');
 var ignore = require('../../plugins/ignore/');
 var hbs    = require('handlebars');
 var moment = require('moment');
 var _      = require('underscore');
 var quote  = {
-    line  : 1,
-    quotes: {}
+    line       : 1,
+    quotes     : {}
+};
+
+quote.reload = function (options) {
+    quote.loadConfig(options);
+};
+
+quote.loadConfig = function (options) {
+    quote.wholeConfig = options.config;
 };
 
 quote.init = function (options) {
     var client = options.client;
     
+    quote.loadConfig(options);
+    
     options.ame.on('actionableMessageAddressingBot', function (info) {
         switch (info.command) {
             case 'quote':
+                quote.line     = 1;
+                // Use this to build a map of number -> log id
+                quote.quotes   = {};
                 var targetNick = info.words[2] && info.words[2].length > 0 ? info.words[2].trim() : info.nick;
                 var searchQry  = false;
                 
@@ -33,8 +47,6 @@ quote.init = function (options) {
                 
                 var quoteCallback = function (result, err) {
                     if (!err && result) {
-                        console.log(result);
-                        
                         var msg  = quote.getQuoteTemplate({
                             nick       : targetNick,
                             message    : result.message,
@@ -45,7 +57,10 @@ quote.init = function (options) {
                         
                         client.say(info.channel, msg);
                         
-                        quote.quotes[quote.line] = result.id;                            
+                        quote.quotes[quote.line] = {
+                            id     : result.id,
+                            channel: info.channel
+                        };          
                         quote.line++;
                         
                     } else {
@@ -63,6 +78,67 @@ quote.init = function (options) {
                 
             break;
             
+            case 'seen':
+                var words      = info.words;
+                var command    = words[1];
+                var nick       = words[2];
+                var limit      = words[3];                
+                var notSeenMsg = hmp.getMessage({
+                    config  : quote.wholeConfig,
+                    plugin  : 'quote',
+                    message : ['error'],
+                    data    : {}
+                });
+                
+                if (nick.length > 0) {
+                    var seenCB = function (result, err) {
+                        if (!err && result.length > 0) {
+                            var lastSeen, message;
+                            
+                            quote.line     = 1;
+                            // Use this to build a map of number -> log id
+                            quote.quotes   = {};
+                            
+                            for (var j = 0; j < result.length; j++) {
+                                if (typeof result[j].nick === 'string') {
+                                    lastSeen = moment(result[j].ts).fromNow();
+                                    message  = hmp.getMessage({
+                                        config  : quote.wholeConfig,
+                                        plugin  : 'quote',
+                                        message : ['ok'],
+                                        data    : {
+                                            lastSeen: lastSeen,
+                                            nick    : result[j].nick,
+                                            message : result[j].message
+                                        }
+                                    });
+                                    
+                                    client.say(info.channel, message);
+                                    
+                                    quote.quotes[quote.line] = {
+                                        id     : result.id,
+                                        channel: info.channel
+                                    };                                   
+                                }
+                            }
+                            
+                        } else {
+                            client.say(info.channel, notSeenMsg);
+                        }
+                    };
+                    
+                    var seenInfo = {
+                        nick    : nick,
+                        channel : info.channel,
+                        message : info.message,
+                        callback: seenCB,
+                        limit   : limit
+                    };
+                    
+                    logger.getLastMessage(seenInfo);
+                }
+            break;
+            
             case 'explain':
                 var context = info.words.slice(2);
                 var query   = parseInt(context[0], 10) || 1;
@@ -71,9 +147,10 @@ quote.init = function (options) {
                 console.log('query: ', query);
                 
                 if (typeof quote.quotes[query] !== 'undefined') {
-                    var contextID = quote.quotes[query];
+                    var q         = quote.quotes[query];
+                    var contextID = q.id;
                     
-                    var callback = function (rows) {
+                    var callback  = function (rows) {
                         _.each(rows, function (k, j) {
                             msg = quote.getQuoteTemplate({
                                 nick       : rows[j].nick,
@@ -86,7 +163,11 @@ quote.init = function (options) {
                             
                             client.say(info.channel, msg);
                             
-                            quote.quotes[quote.line] = rows[j].id;                            
+                            quote.quotes[quote.line] = {
+                                id     : rows[j].id,
+                                channel: info.channel
+                            };
+                            
                             quote.line++;
                         });
                     };
@@ -94,7 +175,7 @@ quote.init = function (options) {
                     logger.getContext({
                         id      : contextID,
                         callback: callback,
-                        channel : info.channel
+                        channel : q.channel
                     });
                     
                 } else {
@@ -109,6 +190,7 @@ quote.init = function (options) {
              */
             case 'mention':
             case 'mentionall':
+            case 'rmention':
                 // Search query is everything after the first two words, which are the bot's nick
                 // and the 'mention' command
                 // n (0) mention (1) query (2)
@@ -121,10 +203,6 @@ quote.init = function (options) {
                 if (info.words[2].charAt(0) === '#') {
                     channel = info.words[2];
                     query   = info.words.slice(3);
-                    
-                    console.log(query);
-                } else {
-                    console.log(info.words[2].charAt(0));
                 }
                 
                 var minlen        = 3;
@@ -159,7 +237,10 @@ quote.init = function (options) {
                             
                             client.say(info.channel, msg);
                             
-                            quote.quotes[quote.line] = row.id;                            
+                            quote.quotes[quote.line] = {
+                                id     : row.id,
+                                channel: channel
+                            };       
                             quote.line++;
                             
                         } else {
@@ -171,13 +252,19 @@ quote.init = function (options) {
                         channel = null;
                     }
                     
+                    var noResultsCB = function () {
+                        client.say(info.channel, 'No quotes found');
+                    };
+                    
                     logger.getMentions({
                         nick       : info.nick,
                         channel    : channel,
                         searchQuery: query,
                         limit      : limit,
                         callback   : cb,
-                        message    : info.message
+                        message    : info.message,
+                        order      : info.command === 'rmention' ? 'RAND()' : 'ts',
+                        noResultsCB: noResultsCB
                     });
                     
                 } else {
@@ -187,11 +274,15 @@ quote.init = function (options) {
             
             case 'first':
                 if (info.words[2] === 'mention') {
-                    var query  = info.words.slice(3).join(' ');
-                    var minlen = 3;
-                    
+                    var query    = info.words.slice(3).join(' ');
+                    var minlen   = 3;
+                    quote.line   = 1;
+                    // Use this to build a map of number -> log id
+                    quote.quotes = {};
+                
                     if (query.length >= minlen) {
                         var firstMentionCallback = function (result) {
+                            
                             if (result && result.message !== info.message) {
                                 var msg  = quote.getQuoteTemplate({
                                     nick       : result.nick,
@@ -203,7 +294,10 @@ quote.init = function (options) {
                                 
                                 client.say(info.channel, msg);
                                 
-                                quote.quotes[quote.line] = result.id;                            
+                                quote.quotes[quote.line] = {
+                                    id     : result.id,
+                                    channel: info.channel
+                                };                            
                                 quote.line++;
                             } else {
                                 client.say(info.channel, 'No quotes found');
@@ -224,6 +318,10 @@ quote.init = function (options) {
                     
                 } else if (info.words[2] === 'quote') {
                     var targetNick = info.words[3] && info.words[3].length > 0 ? info.words[3].trim() : nick;
+                    quote.line     = 1;
+                    // Use this to build a map of number -> log id
+                    quote.quotes   = {};
+                    
                     var quoteCB    = function (result, err) {
                         if (err) {             
                             console.log(err);
@@ -239,7 +337,10 @@ quote.init = function (options) {
                             
                             client.say(info.channel, msg);
                             
-                            quote.quotes[quote.line] = result.id;
+                            quote.quotes[quote.line] = {
+                                id     : result.id,
+                                channel: info.channel
+                            };
                             quote.line++;
                         } else {
                             client.say(info.channel, 'No quotes found');
@@ -257,8 +358,11 @@ quote.init = function (options) {
             
             case 'last':
                 if (info.words[2] === 'mention') {
-                    var query  = info.words.slice(3).join(' ');
-                    var minlen = 3;
+                    var query    = info.words.slice(3).join(' ');
+                    var minlen   = 3;
+                    quote.line   = 1;
+                    // Use this to build a map of number -> log id
+                    quote.quotes = {};
                     
                     if (query.length >= minlen) {
                         var lastMentionCallback = function (result, err) {
@@ -273,7 +377,10 @@ quote.init = function (options) {
                                 
                                 client.say(info.channel, msg);
                                 
-                                quote.quotes[quote.line] = result.id;                         
+                                quote.quotes[quote.line] = {
+                                    id     : result.id,
+                                    channel: info.channel
+                                };                      
                                 quote.line++;
                             } else {
                                 client.say(info.channel, 'No quotes found');
@@ -292,7 +399,11 @@ quote.init = function (options) {
                     }
                     
                 } else if (info.words[2] === 'quote') {                
-                    var targetNick          = info.words[3] && info.words[3].length > 0 ? info.words[3].trim() : nick;
+                    var targetNick = info.words[3] && info.words[3].length > 0 ? info.words[3].trim() : nick;
+                    quote.line     = 1;
+                    // Use this to build a map of number -> log id
+                    quote.quotes   = {};
+                
                     var lastMessageCallback = function (result, err) {
                         if (err) {                            
                             console.log(err);
@@ -308,7 +419,10 @@ quote.init = function (options) {
                             
                             client.say(info.channel, msg);
                             
-                            quote.quotes[quote.line] = result.id;                         
+                            quote.quotes[quote.line] = {
+                                id     : result.id,
+                                channel: info.channel
+                            };                       
                             quote.line++;
                                 
                         } else {
@@ -333,6 +447,13 @@ quote.getQuoteTemplate = function (info) {
     var data       = info;
     var lineNumber = '[{{{line}}}] ';
     
+    var messages = hmp.getMessages({
+        messages: ['quote', 'explain'],
+        plugin  : 'quote',
+        config  : note.wholeConfig,
+        data    : info
+    });
+    
     // Bold search query
     if (typeof info.searchQuery !== 'undefined') {
         var boldQry  = "\u0002" + data.searchQuery + "\u0002";
@@ -346,7 +467,7 @@ quote.getQuoteTemplate = function (info) {
     // If we're doing explain, mark the line for which we were looking
     if (typeof info.contextID !== 'undefined') {
         if (info.contextID === info.id) {
-            quoteTpl     = "-> "   + quoteTpl;
+            quoteTpl     = "\u000304-> "   + quoteTpl + "\u000304";
         }
     } else {
         // only line numbers for non-explain
