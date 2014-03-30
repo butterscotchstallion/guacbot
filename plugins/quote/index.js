@@ -135,9 +135,6 @@ quote.init = function (options) {
                 var context = info.words.slice(2);
                 var query   = parseInt(context[0], 10) || 1;
                 
-                console.log('ctx: ', context);
-                console.log('query: ', query);
-                
                 if (typeof quote.quotes[query] !== 'undefined') {
                     var q         = quote.quotes[query];
                     var contextID = q.id;
@@ -171,7 +168,14 @@ quote.init = function (options) {
                     });
                     
                 } else {
-                    client.say(info.channel, 'Error, lol');
+                    var msg = hmp.getMessage({
+                        plugin : 'quote',
+                        config : quote.wholeConfig,
+                        data   : info,
+                        message: 'error'
+                    });
+                    
+                    client.say(info.channel, msg);
                 }
             break;
             
@@ -202,6 +206,14 @@ quote.init = function (options) {
                 // The limit should be the last integer in the array of words
                 var mightBeALimit = _.last(info.words);
                 var limit         = 1;
+                var messages = hmp.getMessages({
+                    plugin  : 'quote',
+                    config  : quote.wholeConfig,
+                    data    : _.extend({
+                        minLen: minlen
+                    }, info),
+                    messages: ['noResults', 'minSearchQuery']
+                });
                 
                 // If the last word looks like an integer, then the query should be everything
                 // from the third word in the message, up to right before the limit. Meaning,
@@ -236,7 +248,7 @@ quote.init = function (options) {
                             quote.line++;
                             
                         } else {
-                            client.say(info.channel, 'No quotes found');
+                            client.say(info.channel, messages.noQuotesFound);
                         }
                     };
                     
@@ -245,7 +257,7 @@ quote.init = function (options) {
                     }
                     
                     var noResultsCB = function () {
-                        client.say(info.channel, 'No quotes found');
+                        client.say(info.channel, messages.noQuotesFound);
                     };
                     
                     logger.getMentions({
@@ -260,7 +272,7 @@ quote.init = function (options) {
                     });
                     
                 } else {
-                    client.say(info.channel, 'Search query must be at least ' + minlen + ' characters');
+                    client.say(info.channel, messages.minSearchQuery);
                 }
             break;
             
@@ -272,6 +284,15 @@ quote.init = function (options) {
                     // Use this to build a map of number -> log id
                     quote.quotes = {};
                 
+                    var messages = hmp.getMessages({
+                        plugin  : 'quote',
+                        config  : quote.wholeConfig,
+                        data    : _.extend({
+                            minLen: minlen
+                        }, info),
+                        messages: ['noResults', 'minSearchQuery']
+                    });
+                    
                     if (query.length >= minlen) {
                         var firstMentionCallback = function (result) {
                             
@@ -292,7 +313,7 @@ quote.init = function (options) {
                                 };                            
                                 quote.line++;
                             } else {
-                                client.say(info.channel, 'No quotes found');
+                                client.say(info.channel, messages.noResults);
                             }
                         };
                         
@@ -305,7 +326,7 @@ quote.init = function (options) {
                         });
                         
                     } else {
-                        client.say(info.channel, 'Search query must be at least ' + minlen + ' characters');
+                        client.say(info.channel, messages.minSearchQuery);
                     }
                     
                 } else if (info.words[2] === 'quote') {
@@ -335,7 +356,7 @@ quote.init = function (options) {
                             };
                             quote.line++;
                         } else {
-                            client.say(info.channel, 'No quotes found');
+                            client.say(info.channel, messages.noResults);
                         }
                     };
                     
@@ -355,6 +376,14 @@ quote.init = function (options) {
                     quote.line   = 1;
                     // Use this to build a map of number -> log id
                     quote.quotes = {};
+                    var messages = hmp.getMessages({
+                        plugin  : 'quote',
+                        config  : quote.wholeConfig,
+                        data    : _.extend({
+                            minLen: minlen
+                        }, info),
+                        messages: ['noResults', 'minSearchQuery']
+                    });
                     
                     if (query.length >= minlen) {
                         var lastMentionCallback = function (result, err) {
@@ -375,7 +404,7 @@ quote.init = function (options) {
                                 };                      
                                 quote.line++;
                             } else {
-                                client.say(info.channel, 'No quotes found');
+                                client.say(info.channel, messages.noResults);
                             }
                         };
                         
@@ -387,7 +416,7 @@ quote.init = function (options) {
                             line       : quote.line
                         });
                     } else {
-                        client.say(info.channel, 'Search query must be at least ' + minlen + ' characters');
+                        client.say(info.channel, messages.minSearchQuery);
                     }
                     
                 } else if (info.words[2] === 'quote') {                
@@ -395,7 +424,15 @@ quote.init = function (options) {
                     quote.line     = 1;
                     // Use this to build a map of number -> log id
                     quote.quotes   = {};
-                
+                    var messages   = hmp.getMessages({
+                        plugin  : 'quote',
+                        config  : quote.wholeConfig,
+                        data    : _.extend({
+                            minLen: minlen
+                        }, info),
+                        messages: ['noResults', 'minSearchQuery']
+                    });
+                    
                     var lastMessageCallback = function (result, err) {
                         if (err) {                            
                             console.log(err);
@@ -418,7 +455,7 @@ quote.init = function (options) {
                             quote.line++;
                                 
                         } else {
-                            client.say(info.channel, 'No quotes found');
+                            client.say(info.channel, messages.noResults);
                         }
                     };
                     
