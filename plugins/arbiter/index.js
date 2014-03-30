@@ -195,7 +195,7 @@ arbiter.getAnswer = function () {
 };
 
 arbiter.isYesOrNoQuestion = function (input) {
-    return input.indexOf('y/n') !== -1;
+    return input.toLowerCase().indexOf('y/n') !== -1;
 };
 
 module.exports = arbiter;
