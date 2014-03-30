@@ -123,7 +123,7 @@ logger.getMentions = function (args) {
         console.log('logger.getMentions error: ' + err);
     });
     
-    console.log(qry.sql);
+    //console.log(qry.sql);
 };
 
 logger.getContext = function (info) {
