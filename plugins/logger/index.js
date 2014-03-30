@@ -84,6 +84,12 @@ logger.getMentions = function (args) {
      */
     var limit = /^[1-5]$/.test(args.limit) ? args.limit : 1;
     
+    var validOrders = ['RAND()', 'ts'];
+    var order       = 'ts';
+    if (validOrders.indexOf(args.order) !== -1) {
+        order = args.order;
+    }
+    
     var q     = ' SELECT ';
         q    += cols.join(',');
         q    += ' FROM logs';
@@ -99,7 +105,7 @@ logger.getMentions = function (args) {
         }
         
         q    +  ' GROUP BY message, ts'
-        q    += ' ORDER BY ts DESC';
+        q    += ' ORDER BY ' + order + ' DESC';
         // Can't bind parameters in a limit clause :[
         q    += ' LIMIT ' + limit;
     
@@ -114,16 +120,23 @@ logger.getMentions = function (args) {
     //console.log('not equal to ' + args.message);
     
     // Perhaps implement a timeout here
-    var qry = db.connection.query(q, params);
+    var qry  = db.connection.query(q, params);
+    var rows = [];
     
     qry.on('result', function (row) {
         args.callback(row);
+        rows.push(row);
     })
     .on('error', function (err) {
         console.log('logger.getMentions error: ' + err);
+    })
+    .on('end', function () {
+        if (rows.length === 0 && typeof args.noResultsCB === 'function') {
+            args.noResultsCB();
+        }
     });
     
-    //console.log(qry.sql);
+    console.log(qry.sql);
 };
 
 logger.getContext = function (info) {

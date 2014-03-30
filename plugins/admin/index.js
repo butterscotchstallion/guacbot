@@ -4,7 +4,6 @@
  */
 "use strict";
 
-var identifier = require('../nickserv-auto-identify/');
 var moment     = require('moment');
 var minimatch  = require('minimatch');
 var timeParser = require("../../lib/timeUnitParser");
@@ -37,9 +36,6 @@ admin.loadConfig = function (options) {
     admin.getAdmins()
          .then(function (admins) {
             admin.pluginCfg.admins = admins;
-         })
-         .then(function () {
-            
          });
     
     admin.getCommandTriggers()
@@ -195,10 +191,6 @@ admin.executeCommand = function (info) {
                 onPluginsLoaded  : admin.onPluginsLoaded,
                 channel          : info.channel
             });
-        break;
-        
-        case 'identify':
-            identifier.identify(info.client, info.pluginCfg.password);
         break;
         
         case 'kickban':

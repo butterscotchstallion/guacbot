@@ -32,7 +32,7 @@ co.getIsCrankOwnedMessage = function (info) {
     var messages = hmp.getMessages({
         plugin  : 'crank-owned',
         config  : co.wholeConfig,
-        messages: ['yes', 'no'],
+        messages: ['yes', 'no', 'maybe', 'error'],
         data    : info
     });
     

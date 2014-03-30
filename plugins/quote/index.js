@@ -79,6 +79,7 @@ quote.init = function (options) {
             break;
             
             case 'seen':
+                var message    = '';
                 var words      = info.words;
                 var command    = words[1];
                 var nick       = words[2];
@@ -91,37 +92,28 @@ quote.init = function (options) {
                 });
                 
                 if (nick.length > 0) {
-                    var seenCB = function (result, err) {
-                        if (!err && result.length > 0) {
-                            var lastSeen, message;
-                            
+                    var seenCB = function (rows, err) {
+                        if (rows) {
                             quote.line     = 1;
                             // Use this to build a map of number -> log id
                             quote.quotes   = {};
                             
-                            for (var j = 0; j < result.length; j++) {
-                                if (typeof result[j].nick === 'string') {
-                                    lastSeen = moment(result[j].ts).fromNow();
-                                    message  = hmp.getMessage({
-                                        config  : quote.wholeConfig,
-                                        plugin  : 'quote',
-                                        message : ['ok'],
-                                        data    : {
-                                            lastSeen: lastSeen,
-                                            nick    : result[j].nick,
-                                            message : result[j].message
-                                        }
-                                    });
-                                    
-                                    client.say(info.channel, message);
-                                    
-                                    quote.quotes[quote.line] = {
-                                        id     : result.id,
-                                        channel: info.channel
-                                    };                                   
-                                }
-                            }
-                            
+                            _.each(rows, function (k, j) {
+                                message = quote.getQuoteTemplate({
+                                    nick       : rows[j].nick,
+                                    message    : rows[j].message,
+                                    date       : quote.getFormattedDate(rows[j].ts),
+                                    line       : quote.line
+                                });
+                                
+                                client.say(info.channel, message);
+                                
+                                quote.quotes[quote.line] = {
+                                    id     : rows[j].id,
+                                    channel: info.channel
+                                };
+                                quote.line++;
+                            }); 
                         } else {
                             client.say(info.channel, notSeenMsg);
                         }
@@ -450,7 +442,7 @@ quote.getQuoteTemplate = function (info) {
     var messages = hmp.getMessages({
         messages: ['quote', 'explain'],
         plugin  : 'quote',
-        config  : note.wholeConfig,
+        config  : quote.wholeConfig,
         data    : info
     });
     

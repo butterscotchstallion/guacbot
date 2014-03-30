@@ -200,7 +200,7 @@ sleuth.parseResponse = function (response) {
         var rating  = video['gd$rating'].average.toFixed(2);
         var views   = video['yt$statistics'].viewCount;
         var likes   = video['yt$rating'].numLikes;
-
+        
         var commafy = function numberWithCommas(x) {
             return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         };
