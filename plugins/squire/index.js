@@ -86,6 +86,10 @@ squire.init = function (options) {
         client.send('MODE', info.channel, '-b', info.hostmask);
     });
     
+    client.addListener('join', function (nick, message) {
+        squire.scan();
+    });
+    
     var tenSeconds = 10000;
     
     setInterval(function () {
