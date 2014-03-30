@@ -27,13 +27,16 @@ weatherPlugin.init = function (options) {
     
     options.ame.on('actionableMessageAddressingBot', function (info) {
         var query                = info.words.slice(2, info.words.length).join(' ').trim();
+        
         var templateData         = _.extend(info, {
             botNick: client.currentNick
         });
-        var templateMessages = [
+        
+        var templateMessages     = [
             'noResults', 
             'usage',
-            'weatherSpyUsage'
+            'weatherSpyUsage',
+            'noStoredLocation'
         ];
         
         var messages = hmp.getMessages({
@@ -43,7 +46,7 @@ weatherPlugin.init = function (options) {
             config  : options.config
         });
         
-        var storedCB = function (stored, err) {
+        var storedCB = function (stored, err, isWeatherSpy) {
             if (!err && stored && stored.location) {
                 weatherPlugin.sendResponse(_.extend({
                     query : stored.location,
@@ -51,14 +54,28 @@ weatherPlugin.init = function (options) {
                     stored: stored
                 }, info));
             } else {
-                client.say(info.channel, messages.usage);
+                var msg = messages.usage;
+                
+                if (isWeatherSpy) {
+                    msg = messages.noStoredLocation;
+                }
+                
+                client.say(info.channel, msg);
             }
         };
         
         switch (info.command) {
             case 'weatherspy':
                 if (query) {
-                    weatherPlugin.getStoredLocationByNick(query, storedCB);
+                    /** 
+                     * We want to let the callback know that this is weatherspy
+                     * because if there are no results, we want to let them know
+                     * instead of printing the usage message
+                     *
+                     */
+                    weatherPlugin.getStoredLocationByNick(query, function (stored, err) {
+                        storedCB(stored, err, true);
+                    });
                 } else {
                     client.say(info.channel, messages.weatherSpyUsage);
                 }
