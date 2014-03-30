@@ -276,21 +276,17 @@ titler.sendHTTPRequest = function (options, websiteCallback, imageCallback) {
                     var isImage = titler.isImage(type);
                     
                     if (isImage) {
-                        //repost.isRepost(null, url, function (rpst) {
-                        //    if (rpst === false) {
-                                titler.downloadFile(options.uri, function (filename, length) {
-                                    console.log('file downloaded:', filename);
-                                    
-                                    titler.getImageInfo(filename, function (err, img, stderr) {
-                                        if (err || stderr) {
-                                            console.log('Error getting image info: ', err, stderr);
-                                        } else {
-                                            imageCallback(err, img, stderr, length, filename);
-                                        }
-                                    });
-                                });
-                            //}
-                        //});
+                        titler.downloadFile(options.uri, function (filename, length) {
+                            console.log('file downloaded:', filename);
+                            
+                            titler.getImageInfo(filename, function (err, img, stderr) {
+                                if (err || stderr) {
+                                    console.log('Error getting image info: ', err, stderr);
+                                } else {
+                                    imageCallback(err, img, stderr, length, filename);
+                                }
+                            });
+                        });
                     }
                 } else {
                     //console.log('not an image:', type);
