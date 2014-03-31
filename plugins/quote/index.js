@@ -25,6 +25,7 @@ quote.reload = function (options) {
 
 quote.loadConfig = function (options) {
     quote.wholeConfig = options.config;
+    quote.botNick     = options.config.nick;
 };
 
 quote.init = function (options) {
@@ -60,7 +61,7 @@ quote.init = function (options) {
                         quote.quotes[quote.line] = {
                             id     : result.id,
                             channel: info.channel
-                        };          
+                        };
                         quote.line++;
                         
                     } else {
@@ -78,6 +79,171 @@ quote.init = function (options) {
                 
             break;
             
+            case 'wordcountme':
+            case 'wordcountspy':
+                var query      = info.words[1];
+                var channel    = info.channel;
+                var targetNick = info.nick;
+                
+                if (query && targetNick) {
+                    if (info.words[2].charAt(0) === '#') {
+                        channel = info.words[2];
+                        query   = info.words.slice(3);
+                    }
+                    
+                    if (info.command === 'wordcountspy') {
+                        if (info.words[2].charAt(0) === '#') {
+                            targetNick = info.words[3];
+                            query      = info.words.slice(4).join(' ');
+                        } else {
+                            targetNick = info.words[2];
+                            query      = info.words.slice(3).join(' ');
+                        }
+                    }
+                    
+                    console.log(targetNick, channel, query);
+                    
+                    var cb = function (row) {
+                        row.wordcount = quote.commafy(row.wordcount);
+                        
+                        var msg = hmp.getMessage({
+                            plugin : 'quote',
+                            config : quote.wholeConfig,
+                            message: 'wordcountMeOK',
+                            data   : _.extend({
+                                nick: targetNick,
+                            }, row)
+                        });
+                        
+                        client.say(info.channel, msg);
+                    };
+                    
+                    var noResultsCB = function () {
+                        var msg = hmp.getMessage({
+                            plugin : 'quote',
+                            config : quote.wholeConfig,
+                            message: 'wordcountNoResults'
+                        });
+                        
+                        client.say(info.channel, msg);
+                    };
+                    
+                    logger.getWordCountByNick({
+                        callback   : cb,
+                        channel    : channel,
+                        noResultsCB: noResultsCB,
+                        searchQuery: query,
+                        nick       : targetNick
+                    });
+                } else {
+                    var message;
+                    
+                    switch (info.command) {
+                        case 'wordcountme':
+                            message = 'wordcountmeUsage';
+                        break;
+                        
+                        case 'wordcountspy':
+                            message = 'wordcountspyUsage';
+                        break;
+                    }
+                    
+                    var msg = hmp.getMessage({
+                        plugin  : 'quote',
+                        config  : quote.wholeConfig,
+                        message : message,
+                        data    : {
+                            botNick: quote.botNick
+                        }
+                    });
+                    
+                    client.say(info.channel, msg);
+                }
+            break;
+            
+            case 'wordcount':
+                var query   = info.words[1];
+                var channel = info.channel;
+                
+                if (query) {
+                    if (info.words[2].charAt(0) === '#') {
+                        channel = info.words[2];
+                        query   = info.words.slice(3).join(' ');
+                    }
+                    
+                    var cb = function (rows) {
+                        var nickLengths = [];
+                        
+                        // Iterate all rows and find the longest
+                        // nick so we can pad the others and they
+                        // line up
+                        _.each(rows, function (k, j) {
+                            nickLengths.push(rows[j].nick.length);
+                        });
+                        
+                        nickLengths.sort(function (a, b) {
+                            return a < b;
+                        });
+                        
+                        var longestNickLength = nickLengths[0];
+                        
+                        var padRight = function (input, pad, len) {
+                            var max = (len - input.length)/pad.length;
+                            for (var i = 0; i < max; i++) {
+                                input += pad;
+                            }
+
+                            return input;
+                        };
+                        
+                        // Now send each result with padded nicks
+                        _.each(rows, function (k, j) {
+                            rows[j].nick      = padRight(rows[j].nick, ' ', longestNickLength);
+                            rows[j].wordcount = quote.commafy(rows[j].wordcount);
+                            
+                            var msg = hmp.getMessage({
+                                plugin : 'quote',
+                                config : quote.wholeConfig,
+                                message: 'wordcountOK',
+                                data   : rows[j]
+                            });
+                            
+                            client.say(info.channel, msg);
+                        });
+                    };
+                    
+                    var noResultsCB = function () {
+                        var msg = hmp.getMessage({
+                            plugin : 'quote',
+                            config : quote.wholeConfig,
+                            message: 'wordcountNoResults',
+                            data   : row
+                        });
+                        
+                        client.say(info.channel, msg);
+                    };
+                    
+                    logger.getTopMentions({
+                        callback   : cb,
+                        channel    : channel,
+                        noResultsCB: noResultsCB,
+                        searchQuery: query,
+                        limit      : 5
+                    });
+                } else {
+                    var msg = hmp.getMessage({
+                        plugin  : 'quote',
+                        config  : quote.wholeConfig,
+                        message : 'wordcountUsage',
+                        data    : {
+                            botNick: quote.botNick
+                        }
+                    });
+                    
+                    client.say(info.channel, msg);
+                }
+            break;
+            
             case 'seen':
                 var message    = '';
                 var words      = info.words;
@@ -87,13 +253,13 @@ quote.init = function (options) {
                 var notSeenMsg = hmp.getMessage({
                     config  : quote.wholeConfig,
                     plugin  : 'quote',
-                    message : ['error'],
+                    message : 'notSeen',
                     data    : {}
                 });
                 
-                if (nick.length > 0) {
+                if (nick && nick.length > 0) {
                     var seenCB = function (rows, err) {
-                        if (rows) {
+                        if (rows && rows.length > 0) {
                             quote.line     = 1;
                             // Use this to build a map of number -> log id
                             quote.quotes   = {};
@@ -128,6 +294,17 @@ quote.init = function (options) {
                     };
                     
                     logger.getLastMessage(seenInfo);
+                } else {
+                    var usage = hmp.getMessage({
+                        config  : quote.wholeConfig,
+                        plugin  : 'quote',
+                        message : 'seenUsage',
+                        data    : {
+                            botNick: quote.botNick
+                        }
+                    });
+                    
+                    client.say(info.channel, usage);
                 }
             break;
             
@@ -470,6 +647,10 @@ quote.init = function (options) {
             break;
         }
     });
+};
+
+quote.commafy = function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
 quote.getQuoteTemplate = function (info) {

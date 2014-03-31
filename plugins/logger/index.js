@@ -139,6 +139,91 @@ logger.getMentions = function (args) {
     console.log(qry.sql);
 };
 
+logger.getTopMentions = function (args) {
+    var cols  = ['id', 
+                 'nick', 
+                 'channel', 
+                 'COUNT(*) as wordcount'];
+    
+    var q     = ' SELECT ';
+        q    += cols.join(',');
+        q    += ' FROM logs';
+        q    += ' WHERE 1=1';        
+        q    += ' AND message LIKE ?';
+        q    += ' AND channel    = ?';
+        q    += ' GROUP BY nick'
+        q    += ' ORDER BY COUNT(*) DESC';
+        q    += ' LIMIT ' + args.limit;
+    
+    var params = ['%' + args.searchQuery + '%', args.channel];
+    var qry    = db.connection.query(q, params);
+    var rows   = [];
+    
+    /**
+     * The callback needs the entire result set at once
+     * which is why we wait until the end to execute the
+     * callback
+     *
+     */
+    qry.on('result', function (row) {
+        //args.callback(row);
+        rows.push(row);
+    })
+    .on('error', function (err) {
+        console.log('logger.getTopMentions error: ' + err);
+    })
+    .on('end', function () {
+        if (rows.length === 0) {
+            if (typeof args.noResultsCB === 'function') {
+                args.noResultsCB();
+            }
+        } else {
+            args.callback(rows);
+        }
+    });
+};
+
+logger.getWordCountByNick = function (args) {
+    var cols   = ['COUNT(*) as wordcount'];
+    
+    var q      = ' SELECT ';
+        q     += cols.join(',');
+        q     += ' FROM logs';
+        q     += ' WHERE 1=1';        
+        q     += ' AND channel    = ?';
+        q     += ' AND nick       = ?';
+        
+    if (args.searchQuery.length > 0) {
+        q     += ' AND message LIKE ?';
+    }
+    
+    var params = [args.channel,
+                  args.nick];
+    
+    if (args.searchQuery.length > 0) {
+        params.push('%' + args.searchQuery + '%');
+    }  
+    
+    var qry    = db.connection.query(q, params);
+    var rows   = [];
+    
+    qry.on('result', function (row) {
+        rows.push(row);
+    })
+    .on('error', function (err) {
+        console.log('logger.getWordCountByNick error: ' + err);
+    })
+    .on('end', function () {
+        if (rows.length > 0 && rows[0].wordcount > 0) {
+            args.callback(rows[0]);
+        } else {
+            args.noResultsCB();
+        }
+    });
+    
+    console.log(qry.sql);
+};
+
 logger.getContext = function (info) {
     var limit = 3;
     var cols  = ['id', 'nick', 'ts', 'channel', 'message'];
