@@ -95,13 +95,17 @@ sleuth.parseInputIntoQuery = function (input) {
     return query;
 };
 
+sleuth.getYTLink = function (id) {
+    return 'https://youtu.be/' + id;
+};
+
 sleuth.getRandomSearchResult = function (query, callback) {
     sleuth.getYoutubeSearchResults(query, function (video) {
         if (typeof video === 'object') {
-            callback({
+            callback(_.extend(video, {
                 title: video.title,
-                link : 'https://youtube.com/watch?v=' + video.id
-            });
+                link : sleuth.getYTLink(video.id)
+            }));
         } else {
             callback(false);
         }
@@ -113,8 +117,9 @@ sleuth.getFirstSearchResult = function (query, callback) {
         if (typeof video === 'object') {
             callback(_.extend(video, {
                 title: video.title,
-                link : 'https://youtube.com/watch?v=' + video.id
+                link : sleuth.getYTLink(video.id)
             }));
+            
         } else {
             callback(false);
         }
@@ -169,38 +174,23 @@ sleuth.getYoutubeSearchResponse = function (query, callback) {
     });
 };
 
-// TODO this is almost identical to parseResponse. There has to be a way to refactor
-// these two methods to be less redundant
 sleuth.parseResultSet = function (results) {
-    // there is definitely a better way to do this
-    var entries = typeof results.feed === 'object' && results.feed.entry || [];
-    
-    if (entries && entries.length > 0) {
-        var video   = entries[Math.floor(Math.random() * entries.length)];
-        var title   = video.title['$t'];
-        var link    = video.content.src;
-        var id      = _.last(video.id['$t'].split(':'));
-        
-        return {
-            title: title,
-            link : link,
-            id   : id
-        };
-    }
+    return sleuth.parseResponse(results, true);
 };
 
-sleuth.parseResponse = function (response) {
-    var entries = typeof response.feed === 'object' && response.feed.entry || [];
+sleuth.parseResponse = function (response, rnd) {
+    var entries     = typeof response.feed === 'object' && response.feed.entry || [];
     
     if (entries && entries.length > 0) {
-        var video   = entries[0];
+        var idx     = rnd === true ? ~~(Math.random() * entries.length) : 0;
+        var video   = entries[idx];
         var title   = video.title['$t'] ? ent.decode(video.title['$t']) : '';
         var link    = video.content.src;
         var id      = _.last(video.id['$t'].split(':'));
         var rating  = video['gd$rating'].average.toFixed(2);
         var views   = video['yt$statistics'].viewCount;
         var likes   = video['yt$rating'].numLikes;
-        
+
         var commafy = function numberWithCommas(x) {
             return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         };
