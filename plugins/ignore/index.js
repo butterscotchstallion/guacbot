@@ -5,14 +5,13 @@
  */
 "use strict";
 
-var parser      = require('../../lib/messageParser');
-var argus       = require('../../lib/argus');
-var db          = require('../../lib/db');
-var admin       = require('../../plugins/admin');
-var ig          = {};
+var db    = require('../../lib/db');
+var admin = require('../../plugins/admin');
+var ig    = {};
 
-ig.init = function (options) {
+ig.init   = function (options) {
     var client = options.client;
+    ig.argus   = options.argus;
     
     options.ame.on('actionableMessageAddressingBot', function (info) {
         var words           = info.words;
@@ -81,7 +80,7 @@ ig.isIgnored = function (hostmask, callback) {
         return false;
     }
     
-    var cachedNick = argus.getNick();
+    var cachedNick = ig.argus.getNick();
     
     var q  = ' SELECT COUNT(*) AS ignored';
         q += ' FROM ignored';
