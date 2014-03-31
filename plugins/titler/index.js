@@ -14,7 +14,6 @@ var easyimg    = require('easyimage');
 var path       = require('path');
 var fs         = require('fs');
 var filesize   = require('filesize');
-//var repost     = require('../../plugins/repost');
 var ent        = require('ent');
 var twitter    = require('../../plugins/twitter');
 var sa         = require('../../plugins/somethingawful');
@@ -191,16 +190,16 @@ titler.getReferrer = function (urlInfo) {
     return urlInfo.protocol + '//' + urlInfo.host;
 };
 
-titler.requestWebsite = function (url, websiteCallback, imageCallback) {
+titler.requestWebsite = function (options) {
     var u               = require('url');
-    var urlInfo         = u.parse(url);
+    var urlInfo         = u.parse(options.url);
     var isIgnoredDomain = titler.isIgnoredDomain(urlInfo.host);
     
     if (!isIgnoredDomain) {
         //console.log('Retrieving page HTML for URL: ' + url);
         
-        var options = {
-            uri: url,
+        var httpOptions = {
+            uri    : options.url,
             headers: {
                 'user-agent': titler.getUserAgent(),
                 'referrer'  : titler.getReferrer(urlInfo)
@@ -244,31 +243,36 @@ titler.requestWebsite = function (url, websiteCallback, imageCallback) {
             }
         } else {
             //console.log('not sa url');
-            titler.sendHTTPRequest(options, websiteCallback, imageCallback);
+            //titler.sendHTTPRequest(options, websiteCallback, imageCallback);
+            titler.sendHTTPRequest({
+                httpOptions: httpOptions,
+                website    : options.websiteCallback,
+                image      : options.imageCallback,
+                error      : options.errorCallback
+            });
         }
     }
 };
 
-titler.sendHTTPRequest = function (options, websiteCallback, imageCallback) {
-    request(options, function (error, response, body) {            
+titler.sendHTTPRequest = function (options) {    
+    request(options.httpOptions, function (error, response, body) {            
         if (!error) {
             var type      = response.headers['content-type'];
             var isWebsite = titler.isHTML(type);
             
             if (isWebsite) {
-                switch (response.statusCode) {
-                    case 200:
-                        websiteCallback(body);
-                    break;
-                    
-                    default:
-                    case 400:
-                        console.log('titler error: ',
-                            error,
-                            ' response code:',
-                            response.statusCode,
-                            " URL: ", url);
-                    break;
+                var isOK = response.statusCode >= 200 && response.statusCode <= 400;
+                
+                if (isOK) {
+                    options.website(body);                    
+                } else {
+                   console.log('titler error: ',
+                        error,
+                        ' response code:',
+                        response.statusCode,
+                        " URL: ", options.url);
+                        
+                    options.error(response.statusCode);
                 }
                 
             } else {
@@ -283,13 +287,11 @@ titler.sendHTTPRequest = function (options, websiteCallback, imageCallback) {
                                 if (err || stderr) {
                                     console.log('Error getting image info: ', err, stderr);
                                 } else {
-                                    imageCallback(err, img, stderr, length, filename);
+                                    options.image(err, img, stderr, length, filename);
                                 }
                             });
                         });
                     }
-                } else {
-                    //console.log('not an image:', type);
                 }
             }
         }
@@ -407,7 +409,42 @@ titler.getTitle = function (url, callback) {
                     }
                 };
                 
-                titler.requestWebsite(url, websiteCallback, imageCallback);
+                var errorCallback = function (code) {
+                    switch (code) {
+                        case 404:
+                            var msg = hmp.getMessage({
+                                plugin: 'titler',
+                                config: titler.wholeConfig,
+                                data  : {
+                                    code: code
+                                },
+                                message: '404'
+                            });
+                            
+                            callback(msg);
+                        break;
+                        
+                        default:
+                            var msg = hmp.getMessage({
+                                plugin: 'titler',
+                                config: titler.wholeConfig,
+                                data  : {
+                                    code: code
+                                },
+                                message: 'httpError'
+                            });
+                            
+                            callback(msg);
+                        break;
+                    }
+                };
+                
+                titler.requestWebsite({
+                    url            : url,
+                    websiteCallback: websiteCallback,
+                    imageCallback  : imageCallback,
+                    errorCallback  : errorCallback
+                });
             }
         } else {
             console.log('titler: error parsing url: ', url);
