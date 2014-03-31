@@ -11,6 +11,10 @@ var _             = require('underscore');
 var weatherPlugin = {};
 var when          = require('when');
 
+weatherPlugin.reload = function (options) {
+    weatherPlugin.loadConfig(options.config.plugins.weather);
+};
+
 weatherPlugin.loadConfig = function (config) {
     weatherPlugin.getConfig(function (wConfig, err) {
         weatherPlugin.config = _.extend(weatherPlugin.config, wConfig);
@@ -81,6 +85,21 @@ weatherPlugin.init = function (options) {
                 }
             break;
             
+            case 'forecast':
+            case 'fc':
+                if (query) {
+                    weatherPlugin.sendResponse(_.extend({
+                        query : query,
+                        stored: { rememberMe: true },
+                        type  : 'forecast'
+                    }, info));
+                } else {
+                    weatherPlugin.getStoredLocation(info.info.host,
+                                                    storedCB);
+                }
+            break;
+            
+            case 'w':
             case 'weather':
                 if (query) {
                     weatherPlugin.sendResponse(_.extend({
@@ -101,8 +120,13 @@ weatherPlugin.sendResponse = function (info) {
         weatherPlugin.query({
             apiKey  : weatherPlugin.config.apiKey,
             query   : info.query,
-            callback: function (response, err) {
-                var noResults = response.indexOf('No cities match') !== -1;
+            type    : info.type,
+            callback: function (response, err) {                
+                console.log('qry: ', info.query);
+                console.log('resp: ', response);
+                console.log('err: ', err);
+                
+                var noResults = response ? response.indexOf('No cities match') !== -1 : false;
                 
                 // Location successfully queried, store it
                 if (!err && !noResults && info.stored.rememberMe) {
@@ -118,11 +142,11 @@ weatherPlugin.sendResponse = function (info) {
                     });
                 }
                 
-                if (noResults) {
+                if (!response || err || noResults) {
                     response = hmp.getMessage({
                         plugin : 'weather',
                         message: 'noResults',
-                        config : weatherPlugin.weatherPlugin.weatherCfg
+                        config : weatherPlugin.wholeConfig
                     });
                 }
                 
@@ -186,6 +210,43 @@ weatherPlugin.getConfig = function (callback) {
     });
 };
 
+weatherPlugin.getForecastTemplate = function (data) {
+    var msg = '';
+    
+    if (data) {
+        var cfg = weatherPlugin.wholeConfig;
+            msg = hmp.getMessage({
+                config : cfg,
+                plugin : 'weather',
+                message: 'forecast',
+                data   : data
+            });        
+    } 
+    
+    return msg;
+};
+
+weatherPlugin.parseForecastResponse = function (response) {
+    try {
+        var res    = JSON.parse(response);
+        var result = '';
+        
+        if (res && res.response) {
+            if (typeof res.response.error === 'string') {
+                result     = res.response.error.description;
+            } else {
+                var fcResp = res.forecast.simpleforecast.forecastday;            
+                result     = fcResp && fcResp.length > 0 ? fcResp[0] : '';
+            }
+        }
+        
+    } catch (e) {
+        console.log(e.stack);
+    }
+    
+    return result;
+};
+
 weatherPlugin.parseResponse = function (response) {
     var res = JSON.parse(response);
     
@@ -221,17 +282,37 @@ weatherPlugin.query = function (cfg) {
     var WunderNodeClient = require("wundernode", true);
     var URL              = require('url');
     var wunder           = new WunderNodeClient(cfg.apiKey, cfg.debug);
-    var conditions       = '';
+    var result           = '';
     
-    wunder.conditions(cfg.query, function (err, response) {
-        if (err) {
-            conditions = err;
-        } else {
-            conditions = weatherPlugin.parseResponse(response);
-        }
+    switch (cfg.type) {
+        case 'forecast':
+            wunder.forecast(cfg.query, function (err, response) {
+                if (err) {
+                    result = err;
+                } else {
+                    var parsed = weatherPlugin.parseForecastResponse(response);
+                    var msg    = weatherPlugin.getForecastTemplate(parsed);
+                    
+                    result     = msg;
+                }
+                
+                cfg.callback(result, err);
+            });
+        break;
         
-        cfg.callback(conditions, err);
-    });
+        default:
+        case 'conditions':   
+            wunder.conditions(cfg.query, function (err, response) {
+                if (err) {
+                    result = err;
+                } else {
+                    result = weatherPlugin.parseResponse(response);
+                }
+                
+                cfg.callback(result, err);
+            });
+        break;
+    }
 };
 
 module.exports = weatherPlugin;
