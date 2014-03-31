@@ -28,7 +28,7 @@ quote.loadConfig = function (options) {
     quote.botNick     = options.config.nick;
 };
 
-quote.init = function (options) {
+quote.init     = function (options) {
     var client = options.client;
     
     quote.loadConfig(options);
@@ -44,7 +44,13 @@ quote.init = function (options) {
                 
                 if (info.words.length >= 3) {
                     searchQry = info.words.slice(3).join(' ');
-                } 
+                }
+                
+                var noResultsMsg = hmp.getMessage({
+                    plugin  : 'quote',
+                    config  : quote.wholeConfig,
+                    message : 'noResults'
+                });
                 
                 var quoteCallback = function (result, err) {
                     if (!err && result) {
@@ -65,7 +71,7 @@ quote.init = function (options) {
                         quote.line++;
                         
                     } else {
-                        client.say(info.channel, 'No quotes found');
+                        client.say(info.channel, noResultsMsg);
                     }
                 };
                 
@@ -216,8 +222,7 @@ quote.init = function (options) {
                         var msg = hmp.getMessage({
                             plugin : 'quote',
                             config : quote.wholeConfig,
-                            message: 'wordcountNoResults',
-                            data   : row
+                            message: 'wordcountNoResults'
                         });
                         
                         client.say(info.channel, msg);
@@ -421,7 +426,7 @@ quote.init = function (options) {
                             quote.quotes[quote.line] = {
                                 id     : row.id,
                                 channel: channel
-                            };       
+                            };    
                             quote.line++;
                             
                         } else {
@@ -460,7 +465,7 @@ quote.init = function (options) {
                     quote.line   = 1;
                     // Use this to build a map of number -> log id
                     quote.quotes = {};
-                
+                    
                     var messages = hmp.getMessages({
                         plugin  : 'quote',
                         config  : quote.wholeConfig,
