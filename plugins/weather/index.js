@@ -50,12 +50,13 @@ weatherPlugin.init = function (options) {
             config  : options.config
         });
         
-        var storedCB = function (stored, err, isWeatherSpy) {
+        var storedCB = function (stored, err, isWeatherSpy, type) {
             if (!err && stored && stored.location) {
                 weatherPlugin.sendResponse(_.extend({
                     query : stored.location,
                     err   : err,
-                    stored: stored
+                    stored: stored,
+                    type  : type
                 }, info));
             } else {
                 var msg = messages.usage;
@@ -95,7 +96,9 @@ weatherPlugin.init = function (options) {
                     }, info));
                 } else {
                     weatherPlugin.getStoredLocation(info.info.host,
-                                                    storedCB);
+                                                    function (stored, err) {
+                                                        storedCB(stored, err, false, 'forecast');
+                                                    });
                 }
             break;
             
@@ -121,11 +124,7 @@ weatherPlugin.sendResponse = function (info) {
             apiKey  : weatherPlugin.config.apiKey,
             query   : info.query,
             type    : info.type,
-            callback: function (response, err) {                
-                console.log('qry: ', info.query);
-                console.log('resp: ', response);
-                console.log('err: ', err);
-                
+            callback: function (response, err) {
                 var noResults = response ? response.indexOf('No cities match') !== -1 : false;
                 
                 // Location successfully queried, store it
@@ -234,9 +233,9 @@ weatherPlugin.parseForecastResponse = function (response) {
         if (res && res.response) {
             if (typeof res.response.error === 'string') {
                 result     = res.response.error.description;
-            } else {
-                var fcResp = res.forecast.simpleforecast.forecastday;            
-                result     = fcResp && fcResp.length > 0 ? fcResp[0] : '';
+            } else {     
+                var fcResp = res.forecast.txt_forecast.forecastday;
+                result     = fcResp && fcResp.length > 0 ? fcResp[1] : '';
             }
         }
         
