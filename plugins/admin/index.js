@@ -241,7 +241,10 @@ admin.onPluginsLoaded = function (channel, loaded) {
     var def  = when.defer();
     var msg  = loaded.length > 0 ? 'Loaded: ' + loaded.join(', ') : '0 plugins loaded';
     
-    admin.client.say(channel, msg);
+    if (loaded.length > 0) {
+        admin.client.say(channel, msg);
+    }
+    
     def.resolve(admin.wholeConfig);
 };
 
