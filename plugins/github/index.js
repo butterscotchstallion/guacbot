@@ -14,6 +14,8 @@ var announcer = {};
 announcer.loadConfig = function (options) {
     announcer.wholeConfig = options.config;
     announcer.config      = options.config.plugins.github;
+    
+    console.log(announcer.config);
 };
 
 announcer.reload = function (options) {
@@ -21,6 +23,7 @@ announcer.reload = function (options) {
 };
 
 announcer.init = function (options) {
+    var client = options.client;
     announcer.loadConfig(options);
     
     options.ame.on('actionableMessageAddressingBot', function (info) {
@@ -55,8 +58,6 @@ announcer.init = function (options) {
     
     var channels = announcer.config.channels || [];
     var interval = announcer.config.interval || 60000;
-    
-    console.log('an cfg: ', announcer.config);
     
     if (channels.length > 0) {
         setInterval(function () {
