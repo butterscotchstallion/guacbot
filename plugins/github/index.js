@@ -5,16 +5,25 @@
  */
 "use strict";
 
-var db        = require('../../plugins/db');
-var hbs       = require('handlebars');
+var db        = require('../../lib/db');
+var hmp       = require('../../lib/helpMessageParser');
 var admin     = require('../../plugins/admin');
 var moment    = require('moment');
 var announcer = {};
 
-announcer.init = function (client) {
-    var pluginCfg = client.config.plugins.github;
+announcer.loadConfig = function (options) {
+    announcer.wholeConfig = options.config;
+    announcer.config      = options.config.plugins.github;
+};
+
+announcer.reload = function (options) {
+    announcer.loadConfig(options);
+};
+
+announcer.init = function (options) {
+    announcer.loadConfig(options);
     
-    client.ame.on('actionableMessageAddressingBot', function (info) {
+    options.ame.on('actionableMessageAddressingBot', function (info) {
         var user = {
             userInfo: {
                 user: info.info.user,
@@ -44,8 +53,10 @@ announcer.init = function (client) {
         }
     });
     
-    var channels = pluginCfg.channels || [];
-    var interval = pluginCfg.interval || 60000;
+    var channels = announcer.config.channels || [];
+    var interval = announcer.config.interval || 60000;
+    
+    console.log('an cfg: ', announcer.config);
     
     if (channels.length > 0) {
         setInterval(function () {
@@ -78,7 +89,6 @@ announcer.tidyCommitMessage = function (msg) {
 };
 
 announcer.getAnnouncementTemplate = function (info) {
-    var compileMe     = '{{author}} pushed {{numberOfCommits}} {{commitsWord}} {{timeAgo}} :: {{message}} :: {{url}}';
     var payload       = JSON.parse(info.payload);       
     var commits       = payload.commits || [];
     var commit        = payload.head_commit;
@@ -86,17 +96,22 @@ announcer.getAnnouncementTemplate = function (info) {
     var messageMaxLen = 200;
     var timeAgo       = moment(commit.timestamp).fromNow();
     var url           = commit.url;
-    var author        = commit.author.username;    
-    var tpl           = hbs.compile(compileMe);
-    
-    return tpl({
-        author         : author,
-        numberOfCommits: commits.length,
-        timeAgo        : timeAgo,
-        url            : url,
-        message        : message,
-        commitsWord    : commits.length === 1 ? 'commit' : 'commits'
+    var author        = commit.author.username;
+    var message       = hmp.getMessage({
+        plugin : 'github',
+        config : announcer.wholeConfig,
+        message: 'ok',
+        data   : {
+            author         : author,
+            numberOfCommits: commits.length,
+            timeAgo        : timeAgo,
+            url            : url,
+            message        : message,
+            commitsWord    : commits.length === 1 ? 'commit' : 'commits'
+        }
     });
+    
+    return message;
 };
 
 announcer.markNotificationRead = function (notificationID, callback) {
