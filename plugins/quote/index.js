@@ -517,6 +517,15 @@ quote.init     = function (options) {
                     // Use this to build a map of number -> log id
                     quote.quotes   = {};
                     
+                    var messages = hmp.getMessages({
+                        plugin  : 'quote',
+                        config  : quote.wholeConfig,
+                        data    : _.extend({
+                            minLen: 3
+                        }, info),
+                        messages: ['noResults']
+                    });
+                    
                     var quoteCB    = function (result, err) {
                         if (err) {             
                             console.log(err);
