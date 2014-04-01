@@ -14,8 +14,6 @@ var announcer = {};
 announcer.loadConfig = function (options) {
     announcer.wholeConfig = options.config;
     announcer.config      = options.config.plugins.github;
-    
-    console.log(announcer.config);
 };
 
 announcer.reload = function (options) {
