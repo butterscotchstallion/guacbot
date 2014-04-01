@@ -135,8 +135,6 @@ logger.getMentions = function (args) {
             args.noResultsCB();
         }
     });
-    
-    console.log(qry.sql);
 };
 
 logger.getTopMentions = function (args) {
