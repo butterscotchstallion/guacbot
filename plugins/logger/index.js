@@ -179,6 +179,8 @@ logger.getTopMentions = function (args) {
             args.callback(rows);
         }
     });
+    
+    console.log(qry.sql);
 };
 
 logger.getWordCountByNick = function (args) {
@@ -352,6 +354,25 @@ logger.getLastMessage = function (args) {
     
     db.connection.query(q, params, function (err, rows, fields) {
         args.callback(rows, err);
+    });
+};
+
+logger.getFirstMessage = function (args) {
+    var cols = ['id', 'nick', 'host', 'message', 'ts', 'channel'];
+    
+    var q    = ' SELECT ';
+        q   += cols.join(',');
+        q   += ' FROM logs';
+        q   += ' WHERE 1=1';
+        q   += ' AND nick    = ?';
+        q   += ' AND channel = ?';
+        q   += ' ORDER BY ts';
+        q   += ' LIMIT 1';
+    
+    var params = [args.nick, args.channel, args.message];
+    
+    db.connection.query(q, params, function (err, rows, fields) {
+        args.callback(rows[0], err);
     });
 };
 

@@ -107,7 +107,19 @@ quote.init     = function (options) {
                         }
                     }
                     
-                    console.log(targetNick, channel, query);
+                    if (info.command === 'wordcountme') {
+                        targetNick = info.nick;
+                        
+                        if (info.words[2] && info.words[2].charAt(0) === '#') {
+                            query      = info.words.slice(3).join(' ');
+                        } else {
+                            query      = info.words.slice(2).join(' ');
+                        }
+                    }
+                    
+                    //console.log(info.words);
+                    //console.log('channel: ', channel);
+                    //console.log('query: ', query);
                     
                     var cb = function (row) {
                         row.wordcount = quote.commafy(row.wordcount);
@@ -168,14 +180,19 @@ quote.init     = function (options) {
             break;
             
             case 'wordcount':
-                var query   = info.words[1];
+                var query   = info.words.slice(2).join(' ');
                 var channel = info.channel;
                 
+                console.log(info.words);
+                
                 if (query) {
-                    if (info.words[2].charAt(0) === '#') {
+                    if (info.words[2] && info.words[2].charAt(0) === '#') {
                         channel = info.words[2];
                         query   = info.words.slice(3).join(' ');
                     }
+                    
+                    console.log('channel: ', channel);
+                    console.log('query: ', query);
                     
                     var cb = function (rows) {
                         var nickLengths = [];
@@ -551,7 +568,7 @@ quote.init     = function (options) {
                         }
                     };
                     
-                    logger.getRandomQuote({
+                    logger.getFirstMessage({
                         nick    : targetNick,
                         channel : info.channel,
                         callback: quoteCB,
