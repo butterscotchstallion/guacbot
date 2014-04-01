@@ -210,7 +210,8 @@ titler.requestWebsite = function (options) {
          * Issue #72 - More descriptive SA titles
          *
          */
-        var isSAURL     = sa.isSAURL(urlInfo);
+        //var isSAURL     = sa.isSAURL(urlInfo);
+        var isSAURL     = false;
         var isSAEnabled = false;
         
         // Don't even bother checking anything else unless this is a SA URL
@@ -366,7 +367,8 @@ titler.getTitle = function (url, callback) {
             } else {
                 var websiteCallback = function (html) {
                     var isTwitterURL = titler.isTwitterURL(info);
-                    var isSAURL      = sa.isSAURL(info);
+                    //var isSAURL      = sa.isSAURL(info);
+                    var isSAURL      =  false;
                     
                     if (isTwitterURL) {
                         twitter.getTweet(html, function (tweet) {
