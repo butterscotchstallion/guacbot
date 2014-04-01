@@ -517,15 +517,6 @@ quote.init     = function (options) {
                     // Use this to build a map of number -> log id
                     quote.quotes   = {};
                     
-                    var messages = hmp.getMessages({
-                        plugin  : 'quote',
-                        config  : quote.wholeConfig,
-                        data    : _.extend({
-                            minLen: 3
-                        }, info),
-                        messages: ['noResults']
-                    });
-                    
                     var quoteCB    = function (result, err) {
                         if (err) {             
                             console.log(err);
@@ -537,6 +528,15 @@ quote.init     = function (options) {
                                 message: result.message,
                                 date   : quote.getFormattedDate(result.ts),
                                 line   : quote.line
+                            });
+                            
+                            var messages = hmp.getMessages({
+                                plugin  : 'quote',
+                                config  : quote.wholeConfig,
+                                data    : _.extend({
+                                    minLen: 3
+                                }, info),
+                                messages: ['noResults']
                             });
                             
                             client.say(info.channel, msg);
