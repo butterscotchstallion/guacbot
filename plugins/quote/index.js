@@ -191,8 +191,8 @@ quote.init     = function (options) {
                         query   = info.words.slice(3).join(' ');
                     }
                     
-                    console.log('channel: ', channel);
-                    console.log('query: ', query);
+                    //console.log('channel: ', channel);
+                    //console.log('query: ', query);
                     
                     var cb = function (rows) {
                         var nickLengths = [];
@@ -287,11 +287,16 @@ quote.init     = function (options) {
                             quote.quotes   = {};
                             
                             _.each(rows, function (k, j) {
-                                message = quote.getQuoteTemplate({
-                                    nick       : rows[j].nick,
-                                    message    : rows[j].message,
-                                    date       : quote.getFormattedDate(rows[j].ts),
-                                    line       : quote.line
+                                message = hmp.getMessage({
+                                    plugin : 'quote',
+                                    message: 'seen',
+                                    config : quote.wholeConfig,
+                                    data   : {
+                                        nick   : rows[j].nick,
+                                        message: rows[j].message,
+                                        timeAgo: moment(rows[j].ts).fromNow(),
+                                        line   : quote.line
+                                    }
                                 });
                                 
                                 client.say(info.channel, message);
