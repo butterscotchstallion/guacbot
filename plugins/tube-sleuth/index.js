@@ -137,7 +137,7 @@ sleuth.getYoutubeSearchResults = function (query, callback) {
     request(apiURL, function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var rawResponse  = JSON.parse(body);
-            var videoInfo    = sleuth.parseResultSet(rawResponse);
+            var videoInfo    = sleuth.parseResponse(rawResponse, true);
             
             callback(videoInfo);
         } else {
@@ -174,10 +174,6 @@ sleuth.getYoutubeSearchResponse = function (query, callback) {
     });
 };
 
-sleuth.parseResultSet = function (results) {
-    return sleuth.parseResponse(results, true);
-};
-
 sleuth.parseResponse = function (response, rnd) {
     var entries     = typeof response.feed === 'object' && response.feed.entry || [];
     
@@ -187,7 +183,7 @@ sleuth.parseResponse = function (response, rnd) {
         var title   = video.title['$t'] ? ent.decode(video.title['$t']) : '';
         var link    = video.content.src;
         var id      = _.last(video.id['$t'].split(':'));
-        var rating  = video['gd$rating'].average.toFixed(2);
+        var rating  = typeof video['gd$rating'].average !== 'undefined' ? video['gd$rating'].average.toFixed(2) : '';
         var views   = video['yt$statistics'].viewCount;
         var likes   = video['yt$rating'].numLikes;
 
