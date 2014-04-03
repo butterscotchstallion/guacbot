@@ -153,6 +153,7 @@ quote.init     = function (options) {
                         searchQuery: query,
                         nick       : targetNick
                     });
+                    
                 } else {
                     var message;
                     
@@ -180,10 +181,9 @@ quote.init     = function (options) {
             break;
             
             case 'wordcount':
-                var query   = info.words.slice(2).join(' ');
-                var channel = info.channel;
-                
-                console.log(info.words);
+                var query    = info.words.slice(2).join(' ');
+                var channel  = info.channel;
+                var verbatim = false;
                 
                 if (query) {
                     if (info.words[2] && info.words[2].charAt(0) === '#') {
@@ -191,8 +191,14 @@ quote.init     = function (options) {
                         query   = info.words.slice(3).join(' ');
                     }
                     
-                    //console.log('channel: ', channel);
-                    //console.log('query: ', query);
+                    /**
+                     * #89 - If a search query contains quotes then perform 
+                     * a verbatim search. Both kinds of quotes. Just in case.
+                     *
+                     */
+                    if (query.indexOf('"') !== -1 || query.indexOf("'") !== -1) {
+                        verbatim = true;
+                    }
                     
                     var cb = function (rows) {
                         var nickLengths = [];
@@ -210,6 +216,7 @@ quote.init     = function (options) {
                         
                         var longestNickLength = nickLengths[0];
                         
+                        // Pad each nick so that it is the same length as the longest nick
                         var padRight = function (input, pad, len) {
                             var max = (len - input.length)/pad.length;
                             for (var i = 0; i < max; i++) {
@@ -250,7 +257,8 @@ quote.init     = function (options) {
                         channel    : channel,
                         noResultsCB: noResultsCB,
                         searchQuery: query,
-                        limit      : 5
+                        limit      : 5,
+                        verbatim   : verbatim
                     });
                 } else {
                     var msg = hmp.getMessage({

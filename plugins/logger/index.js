@@ -143,17 +143,32 @@ logger.getTopMentions = function (args) {
                  'channel', 
                  'COUNT(*) as wordcount'];
     
+    console.log(args);
+    
     var q     = ' SELECT ';
         q    += cols.join(',');
         q    += ' FROM logs';
-        q    += ' WHERE 1=1';        
-        q    += ' AND message LIKE ?';
+        q    += ' WHERE 1=1';
+        
+        if (args.verbatim) {
+            q    += ' AND message = ?';
+        } else {
+            q    += ' AND message LIKE ?';
+        }
+        
         q    += ' AND channel    = ?';
         q    += ' GROUP BY nick'
         q    += ' ORDER BY COUNT(*) DESC';
         q    += ' LIMIT ' + args.limit;
     
-    var params = ['%' + args.searchQuery + '%', args.channel];
+    var searchQuery = '%' + args.searchQuery + '%';
+    
+    if (args.verbatim) {
+        // Don't forget to remove the quotes!
+        searchQuery = args.searchQuery.replace(/["']/g, "");
+    }
+    
+    var params = [searchQuery, args.channel];
     var qry    = db.connection.query(q, params);
     var rows   = [];
     
