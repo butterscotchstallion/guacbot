@@ -11,6 +11,12 @@ var db      = require('../../lib/db');
 var _       = require('underscore');
 var arbiter = {};
 
+arbiter.reload = function (options) {
+    var arbiterCfg = options.config.plugins.arbiter;
+    
+    arbiter.loadConfig(arbiterCfg);
+};
+
 arbiter.loadConfig = function (config) {
     arbiter.getAnswers()
            .then(function (answers) {
@@ -67,7 +73,7 @@ arbiter.decide = function (input) {
 };
 
 arbiter.selectChoice = function (choices) {
-    return choices[Math.floor(Math.random() * choices.length)];
+    return choices[~~(Math.random() * choices.length)];
 };
 
 /**
@@ -106,7 +112,7 @@ arbiter.applyChoiceSelectionIndicators = function (choices, selected) {
 arbiter.isDecision = function (input) {
     var hasOr = input.indexOf(' or ') > -1;
     
-    return hasOr;    
+    return hasOr;
 };
 
 /**
@@ -199,3 +205,4 @@ arbiter.isYesOrNoQuestion = function (input) {
 };
 
 module.exports = arbiter;
+
