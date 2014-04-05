@@ -149,21 +149,20 @@ logger.getTopMentions = function (args) {
         q    += cols.join(',');
         q    += ' FROM logs';
         q    += ' WHERE 1=1';
-        
-        if (args.verbatim) {
-            q    += ' AND message = ?';
-        } else {
-            q    += ' AND message LIKE ?';
-        }
-        
+        q    += ' AND message LIKE ?';
         q    += ' AND channel    = ?';
         q    += ' GROUP BY nick'
         q    += ' ORDER BY COUNT(*) DESC';
         q    += ' LIMIT ' + args.limit;
     
-    var searchQuery = '%' + args.searchQuery + '%';
+    var searchQuery = args.searchQuery;
     
     if (args.verbatim) {
+        //Replace wildcards where the user wants them, i.e. replace " with %
+        searchQuery = args.searchQuery.replace(/["'], "%");
+        
+    } else {
+        searchQuery = '%' + args.searchQuery + '%';
         // Don't forget to remove the quotes!
         searchQuery = args.searchQuery.replace(/["']/g, "");
     }
