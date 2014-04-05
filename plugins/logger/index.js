@@ -157,7 +157,7 @@ logger.getTopMentions = function (args) {
     
     if (args.verbatim) {
         //Replace wildcards where the user wants them, i.e. replace " with %
-        searchQuery = args.searchQuery.replace(/["'], "%");
+        searchQuery = args.searchQuery.replace(/["']/g, "%");
         
     } else {
         searchQuery = '%' + args.searchQuery + '%';
