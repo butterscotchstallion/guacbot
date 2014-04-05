@@ -143,8 +143,6 @@ logger.getTopMentions = function (args) {
                  'channel', 
                  'COUNT(*) as wordcount'];
     
-    console.log(args);
-    
     var q     = ' SELECT ';
         q    += cols.join(',');
         q    += ' FROM logs';
@@ -195,7 +193,7 @@ logger.getTopMentions = function (args) {
         }
     });
     
-    console.log(qry.sql);
+    console.log('getTopMentions: ', qry.sql);
 };
 
 logger.getWordCountByNick = function (args) {
