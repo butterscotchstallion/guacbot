@@ -161,6 +161,8 @@ sleuth.getYoutubeSearchAPIURL = function (query, limit) {
 sleuth.getYoutubeSearchResponse = function (query, callback) {
     var apiURL  = sleuth.getYoutubeSearchAPIURL(query, 1);
     
+    //console.log(apiURL);
+    
     request(apiURL, function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var rawResponse  = JSON.parse(body);
@@ -180,13 +182,16 @@ sleuth.parseResponse = function (response, rnd) {
     if (entries && entries.length > 0) {
         var idx     = rnd === true ? ~~(Math.random() * entries.length) : 0;
         var video   = entries[idx];
+        
+        console.log(video);
+        
         var title   = video.title['$t'] ? ent.decode(video.title['$t']) : '';
         var link    = video.content.src;
         var id      = _.last(video.id['$t'].split(':'));
-        var rating  = typeof video['gd$rating'].average !== 'undefined' ? video['gd$rating'].average.toFixed(2) : '';
+        var rating  = typeof video['gd$rating'] !== 'undefined' ? video['gd$rating'].average.toFixed(2) : '';
         var views   = video['yt$statistics'].viewCount;
-        var likes   = video['yt$rating'].numLikes;
-
+        var likes   = typeof video['yt$rating'] !== 'undefined' ? video['yt$rating'].numLikes : false;
+        
         var commafy = function numberWithCommas(x) {
             return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         };
