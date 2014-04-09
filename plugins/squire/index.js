@@ -68,6 +68,31 @@ squire.init = function (options) {
         }
     });
     
+    options.ame.on('actionableMessageAddressingBot', function (info) {
+        var isAdmin = admin.userIsAdmin({
+            userInfo: {
+                user: info.info.user,
+                host: info.info.host
+            }
+        });
+        
+        if (isAdmin) {
+            switch (info.command) {
+                case 'af':
+                    squire.processAddFriendCommand(info, options);
+                break;
+                
+                case 'rf':
+                    squire.processRemoveFriendCommand(info, options);
+                break;
+                
+                case 'if':
+                    squire.processIsFriendCommand(info, options);
+                break;
+            }
+        }
+    });
+    
     aee.on('hostmaskUpdated', function (info) {
         for (var j = 0; j < info.channels.length; j++) {
             var targetUpgradeable = squire.isTargetUpgradeable(info.channels[j]);
@@ -81,8 +106,6 @@ squire.init = function (options) {
     });
     
     aee.on('adminHostmaskBanned', function (info) {
-        console.log(info);
-        
         client.send('MODE', info.channel, '-b', info.hostmask);
     });
     
@@ -95,6 +118,79 @@ squire.init = function (options) {
     setInterval(function () {
         squire.scan();
     }, tenSeconds);
+};
+
+squire.processIsFriendCommand = function (info, options) {
+    var errorCB = function (e) {
+        var errMsg = 'error lol';
+        var msg    = e ? [errMsg, e].join(': ') : errMsg;
+        
+        squire.client.say(info.channel, msg);
+    };
+    
+    var target = info.words[2];
+    var user   = squire.argus.getNick(target);
+    
+    if (user && user.hostmask) {
+        var isFriend = squire.isFriend(user.hostmask);
+        var msg      = isFriend ? 'yes' : 'no';
+        
+        squire.client.say(info.channel, msg);
+        
+    } else {
+        errorCB();
+    }    
+};
+
+squire.processAddFriendCommand = function (info, options) {
+    var errorCB = function (e) {
+        var errMsg = 'error lol';
+        var msg    = e ? [errMsg, e].join(': ') : errMsg;
+        
+        squire.client.say(info.channel, msg);
+    };
+    
+    var target = info.words[2];
+    var user   = squire.argus.getNick(target);
+    
+    if (user && user.hostmask) {
+        squire.addFriend(_.extend(info, {
+            hostmask: user.hostmask,
+            nick    : target
+        }), options)
+        .then(function () {
+            squire.reload(options);
+        })
+        .catch(function (e) {
+            errorCB(e);
+        });
+    } else {
+        errorCB();
+    }    
+};
+
+squire.processRemoveFriendCommand = function (info, options) {
+    var errorCB = function (e) {
+        var errMsg = 'error lol';
+        var msg    = e ? [errMsg, e].join(': ') : errMsg;
+        
+        squire.client.say(info.channel, msg);
+    };
+    
+    var target = info.words[2];
+    var user   = squire.argus.getNick(target);
+    
+    if (user && user.hostmask) {
+        squire.removeFriend(user.hostmask)
+        .then(function () {
+            squire.reload(options);
+        })
+        .catch(function (e) {
+            errorCB(e);
+        });
+    } else {
+        errorCB();
+    }    
 };
 
 squire.scan = function () {
@@ -187,10 +283,60 @@ squire.getHostmasks = function () {
     var query = [
         'SELECT ',
         cols.join(','),
-        'FROM squire_hostmasks'
+        'FROM squire_hostmasks',
+        'WHERE 1=1',
+        'AND enabled = 1'
     ].join("\n");
     
     var qry = db.connection.query(query, function (err, result) {
+        if (err && result) {
+            def.reject(err);
+        } else {
+            def.resolve(result);
+        }
+    });
+    
+    return def.promise;
+};
+
+squire.addFriend = function (options) {
+    var def   = when.defer();
+    
+    console.log(options);
+    
+    // Grant channel operator status immediately
+    admin.grantChannelOperatorStatus(options, options.nick);
+    
+    var query = [
+        "REPLACE INTO squire_hostmasks (hostmask, upgrade_type)",
+        "VALUES(?, ?)"
+    ].join("\n");
+    
+    var params = [options.hostmask, options.upgradeType || 'op'];
+    
+    var qry    = db.connection.query(query, params, function (err, result) {
+        console.log('squire.addFriend: ', result);
+        
+        if (err && result) {
+            def.reject(err);
+        } else {
+            def.resolve(result);
+        }
+    });
+    
+    return def.promise;
+};
+
+squire.removeFriend = function (hostmask) {
+    var def   = when.defer();
+    var query = [
+        "UPDATE squire_hostmasks SET enabled = 0 WHERE hostmask = ?"
+    ].join("\n");
+    
+    var params = [hostmask];
+    
+    var qry    = db.connection.query(query, params, function (err, result) {
+        console.log('squire.removeFriend: ', result);
         if (err && result) {
             def.reject(err);
         } else {
