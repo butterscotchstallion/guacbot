@@ -9,11 +9,18 @@ var db        = require('../../lib/db');
 var hmp       = require('../../lib/helpMessageParser');
 var admin     = require('../../plugins/admin');
 var moment    = require('moment');
+var _         = require('underscore');
 var announcer = {};
 
 announcer.loadConfig = function (options) {
-    announcer.wholeConfig = options.config;
-    announcer.config      = options.config.plugins.github;
+    announcer.wholeConfig     = options.config;
+    announcer.config          = options.config.plugins.github;
+    announcer.client          = options.client;
+    
+    // Note: if there are no channels, this plugin will never make the bot
+    // say anything, although it will continue to function otherwise
+    announcer.config.channels = announcer.config.channels || [];
+    announcer.config.interval = announcer.config.interval || 60000;
 };
 
 announcer.reload = function (options) {
@@ -21,7 +28,6 @@ announcer.reload = function (options) {
 };
 
 announcer.init = function (options) {
-    var client = options.client;
     announcer.loadConfig(options);
     
     options.ame.on('actionableMessageAddressingBot', function (info) {
@@ -33,43 +39,26 @@ announcer.init = function (options) {
         };
         
         if (admin.userIsAdmin(user)) {
-            if (info.words[1] === 'github') {
-                var command        = info.words[2];
-                var notificationCB = function (n) {
-                    if (typeof n === 'object' && n) {
-                        var msg = announcer.getAnnouncementTemplate(n);
-                        
-                        client.say(info.channel, msg);
-                    } else {
-                        client.say(info.channel, 'No unread notifications');
-                    }
-                };
-                
-                //if (command === 'last') {
-                    //announcer.getLatestNotification(notificationCB);
-                //} else {
-                    announcer.getLatestUnreadNotification(notificationCB);
-                //}
+            if (info.command === 'github') {
+                // Only send to this channel
+                announcer.getLatestUnreadNotification({
+                    channels         : [info.channel],
+                    currentChannel   : info.channel,
+                    noResultsCallback: announcer.sendNoResultsMessage
+                });
             }
         }
     });
     
-    var channels = announcer.config.channels || [];
-    var interval = announcer.config.interval || 60000;
-    
-    if (channels.length > 0) {
+    if (announcer.config.channels.length > 0) {
         setInterval(function () {
-            announcer.getLatestUnreadNotification(function (n) {
-                for (var j = 0; j < channels.length; j++) {
-                    if (typeof n === 'object' && n) {
-                        var msg = announcer.getAnnouncementTemplate(n);
-                        
-                        client.say(channels[j], msg);
-                    }
-                }
-            });
-        }, interval);
+            announcer.getLatestUnreadNotification();            
+        }, announcer.config.interval);
     }
+};
+
+announcer.getCommitURL = function (options) {
+    g.shorten(options.url, options.callback);
 };
 
 announcer.tidyCommitMessage = function (msg) {
@@ -113,6 +102,20 @@ announcer.getAnnouncementTemplate = function (info) {
     return message;
 };
 
+announcer.sendNotification = function (n, channels) {
+    if (typeof channels === 'undefined') {
+        channels = announcer.config.channels;
+    }
+    
+    _.each(channels, function (k, j) {
+        if (typeof n === 'object' && n) {
+            var msg = announcer.getAnnouncementTemplate(n);
+
+            announcer.client.say(channels[j], msg);
+        }
+    });
+};
+
 announcer.markNotificationRead = function (notificationID, callback) {
     var query  = ' UPDATE github_push_notifications';
         query += ' SET notification_sent = 1';
@@ -123,7 +126,7 @@ announcer.markNotificationRead = function (notificationID, callback) {
     });
 };
 
-announcer.getLatestUnreadNotification = function (callback) {
+announcer.getLatestUnreadNotification = function (options) {
     var q  = ' SELECT id, payload, '
         q += ' number_of_commits AS numberOfCommits,';
         q += ' created_at AS createdAt';
@@ -133,26 +136,52 @@ announcer.getLatestUnreadNotification = function (callback) {
         q += ' ORDER BY created_at DESC';
         q += ' LIMIT 1';
     
-    db.connection.query(q, function (err, rows, fields) {
-        if (err) {
-            console.log('announcer.getNotification error: ' + err);
+    var channels = options && options.channels || [];
+    
+    db.connection.query(q, function (err, rows, fields, channels) {
+        if (rows && rows.length > 0) {
+            announcer.processNotification(err, rows, fields, channels);
         } else {
-            // If OK, mark notification read
-            if (!err) {
-                callback(rows[0], err);
-                
-                if (typeof rows[0] !== 'undefined' && rows[0].id) {
-                    announcer.markNotificationRead(rows[0].id, function (result, err) {
-                        if (!err) {
-                            //console.log('OK: marked ' + rows[0].id + ' read');
-                        } else {
-                            console.log('ERROR: failed to mark ' + rows[0].id + ' read');
-                        }
-                    });
-                }
+            if (options && typeof options.noResultsCallback === 'function') {
+                options.noResultsCallback(options);
             }
         }
     });
 };
 
+announcer.sendNoResultsMessage = function (options) {
+    var msg = hmp.getMessage({
+        plugin : 'github',
+        config : announcer.wholeConfig,
+        message: 'noResults'
+    });
+    
+    announcer.client.say(options.currentChannel, msg);
+};
+
+announcer.processNotification = function (err, rows, fields, channels) {
+    if (err) {
+        console.log('announcer.getNotification error: ' + err);
+    } else {
+        // If OK, mark notification read
+        if (!err && rows && rows.length > 0) {
+            var notification = rows[0];
+            
+            announcer.sendNotification(notification, channels);
+            
+            if (notification && notification.id) {
+                announcer.markNotificationRead(notification.id, function (result, err) {
+                    if (!err) {
+                        //console.log('OK: marked ' + rows[0].id + ' read');
+                    } else {
+                        console.log('ERROR: failed to mark ' + notification.id + ' read');
+                    }
+                });
+            }
+        }
+    }
+};
+
 module.exports = announcer;
+
+
