@@ -301,9 +301,7 @@ squire.getHostmasks = function () {
 
 squire.addFriend = function (options) {
     var def   = when.defer();
-    
-    console.log(options);
-    
+
     // Grant channel operator status immediately
     admin.grantChannelOperatorStatus(options, options.nick);
     
@@ -315,7 +313,7 @@ squire.addFriend = function (options) {
     var params = [options.hostmask, options.upgradeType || 'op'];
     
     var qry    = db.connection.query(query, params, function (err, result) {
-        console.log('squire.addFriend: ', result);
+        //console.log('squire.addFriend: ', result);
         
         if (err && result) {
             def.reject(err);
@@ -336,7 +334,8 @@ squire.removeFriend = function (hostmask) {
     var params = [hostmask];
     
     var qry    = db.connection.query(query, params, function (err, result) {
-        console.log('squire.removeFriend: ', result);
+        //console.log('squire.removeFriend: ', result);
+        
         if (err && result) {
             def.reject(err);
         } else {
