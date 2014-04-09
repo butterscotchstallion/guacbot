@@ -182,9 +182,6 @@ sleuth.parseResponse = function (response, rnd) {
     if (entries && entries.length > 0) {
         var idx     = rnd === true ? ~~(Math.random() * entries.length) : 0;
         var video   = entries[idx];
-        
-        console.log(video);
-        
         var title   = video.title['$t'] ? ent.decode(video.title['$t']) : '';
         var link    = video.content.src;
         var id      = _.last(video.id['$t'].split(':'));
