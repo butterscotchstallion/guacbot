@@ -409,19 +409,19 @@ admin.getMuteMask = function (host) {
 };
 
 admin.grantChannelOperatorStatus = function (info, target) {
-    if (info.pluginCfg.useChanserv) {
-        info.client.say('CHANSERV', 'OP ' + info.channel + ' ' + target);
-    } else {
-        info.client.send('MODE', info.channel, '+o', target);
-    }
+    //if (info.pluginCfg.useChanserv) {
+    //    info.client.say('CHANSERV', 'OP ' + info.channel + ' ' + target);
+    //} else {
+        admin.client.send('MODE', info.channel, '+o', target);
+    //}
 };
 
 admin.removeChannelOperatusStatus = function (info, target) {
-    if (info.pluginCfg.useChanserv) {
-        info.client.say('CHANSERV', 'DEOP ' + info.channel + ' ' + target);
-    } else {
-        info.client.send('MODE', info.channel, '-o', target);
-    }
+    //if (info.pluginCfg.useChanserv) {
+    //    admin.client.say('CHANSERV', 'DEOP ' + info.channel + ' ' + target);
+    //} else {
+        admin.client.send('MODE', info.channel, '-o', target);
+    //}
 };
 
 admin.getAccessDeniedMsg = function (cfg) {
