@@ -197,6 +197,8 @@ squire.scan = function () {
     var channels = squire.argus.channels;
     var cur;
     
+    console.log(new Date() + ' Squire started scanning...');
+    
     for (var j = 0; j < channels.length; j++) {
         cur = channels[j];
         
@@ -306,11 +308,11 @@ squire.addFriend = function (options) {
     admin.grantChannelOperatorStatus(options, options.nick);
     
     var query = [
-        "REPLACE INTO squire_hostmasks (hostmask, upgrade_type)",
-        "VALUES(?, ?)"
+        "REPLACE INTO squire_hostmasks (hostmask, upgrade_type, nick)",
+        "VALUES(?, ?, ?)"
     ].join("\n");
     
-    var params = [options.hostmask, options.upgradeType || 'op'];
+    var params = [options.hostmask, options.upgradeType || 'op', options.nick];
     
     var qry    = db.connection.query(query, params, function (err, result) {
         //console.log('squire.addFriend: ', result);
