@@ -43,22 +43,33 @@ sleuth.init = function (options) {
             client.say(info.channel, msg);
         };
         
-        // Basic YT search
-        if (isQuestion) {
-            var query  = sleuth.parseInputIntoQuery(info.message);
-            
-            if (query) {
-                sleuth.getFirstSearchResult(query, videoCallback);
+        var messages = hmp.getMessages({
+            plugin  : 'tube-sleuth',
+            config  : sleuth.wholeConfig,
+            messages: ['ytUsage', 'ytrandUsage'],
+            data    : {
+                botNick: options.config.nick
             }
-        } else {
-            // some other command
-            if (info.command === 'ytrand') {
-                var query = info.words.slice(2).join(' ');
-                
+        });
+        
+        var query = info.words.slice(2).join(' ');
+        
+        switch (info.command) {
+            case 'yt':
+                if (query) {
+                    sleuth.getFirstSearchResult(query, videoCallback);
+                } else {
+                    client.say(info.channel, messages.ytUsage);
+                }
+            break;
+            
+            case 'ytrand':
                 if (query) {
                     sleuth.getRandomSearchResult(query, videoCallback);
-                }          
-            }
+                } else {
+                    client.say(info.channel, messages.ytrandUsage);
+                }
+            break;
         }
     });
 };
@@ -70,29 +81,6 @@ sleuth.getTitleTemplate = function (video) {
         config : sleuth.wholeConfig,
         message: 'ok'
     });
-};
-
-sleuth.isQuestion = function (input) {
-    var trimmed = input.trim()
-    var lastChr = trimmed.substring(trimmed.length-1);
-    
-    return lastChr === '?';
-};
-
-sleuth.parseInputIntoQuery = function (input) {
-    var query   = '';
-    
-    // Split into words and remove the first one, which would be the bot's nick
-    var words = parser.splitMessageIntoWords(input);
-    
-    // After splitting the words, take everything after the first word
-    // and rejoin it with spaces
-    query = words.slice(1).join(' ');
-    
-    // Now remove question mark at the end
-    query = query.substring(0, query.length-1);
-    
-    return query;
 };
 
 sleuth.getYTLink = function (id) {
