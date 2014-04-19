@@ -27,7 +27,6 @@ sleuth.init = function (options) {
     sleuth.loadConfig(options);
     
     options.ame.on('actionableMessageAddressingBot', function (info) {        
-        var isQuestion = sleuth.isQuestion(info.message);
         var videoCallback = function (video) {
             var msg = hmp.getMessage({
                 plugin : 'tube-sleuth',
