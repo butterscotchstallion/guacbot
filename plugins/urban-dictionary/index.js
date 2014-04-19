@@ -24,7 +24,7 @@ ud.init = function (options) {
     ud.loadConfig(options);
     
     options.ame.on('actionableMessageAddressingBot', function (info) {
-        var startsWithWhat = info.command.toLowerCase() === 'what';
+        var startsWithWhat = ['wtf', 'what'].indexOf(info.command.toLowerCase()) !== -1;
         
         if (startsWithWhat) {
             var query    = info.words.slice(3).join(' ').trim();
@@ -34,8 +34,6 @@ ud.init = function (options) {
                 console.log('trimming');
                 query = query.substring(0, query.length - 1);
             }
-            
-            console.log('query: ', query);
             
             var messages = hmp.getMessages({
                 plugin  : 'urban-dictionary',
