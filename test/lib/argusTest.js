@@ -45,12 +45,12 @@ describe('argus.getNick', function () {
         
         argus.addNick(expected);
         
-        var actual = argus.getNick(expected);
+        var actual = argus.getNick(expected.nick);
         
         assert.deepEqual(expected, actual);
     });
     
-    it('should return false if it doesnt have nick', function () {   
+    it('should return undefined if it doesnt have nick', function () {   
         var actual   = argus.getNick('lol');
         var expected = undefined;
         
@@ -173,7 +173,7 @@ describe('argus.removeNick', function () {
         
         assert.equal(argus.nickExists(nick), true);
         
-        argus.channels = argus.removeNickByChannel('jalapeno', '#roastbeef');
+        argus.removeNickByChannel('jalapeno', '#roastbeef');
         
         assert.equal(argus.nickExists(nick), false);
     });
