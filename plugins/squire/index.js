@@ -13,16 +13,13 @@
 var parser     = require('../../lib/messageParser');
 var aee        = require('../../lib/argusEventEmitter');
 var admin      = require('../../plugins/admin');
-var minimatch  = require('minimatch');
-var _          = require('underscore');
 var argus      = require('../../lib/argus');
 var db         = require('../../lib/db');
 var when       = require('when');
+var minimatch  = require('minimatch');
+var _          = require('underscore');
 var squire     = {
     cfg: {
-        adminsAreFriends: true,
-        friendAction    : 'op',
-        foeAction       : 'kick',
         channels        : [],
         nicks           : {
             
@@ -35,30 +32,33 @@ squire.reload = function (options) {
     squire.scan();
 };
 
-squire.loadConfig = function (config) {
+squire.loadConfig = function (options) {
+    squire.client    = options.client;
+    squire.argus     = options.argus;
+    
+    //console.log(options.config);
+    
     squire.getHostmasks()
           .then(function (hostmasks) {
-            squire.cfg.friends = _.pluck(_.filter(hostmasks, function (s) {
-                return s.isFriend === 1;
-            }), 'hostmask');
-            
-            squire.cfg.foes = _.pluck(_.filter(hostmasks, function (s) {
-                return s.isFriend === 0;
-            }), 'hostmask');
-            
-            squire.cfg       = _.extend(squire.cfg, config.plugins.squire);
-            squire.adminCfg  = config.plugins.admin;
+                squire.cfg.friends = _.filter(hostmasks, function (s) {
+                    return s.isFriend === 1;
+                });
+                
+                squire.cfg.foes = _.filter(hostmasks, function (s) {
+                    return s.isFriend === 0;
+                });
+                
+                squire.cfg = _.extend(squire.cfg, options.config.plugins.squire);
           })
           .catch(function (e) {
-            //console.log(e.stack);
+                console.log('squire.getHostmasks error: ');
+                console.log(e.stack);
           });
 };
 
 squire.init = function (options) {
     var client       = options.client;
-    squire.client    = client;
-    squire.argus     = options.argus;
-    squire.loadConfig(options.config);
+    squire.loadConfig(options);
     
     options.ame.on('actionableMessage', function (info) {
         var targetUpgradeable = squire.isTargetUpgradeable(info);
@@ -89,6 +89,11 @@ squire.init = function (options) {
                 case 'if':
                     squire.processIsFriendCommand(info, options);
                 break;
+                
+                case 'scan':
+                    squire.scan();
+                    client.say(info.channel, 'scanning!');
+                break;
             }
         }
     });
@@ -112,12 +117,6 @@ squire.init = function (options) {
     client.addListener('join', function (nick, message) {
         squire.scan();
     });
-    
-    var tenSeconds = 10000;
-    
-    setInterval(function () {
-        squire.scan();
-    }, tenSeconds);
 };
 
 squire.processIsFriendCommand = function (info, options) {
@@ -139,7 +138,7 @@ squire.processIsFriendCommand = function (info, options) {
         
     } else {
         errorCB();
-    }    
+    }
 };
 
 squire.processAddFriendCommand = function (info, options) {
@@ -194,10 +193,10 @@ squire.processRemoveFriendCommand = function (info, options) {
 };
 
 squire.scan = function () {
-    var channels = squire.argus.channels;
+    var channels = squire.argus.channels instanceof Array ? squire.argus.channels : [];
     var cur;
     
-    console.log(new Date() + ' Squire started scanning...');
+    console.log('Squire: scanning @ ' + new Date());
     
     for (var j = 0; j < channels.length; j++) {
         cur = channels[j];
@@ -210,25 +209,27 @@ squire.scan = function () {
     }
 };
 
-squire.isTargetUpgradeable = function (info) {
-    var targetHasOpsAlready = false;
-    var hasMask             = false;
-    var botHasOps           = false;
+squire.isTargetUpgradeable  = function (info) {
+    var targetHasModeAlready = false;
+    var hasMask              = false;
+    var botHasOps            = false;
     
-    // If they don't already have ops
-    targetHasOpsAlready = argus.hasMode(_.extend(info, {
-        mode: '@'
+    var user = _.find(squire.cfg.friends, function (s) {
+        return s.hostmask === info.hostmask;
+    });
+    
+    // If they don't already have mode
+    targetHasModeAlready = argus.hasMode(_.extend(info, {
+        mode: user ? user.mode : '+'
     }));
     
     // And this item has a hostmask
-    hasMask             = typeof info.hostmask !== 'undefined';
+    hasMask             = typeof info.hostmask === 'string';
     
     // And the bot has ops in that channel
     botHasOps           = argus.botHasOpsInChannel(info.channel, squire.client.config.nick);
     
-    //console.log('chan: ' + info.channel + ' nick: ' + info.nick + ' ops: ' + botHasOps);
-    
-    return hasMask && botHasOps && !targetHasOpsAlready;
+    return hasMask && botHasOps && !targetHasModeAlready;
 };
 
 squire.isBotInChannel = function (channel) {
@@ -238,28 +239,32 @@ squire.isBotInChannel = function (channel) {
 };
 
 squire.performAction = function (info) {
-    var command, words;
+    var user = _.find(squire.cfg.friends, function (s) {
+        return s.hostmask === info.hostmask;
+    });
     
-    if (squire.isFriend(info.hostmask)) {
-        //console.log(info.hostmask + ' is friend');
-        squire.client.send('MODE', info.channel, '+o', info.nick);
-    }
+    var mode = user ? user.mode : false;
     
-    if (squire.isFoe(info.hostmask)) {
-        //console.log(info.hostmask + ' is foe');
-        squire.client.send('MODE', info.channel, '-o', info.nick);
+    if (mode) {
+        if (squire.isFriend(info.hostmask)) {
+            squire.client.send('MODE', info.channel, '+' + mode, info.nick);
+        }
+        
+        if (squire.isFoe(info.hostmask)) {
+            squire.client.send('MODE', info.channel, '-' + mode, info.nick);
+        }
     }
 };
 
 squire.isFriend = function (hostmask) { 
-    var cfgFriend   = squire.match(hostmask, squire.cfg.friends);
-    var isAdmin     = admin.hostmaskIsAdmin(hostmask);
+    var cfgFriend = squire.match(hostmask, _.pluck(squire.cfg.friends, 'hostmask'));
+    var isAdmin   = admin.hostmaskIsAdmin(hostmask);
     
     return cfgFriend || isAdmin;
 };
 
 squire.isFoe = function (hostmask) { 
-    return squire.match(hostmask, squire.cfg.foes);
+    return squire.match(hostmask, _.pluck(squire.cfg.foes, 'hostmask'));
 };
 
 squire.match = function (needle, haystack) {
@@ -278,9 +283,10 @@ squire.match = function (needle, haystack) {
 };
 
 squire.getHostmasks = function () {
-    var cols  = ['hostmask', 
-                 'upgrade_type AS upgradeType', 
-                 'is_friend AS isFriend'];
+    // I just wanted this to line up, okay?
+    var cols  = ['hostmask     AS hostmask', 
+                 'mode         AS mode', 
+                 'is_friend    AS isFriend'];
     var def   = when.defer();
     var query = [
         'SELECT ',
@@ -308,15 +314,13 @@ squire.addFriend = function (options) {
     admin.grantChannelOperatorStatus(options, options.nick);
     
     var query = [
-        "REPLACE INTO squire_hostmasks (hostmask, upgrade_type, nick)",
+        "REPLACE INTO squire_hostmasks (hostmask, mode, nick)",
         "VALUES(?, ?, ?)"
     ].join("\n");
     
-    var params = [options.hostmask, options.upgradeType || 'op', options.nick];
+    var params = [options.hostmask, options.mode || 'v', options.nick];
     
     var qry    = db.connection.query(query, params, function (err, result) {
-        //console.log('squire.addFriend: ', result);
-        
         if (err && result) {
             def.reject(err);
         } else {
@@ -336,8 +340,6 @@ squire.removeFriend = function (hostmask) {
     var params = [hostmask];
     
     var qry    = db.connection.query(query, params, function (err, result) {
-        //console.log('squire.removeFriend: ', result);
-        
         if (err && result) {
             def.reject(err);
         } else {
