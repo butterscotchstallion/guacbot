@@ -108,6 +108,8 @@ admin.executeCommand = function (info) {
     if (!admin.userIsAdmin(info)) {    
         var msg = admin.getAccessDeniedMsg(info.pluginCfg);
         
+        //info.client.say(info.channel, 'no');
+        
         if (msg) {
             info.client.say(info.channel, msg);
         }
@@ -215,6 +217,12 @@ admin.executeCommand = function (info) {
             }
             
             admin.unbanByHost(channel, hostmask);
+        break;
+        
+        case 'restart':
+            info.client.say(info.channel, 'aight');
+            
+            process.exit();
         break;
         
         // Unknown command - this should probably never happen
