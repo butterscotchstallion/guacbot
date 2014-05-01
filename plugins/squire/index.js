@@ -28,15 +28,15 @@ var squire     = {
 };
 
 squire.reload = function (options) {
-    squire.loadConfig(options.config);
+    squire.loadConfig(options);
     squire.scan();
 };
 
-squire.loadConfig = function (options) {
-    squire.client    = options.client;
-    squire.argus     = options.argus;
-    
-    //console.log(options.config);
+squire.loadConfig      = function (options) {
+    squire.client      = options.client;
+    squire.argus       = options.argus;
+    squire.wholeConfig = options.config;
+    squire.channels    = options.config.channels;
     
     squire.getHostmasks()
           .then(function (hostmasks) {
@@ -48,7 +48,7 @@ squire.loadConfig = function (options) {
                     return s.isFriend === 0;
                 });
                 
-                squire.cfg = _.extend(squire.cfg, options.config.plugins.squire);
+                squire.cfg = _.extend(squire.cfg, squire.wholeConfig.plugins.squire);
           })
           .catch(function (e) {
                 console.log('squire.getHostmasks error: ');
@@ -112,6 +112,10 @@ squire.init = function (options) {
     
     aee.on('adminHostmaskBanned', function (info) {
         client.send('MODE', info.channel, '-b', info.hostmask);
+    });
+    
+    aee.on('allHostmasksProcessed', function (info) {
+        squire.scan();
     });
     
     client.addListener('join', function (nick, message) {
@@ -193,7 +197,7 @@ squire.processRemoveFriendCommand = function (info, options) {
 };
 
 squire.scan = function () {
-    var channels = squire.argus.channels instanceof Array ? squire.argus.channels : [];
+    var channels = squire.argus.channels || [];
     var cur;
     
     console.log('Squire: scanning @ ' + new Date());
@@ -205,6 +209,8 @@ squire.scan = function () {
         
         if (targetUpgradeable) {
             squire.performAction(cur);
+        } else {
+            console.log(cur, ' not upgradeable');
         }
     }
 };
@@ -227,7 +233,11 @@ squire.isTargetUpgradeable  = function (info) {
     hasMask             = typeof info.hostmask === 'string';
     
     // And the bot has ops in that channel
-    botHasOps           = argus.botHasOpsInChannel(info.channel, squire.client.config.nick);
+    botHasOps           = argus.botHasOpsInChannel(info.channel, squire.wholeConfig.nick);
+    
+    //console.log('targetHasModeAlready: ', targetHasModeAlready);
+    //console.log('hasMask: ', hasMask);
+    //console.log('botHasOps: ', botHasOps);
     
     return hasMask && botHasOps && !targetHasModeAlready;
 };
