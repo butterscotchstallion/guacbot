@@ -121,6 +121,12 @@ squire.init = function (options) {
     client.addListener('join', function (nick, message) {
         squire.scan();
     });
+    
+    var fiveMin = 300000;
+    
+    setInterval(function () {
+        squire.scan();
+    }, fiveMin);
 };
 
 squire.processIsFriendCommand = function (info, options) {
@@ -209,8 +215,6 @@ squire.scan = function () {
         
         if (targetUpgradeable) {
             squire.performAction(cur);
-        } else {
-            console.log(cur, ' not upgradeable');
         }
     }
 };
