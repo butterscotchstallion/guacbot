@@ -173,7 +173,7 @@ describe('argus.removeNick', function () {
         
         assert.equal(argus.nickExists(nick), true);
         
-        argus.removeNickByChannel('jalapeno', '#roastbeef');
+        argus.removeNick('jalapeno', '#roastbeef');
         
         assert.equal(argus.nickExists(nick), false);
     });
