@@ -206,7 +206,7 @@ squire.scan = function () {
     var channels = squire.argus.channels || [];
     var cur;
     
-    console.log('Squire: scanning @ ' + new Date());
+    //console.log('Squire: scanning @ ' + new Date());
     
     for (var j = 0; j < channels.length; j++) {
         cur = channels[j];
