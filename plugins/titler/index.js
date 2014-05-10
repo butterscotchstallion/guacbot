@@ -8,6 +8,7 @@ var request    = require('request');
 var ignore     = require('../ignore/');
 var parser     = require('../../lib/messageParser');
 var db         = require('../../lib/db');
+var gfycat     = require('../../plugins/gfycat');
 var moment     = require('moment');
 var cheerio    = require('cheerio');
 var easyimg    = require('easyimage');
@@ -260,7 +261,9 @@ titler.sendHTTPRequest = function (options, retries) {
             if (isWebsite) {
                 var isOK = response.statusCode >= 200 && response.statusCode <= 400;
                 
-                console.log('retries: ', retries);
+                if (retryEnabled) {
+                    console.log('retries: ', retries);
+                }
                 
                 if (isOK) {
                     options.website(body);                    
@@ -370,7 +373,7 @@ titler.getTitle = function (url, callback) {
         var info = u.parse(url);
         var title;
         
-        if (info.host) {            
+        if (info.host) {        
             // If youtube link, query the API and get extra info about the video
             if (titler.isYoutubeURL(info.host)) {
                 // Build title based on API data
@@ -382,10 +385,23 @@ titler.getTitle = function (url, callback) {
             } else {
                 var websiteCallback  = function (html) {
                     var isTwitterURL = titler.isTwitterURL(info);
+                    var isGfycatURL  = gfycat.isGfycatURL(url);
                     
                     if (isTwitterURL) {
                         twitter.getTweet(html, function (tweet) {
                             callback(tweet);
+                        });                    
+                    } else if (isGfycatURL) {
+                        gfycat.getInfo({
+                            url : url,
+                            done: function (options) {                                
+                                var msg = gfycat.getMessage(options.parsed);
+                                
+                                callback(msg);
+                            },
+                            fail: function (error) {
+                                console.log('titler gfycat failure: ', error);
+                            }
                         });
                     } else {
                         titler.parseHTMLAndGetTitle(html, function (title) {
