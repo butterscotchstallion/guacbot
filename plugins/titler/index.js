@@ -77,7 +77,7 @@ titler.init = function (options) {
         var link = titler.getFirstLinkFromString(info.message);
         
         if (link && link.length > 0) {
-            titler.getTitle (link, function (title) {
+            titler.getTitle(link, function (title) {
                 if (title) {
                     client.say(info.channel, title);
                 }
@@ -373,35 +373,39 @@ titler.getTitle = function (url, callback) {
         var info = u.parse(url);
         var title;
         
-        if (info.host) {        
+        if (info.host) {
+            var isGfycatURL  = gfycat.isGfycatURL(url);
+            var isYTURL      = titler.isYoutubeURL(info.host);
+            
             // If youtube link, query the API and get extra info about the video
-            if (titler.isYoutubeURL(info.host)) {
+            if (isYTURL) {
                 // Build title based on API data
                 titler.getYoutubeVideoInfo(url, function (data) {              
                     title = titler.getYoutubeTitleFromTemplate(data);
                     
                     callback(title);
                 });
+            } else if (isGfycatURL) {
+                console.log('gfyurl: ' + url);
+                
+                gfycat.getInfo({
+                    url : url,
+                    done: function (options) {                                
+                        var msg = gfycat.getMessage(options.parsed);
+                        
+                        callback(msg);
+                    },
+                    fail: function (error) {
+                        console.log('titler gfycat failure: ', error);
+                    }
+                });
             } else {
                 var websiteCallback  = function (html) {
                     var isTwitterURL = titler.isTwitterURL(info);
-                    var isGfycatURL  = gfycat.isGfycatURL(url);
                     
                     if (isTwitterURL) {
                         twitter.getTweet(html, function (tweet) {
                             callback(tweet);
-                        });                    
-                    } else if (isGfycatURL) {
-                        gfycat.getInfo({
-                            url : url,
-                            done: function (options) {                                
-                                var msg = gfycat.getMessage(options.parsed);
-                                
-                                callback(msg);
-                            },
-                            fail: function (error) {
-                                console.log('titler gfycat failure: ', error);
-                            }
                         });
                     } else {
                         titler.parseHTMLAndGetTitle(html, function (title) {
