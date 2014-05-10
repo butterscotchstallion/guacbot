@@ -21,6 +21,7 @@ var pm         = require('../../lib/pluginManager');
 var when       = require('when');
 var hmp        = require('../../lib/helpMessageParser');
 var _          = require('underscore');
+var historian  = require('../../plugins/historian');
 
 var titler  = {
     imageInfoEnabled: false,
@@ -65,18 +66,13 @@ titler.loadConfig = function (cfg) {
 };
 
 titler.init = function (options) {
-    var client = options.client;
-    
+    var client          = options.client;    
     titler.client       = client;
     titler.wholeConfig  = options.config;
     titler.pluginConfig = options.config.plugins.titler;
     titler.loadConfig(options.config);
     
     options.ame.on('actionableMessage', function (info) {
-        if (!options.pluginManager.isValidChannel(info.channel, 'titler')) {
-            return false;
-        }
-        
         var link = titler.getFirstLinkFromString(info.message);
         
         if (link && link.length > 0) {
@@ -118,8 +114,7 @@ titler.init = function (options) {
 };
 
 titler.getYoutubeTitleFromTemplate = function (data) {
-    var title           = '{{{title}}}';
-    var details         = titler.getYoutubeVideoTitleDetails(data);
+    var details = titler.getYoutubeVideoTitleDetails(data);
     
     return hmp.getMessage({
         plugin : 'titler',
@@ -141,7 +136,8 @@ titler.getTitleFromTemplate = function (title) {
 };
 
 titler.getFirstLinkFromString = function (input) {
-    var link  = '', word = '';
+    var link  = '';
+    var word  = '';
     var words = parser.splitMessageIntoWords(input);
 
     /**
@@ -170,7 +166,7 @@ titler.matchURL = function (url) {
 };
 
 titler.isIgnoredDomain = function (domain) {
-    return titler.pluginConfig.ignoredDomains.length && 
+    return titler.pluginConfig.ignoredDomains.length > 0 && 
            titler.pluginConfig.ignoredDomains.indexOf(domain) !== -1;
 };
 
@@ -180,7 +176,7 @@ titler.getUserAgent = function () {
     var agent        = defaultAgent;
     
     if (agents.length > 0) {
-        agent = agents[Math.floor(Math.random() * agents.length)];
+        agent = agents[~~(Math.random() * agents.length)];
     }
     
     return agent;
@@ -201,8 +197,8 @@ titler.requestWebsite = function (options) {
         var httpOptions = {
             uri    : options.url,
             headers: {
-                'user-agent': titler.getUserAgent(),
-                'referrer'  : titler.getReferrer(urlInfo)
+                'User-Agent': titler.getUserAgent(),
+                'Referer'   : titler.getReferrer(urlInfo)
             }
         };
         
@@ -216,8 +212,6 @@ titler.requestWebsite = function (options) {
         
         // Don't even bother checking anything else unless this is a SA URL
         if (isSAEnabled && isSAURL) {
-            //console.log('is sa url');
-            
             var isSAPluginLoaded  = pm.getLoadedPlugins().indexOf('somethingawful') !== -1;
             
             if (isSAPluginLoaded) {
@@ -243,8 +237,6 @@ titler.requestWebsite = function (options) {
                 console.log('sa plugin not loaded');
             }
         } else {
-            //console.log('not sa url');
-            //titler.sendHTTPRequest(options, websiteCallback, imageCallback);
             titler.sendHTTPRequest({
                 httpOptions: httpOptions,
                 website    : options.websiteCallback,
@@ -255,8 +247,12 @@ titler.requestWebsite = function (options) {
     }
 };
 
-titler.sendHTTPRequest = function (options) {    
-    request(options.httpOptions, function (error, response, body) {            
+titler.sendHTTPRequest = function (options, retries) {    
+    request(options.httpOptions, function (error, response, body) {
+        var maxRetries    = 2;
+        var retryEnabled  = false;
+        var retries       = retries || 0;
+        
         if (!error) {
             var type      = response.headers['content-type'];
             var isWebsite = titler.isHTML(type);
@@ -264,16 +260,35 @@ titler.sendHTTPRequest = function (options) {
             if (isWebsite) {
                 var isOK = response.statusCode >= 200 && response.statusCode <= 400;
                 
+                console.log('retries: ', retries);
+                
                 if (isOK) {
                     options.website(body);                    
                 } else {
-                   console.log('titler error: ',
+                    console.log('titler error: ',
                         error,
                         ' response code:',
                         response.statusCode,
                         " URL: ", options.url);
-                        
-                    options.error(response.statusCode);
+                    
+                    if (retryEnabled) {
+                        if (retries < maxRetries) {
+                            console.log('retrying');
+                            
+                            setTimeout(function () {
+                                console.log('sending request');
+                                
+                                titler.sendHTTPRequest(options, retries);
+                                retries++;
+                                
+                            }, 1000);
+                            
+                        } else {
+                            console.log('max retries exceeded');
+                            
+                            options.error(response.statusCode);
+                        }
+                    }
                 }
                 
             } else {
@@ -365,25 +380,27 @@ titler.getTitle = function (url, callback) {
                     callback(title);
                 });
             } else {
-                var websiteCallback = function (html) {
+                var websiteCallback  = function (html) {
                     var isTwitterURL = titler.isTwitterURL(info);
-                    //var isSAURL      = sa.isSAURL(info);
-                    var isSAURL      =  false;
                     
                     if (isTwitterURL) {
                         twitter.getTweet(html, function (tweet) {
                             callback(tweet);
                         });
-                    } /*else if (isSAURL) {
-                        twitter.getSATitle(html, function (post) {
-                            
-                        });
-                    }*/ else {
+                    } else {
                         titler.parseHTMLAndGetTitle(html, function (title) {
                             if (title) {
                                 title = titler.getTitleFromTemplate(title);
                                 
                                 callback(title);
+                                
+                                // How to get log id here?
+                                /*
+                                historian.updateWebsiteInfo({
+                                    
+                                });
+                                */
+                                
                             } else {
                                 console.log('titler: error getting title for ', url);
                             }
