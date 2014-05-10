@@ -21,7 +21,7 @@ var pm         = require('../../lib/pluginManager');
 var when       = require('when');
 var hmp        = require('../../lib/helpMessageParser');
 var _          = require('underscore');
-var historian  = require('../../plugins/historian');
+//var historian  = require('../../plugins/historian');
 
 var titler  = {
     imageInfoEnabled: false,
