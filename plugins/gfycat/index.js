@@ -50,7 +50,7 @@ gfy.getFirstURLInString = function (input) {
     return url;
 };
 
-gfy.isGfycatURL = gfycat.isGfycatURL(url);
+gfy.isGfycatURL = gfycat.isGfycatURL;
 gfy.getInfo     = gfycat.getInfo;
 
 module.exports  = gfy;
