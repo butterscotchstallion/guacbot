@@ -378,8 +378,6 @@ titler.getTitle = function (url, callback) {
         var title;
         
         if (info.host) {
-            //console.log(info);
-            
             var isGfycatURL  = gfycat.isGfycatURL(url) && info.path.length > 1;
             var isYTURL      = titler.isYoutubeURL(info.host);
             
@@ -418,7 +416,7 @@ titler.getTitle = function (url, callback) {
                 titler.requestWebsite({
                     url            : url,
                     websiteCallback: titler.websiteCallback,
-                    imageCallback  : imageCallback,
+                    imageCallback  : titler.imageCallback,
                     errorCallback  : titler.errorCallback,
                     callback       : callback
                 });
@@ -433,6 +431,10 @@ titler.getTitle = function (url, callback) {
 };
 
 titler.imageCallback = function (err, img, stderr, length, filename) {
+    if (!titler.imageInfoEnabled) {
+        return false;
+    }
+    
     var hrfs  = length ? filesize(length, 0) : 0;
     var msg   = [img.type, 
                  img.width + 'x' + img.height];
