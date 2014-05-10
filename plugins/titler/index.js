@@ -22,6 +22,8 @@ var pm         = require('../../lib/pluginManager');
 var when       = require('when');
 var hmp        = require('../../lib/helpMessageParser');
 var _          = require('underscore');
+var u          = require('url');
+
 //var historian  = require('../../plugins/historian');
 
 var titler  = {
@@ -240,9 +242,11 @@ titler.requestWebsite = function (options) {
         } else {
             titler.sendHTTPRequest({
                 httpOptions: httpOptions,
+                url        : options.url,
                 website    : options.websiteCallback,
                 image      : options.imageCallback,
-                error      : options.errorCallback
+                error      : options.errorCallback,
+                callback   : options.callback
             });
         }
     }
@@ -266,7 +270,7 @@ titler.sendHTTPRequest = function (options, retries) {
                 }
                 
                 if (isOK) {
-                    options.website(body);                    
+                    options.website(body, options.url, options.callback);                    
                 } else {
                     console.log('titler error: ',
                         error,
@@ -374,7 +378,9 @@ titler.getTitle = function (url, callback) {
         var title;
         
         if (info.host) {
-            var isGfycatURL  = gfycat.isGfycatURL(url);
+            //console.log(info);
+            
+            var isGfycatURL  = gfycat.isGfycatURL(url) && info.path.length > 1;
             var isYTURL      = titler.isYoutubeURL(info.host);
             
             // If youtube link, query the API and get extra info about the video
@@ -386,103 +392,35 @@ titler.getTitle = function (url, callback) {
                     callback(title);
                 });
             } else if (isGfycatURL) {
-                console.log('gfyurl: ' + url);
-                
                 gfycat.getInfo({
                     url : url,
-                    done: function (options) {                                
-                        var msg = gfycat.getMessage(options.parsed);
-                        
-                        callback(msg);
+                    done: function (options) {
+                        if (!options.parsed.error) {
+                            var msg = gfycat.getMessage(options.parsed);
+                            
+                            callback(msg);
+                            
+                        } else {
+                            // Error getting API info - parse as regular website
+                            titler.requestWebsite({
+                                url            : url,
+                                websiteCallback: titler.websiteCallback,
+                                errorCallback  : titler.errorCallback,
+                                callback       : callback
+                            });
+                        }
                     },
                     fail: function (error) {
                         console.log('titler gfycat failure: ', error);
                     }
                 });
             } else {
-                var websiteCallback  = function (html) {
-                    var isTwitterURL = titler.isTwitterURL(info);
-                    
-                    if (isTwitterURL) {
-                        twitter.getTweet(html, function (tweet) {
-                            callback(tweet);
-                        });
-                    } else {
-                        titler.parseHTMLAndGetTitle(html, function (title) {
-                            if (title) {
-                                title = titler.getTitleFromTemplate(title);
-                                
-                                callback(title);
-                                
-                                // How to get log id here?
-                                /*
-                                historian.updateWebsiteInfo({
-                                    
-                                });
-                                */
-                                
-                            } else {
-                                console.log('titler: error getting title for ', url);
-                            }
-                        });
-                    }
-                };
-                
-                var imageCallback = function (err, img, stderr, length, filename) {
-                    var hrfs  = length ? filesize(length, 0) : 0;
-                    var msg   = [img.type, 
-                                 img.width + 'x' + img.height];
-                    
-                    if (length) {             
-                        msg.push(hrfs);
-                    }
-                    
-                    var title = msg.join(' ');
-                    
-                    if (err) {
-                        console.log('Image info error: ', err);
-                    } else {
-                        callback(title);
-                        fs.unlinkSync(filename);
-                        console.log('file deleted: ', filename);
-                    }
-                };
-                
-                var errorCallback = function (code) {
-                    switch (code) {
-                        case 404:
-                            var msg = hmp.getMessage({
-                                plugin: 'titler',
-                                config: titler.wholeConfig,
-                                data  : {
-                                    code: code
-                                },
-                                message: '404'
-                            });
-                            
-                            callback(msg);
-                        break;
-                        
-                        default:
-                            var msg = hmp.getMessage({
-                                plugin: 'titler',
-                                config: titler.wholeConfig,
-                                data  : {
-                                    code: code
-                                },
-                                message: 'httpError'
-                            });
-                            
-                            callback(msg);
-                        break;
-                    }
-                };
-                
                 titler.requestWebsite({
                     url            : url,
-                    websiteCallback: websiteCallback,
+                    websiteCallback: titler.websiteCallback,
                     imageCallback  : imageCallback,
-                    errorCallback  : errorCallback
+                    errorCallback  : titler.errorCallback,
+                    callback       : callback
                 });
             }
         } else {
@@ -491,6 +429,85 @@ titler.getTitle = function (url, callback) {
         
     } else {
         callback('');
+    }
+};
+
+titler.imageCallback = function (err, img, stderr, length, filename) {
+    var hrfs  = length ? filesize(length, 0) : 0;
+    var msg   = [img.type, 
+                 img.width + 'x' + img.height];
+    
+    if (length) {             
+        msg.push(hrfs);
+    }
+    
+    var title = msg.join(' ');
+    
+    if (err) {
+        console.log('Image info error: ', err);
+    } else {
+        callback(title);
+        fs.unlinkSync(filename);
+        console.log('file deleted: ', filename);
+    }
+};
+
+titler.websiteCallback = function (html, url, callback) {
+    var info         = u.parse(url);
+    var isTwitterURL = titler.isTwitterURL(info);
+    
+    if (isTwitterURL) {
+        twitter.getTweet(html, function (tweet) {
+            callback(tweet);
+        });
+    } else {
+        titler.parseHTMLAndGetTitle(html, function (title) {
+            if (title) {
+                title = titler.getTitleFromTemplate(title);
+                
+                callback(title);
+                
+                // How to get log id here?
+                /*
+                historian.updateWebsiteInfo({
+                    
+                });
+                */
+                
+            } else {
+                console.log('titler: error getting title for ', url);
+            }
+        });
+    }
+};
+
+titler.httpErrorCallback = function (code) {
+    switch (code) {
+        case 404:
+            var msg = hmp.getMessage({
+                plugin: 'titler',
+                config: titler.wholeConfig,
+                data  : {
+                    code: code
+                },
+                message: '404'
+            });
+            
+            callback(msg);
+        break;
+        
+        default:
+            var msg = hmp.getMessage({
+                plugin: 'titler',
+                config: titler.wholeConfig,
+                data  : {
+                    code: code
+                },
+                message: 'httpError'
+            });
+            
+            callback(msg);
+        break;
     }
 };
 
