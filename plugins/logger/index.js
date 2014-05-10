@@ -4,29 +4,39 @@
  */
 "use strict";
 
-var db     = require('../../lib/db');
-var logger = {};
+var db           = require('../../lib/db');
+var configurator = require('../../lib/configurator');
+var _            = require('underscore');
+var logger       = {};
 
-logger.init = function (options) {
-    var client = options.client;
+logger.init      = function (options) {
+    var client   = options.client;
+    var logChans = _.filter(options.config.channels, function (c) {
+        return c.loggingEnabled === 1;
+    });
+    var channels = _.pluck(logChans, 'name');
     
     // Log channel messages
     client.addListener('message#', function (nick, channel, text, message) {
-        var info = {
-            nick: nick,
-            channel: channel,
-            host: message.user + '@' + message.host,
-            message: text
-        };
+        var isLoggableChannel = channels.indexOf(channel) !== -1;
         
-        logger.log(info, function (result, err) {
-            if (err) {
-                console.log('logger error: ', err);
-            } else {
-                //console.log(result);
-                //console.log(info);
-            }
-        });
+        if (isLoggableChannel) {
+            var info = {
+                nick   : nick,
+                channel: channel,
+                host   : message.user + '@' + message.host,
+                message: text
+            };
+            
+            logger.log(info, function (result, err) {
+                if (err) {
+                    console.log('logger error: ', err);
+                } else {
+                    //console.log(result);
+                    //console.log(info);
+                }
+            });
+        }
     });
 };
 
@@ -339,6 +349,10 @@ logger.getLastMention = function (args) {
     });
 };
 
+/**
+ * Used by Quote plugin "seen" command
+ *
+ */
 logger.getLastMessage = function (args) {
     var cols = ['id', 'nick', 'host', 'message', 'ts', 'channel'];
     
@@ -367,6 +381,10 @@ logger.getLastMessage = function (args) {
     db.connection.query(q, params, function (err, rows, fields) {
         args.callback(rows, err);
     });
+};
+
+logger.replaceWildcards = function (input) {
+    return input.replace(/\*/g, "%");
 };
 
 logger.getFirstMessage = function (args) {
