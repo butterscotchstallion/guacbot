@@ -185,6 +185,10 @@ quote.init     = function (options) {
                 var channel  = info.channel;
                 var verbatim = false;
                 
+                if (~~(Math.random() * 2) === 1) {
+                    client.send('KICK', info.channel, info.nick, "lol wordcount");
+                }
+                
                 if (query) {
                     if (info.words[2] && info.words[2].charAt(0) === '#') {
                         channel = info.words[2];
@@ -329,6 +333,7 @@ quote.init     = function (options) {
                     };
                     
                     logger.getLastMessage(seenInfo);
+                    
                 } else {
                     var usage = hmp.getMessage({
                         config  : quote.wholeConfig,
