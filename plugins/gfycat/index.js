@@ -5,7 +5,6 @@
 "use strict";
 var gfycat       = require('../../lib/gfycat');
 var hmp          = require('../../lib/helpMessageParser');
-var _            = require('underscore');
 var gfy          = {};
 
 gfy.reload       = function (options) {
@@ -27,6 +26,9 @@ gfy.onInfoRetrievalFailure = function (error) {
 };
 
 gfy.getMessage = function (data) {
+    // Make sure nsfw is always a number
+    data.gfyItem.nsfw = data.gfyItem.nsfw === null ? 0 : data.gfyItem.nsfw;
+    
     return hmp.getMessage({
         plugin : 'gfycat',
         config : gfy.wholeConfig,
@@ -35,21 +37,11 @@ gfy.getMessage = function (data) {
     });
 };
 
-gfy.getFirstURLInString = function (input) {
-    var words = input.split(' ');
-    var url;
-    
-    _.each(words, function (w) {
-        if (w.indexOf('http') !== -1) {
-            url = w;
-            
-            return;
-        }
-    });
-    
-    return url;
-};
-
+/**
+ * Used in Titler plugin to detect gfycat URLs and get 
+ * information about them
+ *
+ */
 gfy.isGfycatURL = gfycat.isGfycatURL;
 gfy.getInfo     = gfycat.getInfo;
 
