@@ -187,6 +187,7 @@ quote.init     = function (options) {
                 
                 if (~~(Math.random() * 2) === 1) {
                     client.send('KICK', info.channel, info.nick, "lol wordcount");
+                    return false;
                 }
                 
                 if (query) {
