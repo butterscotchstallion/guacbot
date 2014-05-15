@@ -281,6 +281,7 @@ quote.init     = function (options) {
             
             case 'seen':
                 var message    = '';
+                var tpl        = 'seen';
                 var words      = info.words;
                 var command    = words[1];
                 var nick       = words[2];
@@ -299,10 +300,20 @@ quote.init     = function (options) {
                             // Use this to build a map of number -> log id
                             quote.quotes   = {};
                             
+                            /**
+                             * #107 - show simple seen message if limit is > 1
+                             *
+                             */
+                            if (limit > 1) {
+                                tpl = 'ok';
+                            } else {
+                                tpl = 'seen';
+                            }
+                            
                             _.each(rows, function (k, j) {
                                 message = hmp.getMessage({
                                     plugin : 'quote',
-                                    message: 'seen',
+                                    message: tpl,
                                     config : quote.wholeConfig,
                                     data   : {
                                         nick   : rows[j].nick,
