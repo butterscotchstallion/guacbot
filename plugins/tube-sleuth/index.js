@@ -163,6 +163,10 @@ sleuth.getYoutubeSearchResponse = function (query, callback) {
     });
 };
 
+sleuth.commafy = function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
 sleuth.parseResponse = function (response, rnd) {
     var entries     = typeof response.feed === 'object' && response.feed.entry || [];
     
@@ -173,18 +177,26 @@ sleuth.parseResponse = function (response, rnd) {
         var link    = video.content.src;
         var id      = _.last(video.id['$t'].split(':'));
         var rating  = typeof video['gd$rating'] !== 'undefined' ? video['gd$rating'].average.toFixed(2) : '';
-        var views   = video['yt$statistics'].viewCount;
-        var likes   = typeof video['yt$rating'] !== 'undefined' ? video['yt$rating'].numLikes : false;
+        var likes   = typeof video['yt$rating'] !== 'undefined' ? video['yt$rating'].numLikes           : false;
+        var views   = 0;
         
-        var commafy = function numberWithCommas(x) {
-            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        };
+        // Bug #108 - don't crash when viewcount is unavailable
+        if (typeof video['yt$statistics'] === 'object') {
+            views = parseInt(video['yt$statistics'].viewCount, 10);
+            
+            if (views > 0) {
+                views = sleuth.commafy(views);
+            }
+            
+        } else {
+            views = "unavailable";
+        }
         
         return {
             title      : title,
-            viewCount  : views > 0 ? commafy(views) : 0,
+            viewCount  : views,
             rating     : rating,
-            likeCount  : likes > 0 ? commafy(likes) : 0,
+            likeCount  : likes > 0 ? sleuth.commafy(likes) : 0,
             id         : id,
             link       : link
         };
