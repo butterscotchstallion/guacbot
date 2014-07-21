@@ -71,6 +71,7 @@ weatherPlugin.init = function (options) {
         
         switch (info.command) {
             case 'weatherspy':
+            case 'weathercreep':
                 if (query) {
                     /** 
                      * We want to let the callback know that this is weatherspy
@@ -88,6 +89,7 @@ weatherPlugin.init = function (options) {
             
             case 'forecast':
             case 'fc':
+            case 'f':
                 if (query) {
                     weatherPlugin.sendResponse(_.extend({
                         query : query,
@@ -104,6 +106,7 @@ weatherPlugin.init = function (options) {
             
             case 'w':
             case 'weather':
+            case 'dubs':
                 if (query) {
                     weatherPlugin.sendResponse(_.extend({
                         query : query,
