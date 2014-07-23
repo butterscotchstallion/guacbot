@@ -280,6 +280,8 @@ quote.init     = function (options) {
             break;
             
             case 'seen':
+            case 'stalk':
+            case 'creep':
                 var message    = '';
                 var tpl        = 'seen';
                 var words      = info.words;
