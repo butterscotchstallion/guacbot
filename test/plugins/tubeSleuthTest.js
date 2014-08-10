@@ -32,6 +32,6 @@ describe('should read search API json and get stuff from it', function () {
         var video = sleuth.parseResponse(data);
         
         assert.equal(video.title, "Clipse - When The Last Time");
-        assert.equal(video.link, "https://www.youtube.com/v/d6VuYsNpYg8?version=3&f=videos&app=youtube_gdata");
+        assert.equal(video.link, "https://youtu.be/d6VuYsNpYg8");
     });
 });

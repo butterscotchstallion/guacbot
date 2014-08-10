@@ -174,7 +174,6 @@ sleuth.parseResponse = function (response, rnd) {
         var idx     = rnd === true ? ~~(Math.random() * entries.length) : 0;
         var video   = entries[idx];
         var title   = video.title['$t'] ? ent.decode(video.title['$t']) : '';
-        var link    = video.content.src;
         var id      = _.last(video.id['$t'].split(':'));
         var rating  = typeof video['gd$rating'] !== 'undefined' ? video['gd$rating'].average.toFixed(2) : '';
         var likes   = typeof video['yt$rating'] !== 'undefined' ? video['yt$rating'].numLikes           : false;
@@ -198,7 +197,7 @@ sleuth.parseResponse = function (response, rnd) {
             rating     : rating,
             likeCount  : likes > 0 ? sleuth.commafy(likes) : 0,
             id         : id,
-            link       : link
+            link       : sleuth.getYTLink(id)
         };
     }
 };
