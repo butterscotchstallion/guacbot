@@ -4,12 +4,14 @@
  */
 "use strict";
 
-var ignore        = require('../ignore/');
-var db            = require('../../lib/db');
-var hmp           = require('../../lib/helpMessageParser');
-var _             = require('underscore');
-var weatherPlugin = {};
-var when          = require('when');
+var ignore           = require('../ignore/');
+var db               = require('../../lib/db');
+var hmp              = require('../../lib/helpMessageParser');
+var _                = require('underscore');
+var weatherPlugin    = {};
+var when             = require('when');
+var WunderNodeClient = require("wundernode", true);
+var admin            = require('../../plugins/admin');
 
 weatherPlugin.reload = function (options) {
     weatherPlugin.loadConfig(options.config.plugins.weather);
@@ -17,20 +19,33 @@ weatherPlugin.reload = function (options) {
 
 weatherPlugin.loadConfig = function (config) {
     weatherPlugin.getConfig(function (wConfig, err) {
-        weatherPlugin.config = _.extend(weatherPlugin.config, wConfig);
+        var debug            = false;    
+        weatherPlugin.config = _.extend(config, wConfig);
+        
+        // wunder client should be initialized here, as it guarantees that
+        // the API key has been loaded from the database already.
+        weatherPlugin.wunder = new WunderNodeClient(weatherPlugin.config.apiKey, debug);    
     });
 };
 
 weatherPlugin.init = function (options) {
     weatherPlugin.wholeConfig = options.config;
-    weatherPlugin.config     = options.config.plugins.weather;
+    weatherPlugin.config      = options.config.plugins.weather;
     weatherPlugin.loadConfig(options.config);
     
     var client               = options.client;
     weatherPlugin.client     = client;
     
     options.ame.on('actionableMessageAddressingBot', function (info) {
-        var query                = info.words.slice(2, info.words.length).join(' ').trim();
+        var query = info.words.slice(2, info.words.length).join(' ').trim();
+        
+        // TODO: move this into a plugin maybe
+        if (query == "33801") {
+            admin.kick(info.channel, info.nick, "keepin it gucci");
+            admin.ban(info.channel, info.nick);
+            
+            return;
+        }
         
         var templateData         = _.extend(info, {
             botNick: client.currentNick
@@ -117,7 +132,85 @@ weatherPlugin.init = function (options) {
                                                     storedCB);
                 }
             break;
+            
+            case 'alerts':
+                if (query) {
+                    weatherPlugin.getAlerts({
+                        query   : query,
+                        callback: weatherPlugin.onAlertsRetrieved,
+                        channel : info.channel
+                    });
+                } else {
+                    weatherPlugin.getStoredLocation(info.info.host,
+                                                    function (stored, err) {
+                        if (stored) {
+                            weatherPlugin.getAlerts({
+                                query   : stored.location,
+                                callback: weatherPlugin.onAlertsRetrieved,
+                                channel : info.channel
+                            });
+                        }                                                
+                    });
+                }
+            break;
         }
+    });
+};
+
+/**
+ *
+ *
+ */
+weatherPlugin.onAlertsRetrieved = function (options) {
+    var alerts    = [];
+    var result    = options.result;
+    var message   = "";
+    var alerts    = result.alerts ? result.alerts : false;
+    var alertsMsg = "";
+    
+    var messages  = hmp.getMessages({
+        messages: ['noAlerts', 'noResults'],
+        plugin  : 'weather',
+        config  : weatherPlugin.wholeConfig
+    });
+    
+    if (alerts && alerts.length > 0) {
+        var firstAlert = alerts[0];
+        
+        firstAlert.message = firstAlert.message.replace(/(?:\r\n|\r|\n)/g, " ");
+        firstAlert.message = firstAlert.message.replace(" * ", "");
+        firstAlert.message = firstAlert.message.replace("...", " ");
+        firstAlert.message = firstAlert.message.substring(0, 400) + "...";
+        
+        // Get templates
+        alertsMsg = hmp.getMessage({
+            message : 'alerts',
+            data    : firstAlert,
+            plugin  : 'weather',
+            config  : weatherPlugin.wholeConfig
+        });
+        
+        message = alertsMsg;
+        
+    } else {
+        if (result.response.error) {
+            message = messages.noResults;
+        } else {
+            message = messages.noAlerts;
+        }
+    }
+    
+    weatherPlugin.client.say(options.channel, message);
+};
+
+weatherPlugin.getAlerts = function (options) {
+    var channel = options.channel;
+    
+    weatherPlugin.wunder.alerts(options.query, function (err, result) {
+        weatherPlugin.onAlertsRetrieved({
+            result : result,
+            channel: channel
+        });
     });
 };
 
@@ -280,15 +373,13 @@ weatherPlugin.parseResponse = function (response) {
     return conditions;
 };
 
-weatherPlugin.query = function (cfg) {
-    var WunderNodeClient = require("wundernode", true);
-    var URL              = require('url');
-    var wunder           = new WunderNodeClient(cfg.apiKey, cfg.debug);
-    var result           = '';
+weatherPlugin.query = function (cfg) {    
+    var URL    = require('url');
+    var result = '';
     
     switch (cfg.type) {
         case 'forecast':
-            wunder.forecast(cfg.query, function (err, response) {
+            weatherPlugin.wunder.forecast(cfg.query, function (err, response) {
                 if (err) {
                     result = err;
                 } else {
@@ -304,7 +395,7 @@ weatherPlugin.query = function (cfg) {
         
         default:
         case 'conditions':   
-            wunder.conditions(cfg.query, function (err, response) {
+            weatherPlugin.wunder.conditions(cfg.query, function (err, response) {
                 if (err) {
                     result = err;
                 } else {
