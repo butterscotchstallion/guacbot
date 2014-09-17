@@ -377,7 +377,11 @@ admin.ban = function (channel, nick, duration) {
             }
         }
         
-        if (ms) {
+        /**
+         * If duration is passed explicitly as false, don't unban ever
+         *
+         */
+        if (ms && duration !== false) {
             console.log('banning for: ', ms, 'ms (', ms / 60000, ')');
             
             setTimeout(function () {

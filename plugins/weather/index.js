@@ -40,9 +40,9 @@ weatherPlugin.init = function (options) {
         var query = info.words.slice(2, info.words.length).join(' ').trim();
         
         // TODO: move this into a plugin maybe
-        if (query == "33801") {
+        if (query == "33801" && info.channel == "#dorkd" && info.nick !== "plb") {
             admin.kick(info.channel, info.nick, "keepin it gucci");
-            admin.ban(info.channel, info.nick);
+            admin.ban(info.channel, info.nick, false);
             
             return;
         }
