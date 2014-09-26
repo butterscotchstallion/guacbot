@@ -353,7 +353,7 @@ titler.isHTML = function (contentType) {
 
 titler.parseHTMLAndGetTitle = function (html, callback) {
     var $     = cheerio.load(html);
-    var title = $('title').text();
+    var title = $('title').first().text();
     
     //console.log('titler.parseHTMLAndGetTitle :: title: ', typeof title, title.length);
     

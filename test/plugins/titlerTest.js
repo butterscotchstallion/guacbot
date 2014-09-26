@@ -257,13 +257,23 @@ describe('URL Matcher', function() {
             'https://www.youtube.com/watch?v=mqFLXayD6e8',
             'http://www.youtube.com/watch?v=7B9z6VEzfDE',
             'https://www.youtube.com/watch?v=MJ17szvj1gk&feature=player_detailpage',
-            'www.google.com'
+            'www.google.com',
+            'www.youtube.com/watch?v=oAq_CVUOGRU'
         ];
         
         var validURLsLen = validURLs.length;
+        //var url          = require('url');
+        //var info;
         
         for (var j = 0; j < validURLsLen; j++) {
+            //info = url.parse(validURLs[j], true);
+            
+            //if (!info.host) {
+            //    console.log(info);
+           // }
+            
             assert.equal(titler.matchURL(validURLs[j]), true);
+            //assert.notEqual(info.host.length, 0);
         }
     });
     
@@ -288,6 +298,17 @@ describe('html', function() {
         
         titler.parseHTMLAndGetTitle(html, function (title) {
             assert.equal(title, 'Chuck Palahniuk Announces a Graphic Novel Sequel to FIGHT CLUB! - ChuckPalahniuk');
+            done();
+        });
+    });
+});
+
+describe('Bug #112', function() {
+    it('should find the title tag in this html', function (done) {
+        var html = fs.readFileSync('fixture/ello.html', 'utf8');
+        
+        titler.parseHTMLAndGetTitle(html, function (title) {
+            assert.equal(title, "Ello | familyguy");
             done();
         });
     });
