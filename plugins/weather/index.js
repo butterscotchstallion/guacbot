@@ -133,6 +133,7 @@ weatherPlugin.init = function (options) {
                 }
             break;
             
+            /** Disabled until PR is accepted
             case 'alerts':
                 if (query) {
                     weatherPlugin.getAlerts({
@@ -153,6 +154,7 @@ weatherPlugin.init = function (options) {
                     });
                 }
             break;
+            */
         }
     });
 };
