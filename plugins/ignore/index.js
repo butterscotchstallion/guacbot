@@ -44,7 +44,7 @@ ig.init   = function (options) {
                     }
                 });
             } else {
-                admin.kick(info.channel, info.nick, "lol");
+                console.log("Non-admin attempted to ignore: ", info.info);
             }
         }
     });
