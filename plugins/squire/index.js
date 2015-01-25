@@ -27,6 +27,9 @@ var squire     = {
     }
 };
 
+var CHANNEL_MODE_OP    = "o";
+var CHANNEL_MODE_VOICE = "v";
+
 squire.reload = function (options) {
     squire.loadConfig(options);
     squire.scan();
@@ -60,6 +63,7 @@ squire.init = function (options) {
     var client       = options.client;
     squire.loadConfig(options);
     
+    /*
     options.ame.on('actionableMessage', function (info) {
         var targetUpgradeable = squire.isTargetUpgradeable(info);
         
@@ -67,6 +71,7 @@ squire.init = function (options) {
             squire.performAction(info);
         }
     });
+    */
     
     options.ame.on('actionableMessageAddressingBot', function (info) {
         var isAdmin = admin.userIsAdmin({
@@ -78,18 +83,29 @@ squire.init = function (options) {
         
         if (isAdmin) {
             switch (info.command) {
+                // Add friend
                 case 'af':
                     squire.processAddFriendCommand(info, options);
                 break;
                 
+                // Remove friend
                 case 'rf':
                     squire.processRemoveFriendCommand(info, options);
                 break;
                 
+                // Is friend
                 case 'if':
                     squire.processIsFriendCommand(info, options);
                 break;
                 
+                // Add voice
+                case 'av':
+                    squire.processAddFriendCommand(info, _.extend({
+                        mode: CHANNEL_MODE_VOICE
+                    }, options));
+                break;
+                
+                // Look for friends
                 case 'scan':
                     squire.scan();
                     client.say(info.channel, 'scanning!');
@@ -119,6 +135,10 @@ squire.init = function (options) {
     });
     
     client.addListener('join', function (nick, message) {
+        squire.scan();
+    });
+    
+    client.addListener('mode', function () {
         squire.scan();
     });
     
@@ -165,7 +185,8 @@ squire.processAddFriendCommand = function (info, options) {
     if (user && user.hostmask) {
         squire.addFriend(_.extend(info, {
             hostmask: user.hostmask,
-            nick    : target
+            nick    : target,
+            mode    : options.mode || CHANNEL_MODE_VOICE
         }), options)
         .then(function () {
             squire.reload(options);
@@ -219,22 +240,52 @@ squire.scan = function () {
     }
 };
 
+/**
+ * When the bot first starts, it has to whois everyone in order
+ * to get their hostmask. We need the hostmask in order to determine
+ * if a user is our friend.
+ *
+ */
 squire.isTargetUpgradeable  = function (info) {
     var targetHasModeAlready = false;
     var hasMask              = false;
     var botHasOps            = false;
+    var mode                 = CHANNEL_MODE_VOICE;
     
     var user = _.find(squire.cfg.friends, function (s) {
         return s.hostmask === info.hostmask;
     });
     
-    // If they don't already have mode
-    targetHasModeAlready = argus.hasMode(_.extend(info, {
-        mode: user ? user.mode : '+'
-    }));
+    // Can't do anything if we didn't find this user
+    if (!user) {
+        return false;
+    }
+    
+    //console.log('user: ', user);
     
     // And this item has a hostmask
     hasMask             = typeof info.hostmask === 'string';
+    
+    if (user) {
+        mode = user.mode;
+    }
+    
+    /** 
+     * Always grant channel operator status to admins
+     *
+     */
+    if (hasMask) {
+        var isAdmin = admin.hostmaskIsAdmin(info.hostmask);
+        
+        if (isAdmin) {
+            mode = CHANNEL_MODE_OP;
+        }
+    }
+    
+    // If they don't already have mode
+    targetHasModeAlready = argus.hasMode(_.extend(info, {
+        mode: mode
+    }));
     
     // And the bot has ops in that channel
     botHasOps           = argus.botHasOpsInChannel(info.channel, squire.wholeConfig.nick);
@@ -253,20 +304,34 @@ squire.isBotInChannel = function (channel) {
 };
 
 squire.performAction = function (info) {
+    // Don't perform modes on self
+    if (info.nick === squire.wholeConfig.nick) {
+        return false;
+    }
+    
     var user = _.find(squire.cfg.friends, function (s) {
         return s.hostmask === info.hostmask;
     });
     
+    // Can't do anything without a hostmask
+    if (!info.hostmask) {
+        return false;
+    }
+    
+    console.log('performing action on :', info);
+    
     var mode = user ? user.mode : false;
     
     if (mode) {
-        if (squire.isFriend(info.hostmask)) {
+        if (squire.isFriend(info.hostmask)) {            
             squire.client.send('MODE', info.channel, '+' + mode, info.nick);
         }
         
         if (squire.isFoe(info.hostmask)) {
             squire.client.send('MODE', info.channel, '-' + mode, info.nick);
         }
+    } else {
+        console.log('no mode: ', user);
     }
 };
 
@@ -324,8 +389,9 @@ squire.getHostmasks = function () {
 squire.addFriend = function (options) {
     var def   = when.defer();
 
-    // Grant channel operator status immediately
-    admin.grantChannelOperatorStatus(options, options.nick);
+    // Grant status immediately
+    //admin.grantChannelOperatorStatus(options, options.nick);
+    squire.client.send('MODE', options.channel, '+' + options.mode, options.nick);
     
     var query = [
         "REPLACE INTO squire_hostmasks (hostmask, mode, nick)",
