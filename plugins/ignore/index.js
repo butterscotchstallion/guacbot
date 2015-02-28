@@ -16,29 +16,36 @@ ig.init   = function (options) {
     options.ame.on('actionableMessageAddressingBot', function (info) {
         var words           = info.words;
         var command         = words[1];
-        var nick            = words[2];
+        var nick            = words[2];        
+        var userIsAdmin     = admin.userIsAdmin({
+            userInfo: info.info
+        });
         
         if (nick && (command === 'ignore' || command === 'unignore')) {
-            client.whois(nick, function (data) {
-                var hostmask = typeof(data.host) !== 'undefined' ? data.user + '@' + data.host : false;
-                
-                if (hostmask) {
-                    if (command === 'ignore') {
-                        ig.add(hostmask, function () {                            
-                            client.say(info.channel, 'k');
-                        });
-                    }
+            if (userIsAdmin) {
+                client.whois(nick, function (data) {
+                    var hostmask = typeof(data.host) !== 'undefined' ? data.user + '@' + data.host : false;
                     
-                    if (command === 'unignore') {
-                        ig.remove(hostmask, function () {                            
-                            client.say(info.channel, 'k');
-                        });
+                    if (hostmask) {
+                        if (command === 'ignore') {
+                            ig.add(hostmask, function () {                            
+                                client.say(info.channel, 'k');
+                            });
+                        }
+                        
+                        if (command === 'unignore') {
+                            ig.remove(hostmask, function () {                            
+                                client.say(info.channel, 'k');
+                            });
+                        }
+                        
+                    } else {
+                        console.log('ignore: unable to determine hostmask of nick "', nick, '"');
                     }
-                    
-                } else {
-                    console.log('ignore: unable to determine hostmask of nick "', nick, '"');
-                }
-            });
+                });
+            } else {
+                console.log("Non-admin attempted to ignore: ", info.info);
+            }
         }
     });
 };
