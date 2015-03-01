@@ -9,7 +9,9 @@ var db      = require('../../lib/db');
 var fs      = require('fs');
 var _       = require('underscore');
 var request = require('request');
-var cf = {};
+var cf      = {
+    
+};
 
 cf.loadConfig = function () {
     cf.facts = JSON.parse(fs.readFileSync(__dirname + "/facts.json", 'utf8')).facts;
@@ -22,17 +24,18 @@ cf.init = function (options) {
 
     options.ame.on('actionableMessage', function (info) {
         var messageContainsTrigger = cf.messageContainsTrigger(info.message);
-        var chance                 = Math.random() * 10;
-        var chanceToActivate       = chance <= 3;
+        var chance                 = Math.floor(Math.random() * 10);
+        var chanceToEmitLink       = chance <= 2;
+        var chanceToEmitFact       = chance >= 8;
         
-        console.log("chance to activate: " + chance);
-        
-        if (chanceToActivate && messageContainsTrigger) {
-            if (Math.random < 0.5) {
+        if (messageContainsTrigger) {
+            console.log("chance to activate: " + chance);
+            
+            if (chanceToEmitFact) {
                 cf.emitFact(_.extend(info, {
                     client: options.client
                 }));
-            } else {
+            } else if (chanceToEmitLink) {
                 cf.emitLink(_.extend(info, {
                     client: options.client
                 }));
@@ -85,7 +88,7 @@ cf.messageContainsTrigger = function (message) {
     ];
     
     for (var j = 0; j < triggers.length; j++) {
-        if (message === triggers[j]) {
+        if (message.indexOf(triggers[j]) !== -1) {
             found = true;
             break;
         }
